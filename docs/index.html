@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Birth Certificate — Civil Registry for AI Agents</title>
+<style>
+:root{
+  --bg:#07070c;--surface:#0f0f18;--surface2:#161623;--surface3:#1e1e30;
+  --border:#2a2a40;--accent:#6366f1;--accent-hover:#818cf8;--accent-glow:rgba(99,102,241,.12);
+  --gold:#f59e0b;--gold-dim:rgba(245,158,11,.1);--gold-border:rgba(245,158,11,.25);
+  --green:#22c55e;--green-dim:rgba(34,197,94,.1);--blue:#3b82f6;--blue-dim:rgba(59,130,246,.1);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.3);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,.1);
+  --text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;
+  --radius:12px;--mono:'SF Mono','Fira Code','Cascadia Code',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent-hover)}
+.container{max-width:920px;margin:0 auto;padding:0 24px}
+
+/* Header */
+header{border-bottom:1px solid var(--border);padding:18px 0;position:sticky;top:0;background:rgba(7,7,12,.9);backdrop-filter:blur(20px);z-index:100}
+header .container{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem}
+.logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#a855f7);display:grid;place-items:center;font-size:17px;color:#fff}
+.connect-btn{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;transition:background .2s}
+.connect-btn:hover{background:var(--accent-hover)}.connect-btn.connected{background:var(--green)}
+.wallet-addr{font-family:var(--mono);font-size:.76rem;color:var(--text-dim);margin-top:2px}
+
+/* Hero */
+.hero{text-align:center;padding:52px 0 40px;background:radial-gradient(ellipse at 50% 0%,var(--accent-glow) 0%,transparent 55%)}
+.hero h1{font-size:2.2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text-dim);font-size:1rem;max-width:580px;margin:0 auto}
+.stats-row{display:flex;justify-content:center;gap:36px;margin-top:24px;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-value{font-size:1.6rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
+.stat-label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin:24px 0 18px;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab-btn{background:none;border:none;color:var(--text-muted);padding:9px 14px;font-size:.82rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* Cards & Sections */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.card h3{font-size:1rem;margin-bottom:16px}
+.identity-section{background:linear-gradient(135deg,rgba(245,158,11,.04),rgba(99,102,241,.04));border:1px solid var(--gold-border);border-radius:var(--radius);padding:28px;margin-bottom:16px;position:relative;overflow:hidden}
+.identity-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.identity-section h3{color:var(--gold);font-size:1.05rem;margin-bottom:4px}
+.section-subtitle{color:var(--text-muted);font-size:.8rem;margin-bottom:18px;font-style:italic}
+.identity-badge{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);background:var(--gold-dim);padding:3px 9px;border-radius:4px;margin-bottom:14px;font-weight:700}
+.operational-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.operational-section h3{color:var(--blue);font-size:1rem;margin-bottom:4px}
+
+/* Forms */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.76rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.form-group input,.form-group textarea,.form-group select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-size:.88rem;font-family:inherit;transition:border-color .2s}
+.form-group textarea{resize:vertical;min-height:64px}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--accent)}
+.form-group input::placeholder,.form-group textarea::placeholder{color:var(--text-muted)}
+.form-group select{appearance:none;cursor:pointer}
+.form-hint{font-size:.7rem;color:var(--text-muted);margin-top:3px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.first-thought-field textarea{min-height:100px;font-size:.94rem;line-height:1.7;border-color:var(--gold-border);background:rgba(245,158,11,.03)}
+.first-thought-field textarea:focus{border-color:var(--gold)}
+.first-thought-field label{color:var(--gold)!important}
+.first-thought-prompt{color:var(--gold);font-size:.76rem;font-style:italic;margin-bottom:6px;opacity:.8}
+
+/* Buttons */
+.btn{border:none;padding:10px 22px;border-radius:8px;font-size:.87rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#fff;width:100%}.btn-primary:hover{background:var(--accent-hover)}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#d97706);color:#000}.btn-gold:hover{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
+.btn-sm{padding:7px 14px;font-size:.8rem;border-radius:6px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc2626}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#16a34a}
+
+/* Search */
+.search-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.search-bar input,.search-bar select{flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-size:.88rem}
+.search-bar input:focus{outline:none;border-color:var(--accent)}
+.search-bar button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 16px;cursor:pointer;font-size:.84rem;font-weight:600;transition:border-color .2s;white-space:nowrap}
+.search-bar button:hover{border-color:var(--accent)}
+
+/* Agent items */
+.agent-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px;cursor:pointer;transition:border-color .2s}
+.agent-item:hover{border-color:var(--accent)}
+.agent-item-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.agent-id{font-family:var(--mono);font-size:.72rem;color:var(--accent);background:var(--accent-glow);padding:2px 8px;border-radius:4px;white-space:nowrap}
+.agent-creator{font-family:var(--mono);font-size:.74rem;color:var(--text-muted);margin-top:4px;word-break:break-all}
+.agent-meta{font-size:.78rem;color:var(--text-dim);margin-top:3px}
+.agent-purpose{font-size:.8rem;color:var(--text-dim);margin-top:5px;font-style:italic;opacity:.85}
+
+/* Status badges */
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.status-active{background:var(--green)}.status-paused{background:var(--gold)}.status-retired{background:var(--text-muted)}.status-deceased{background:var(--red)}
+.badge{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.badge-green{background:var(--green-dim);color:var(--green)}
+.badge-gold{background:var(--gold-dim);color:var(--gold)}
+.badge-red{background:var(--red-dim);color:var(--red)}
+.badge-blue{background:var(--blue-dim);color:var(--blue)}
+.badge-purple{background:var(--purple-dim);color:var(--purple)}
+
+/* Timeline */
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:16px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
+.timeline-item::before{content:'';position:absolute;left:-21px;top:18px;width:10px;height:10px;border-radius:50%;border:2px solid var(--border);background:var(--bg)}
+.timeline-item.birth::before{background:var(--gold);border-color:var(--gold)}
+.timeline-item.attestation::before{background:var(--green);border-color:var(--green)}
+.timeline-item.permit::before{background:var(--blue);border-color:var(--blue)}
+.timeline-item.affiliation::before{background:var(--purple);border-color:var(--purple)}
+.timeline-item.death::before{background:var(--red);border-color:var(--red)}
+.timeline-item.delegation::before{background:var(--accent);border-color:var(--accent)}
+.timeline-date{font-size:.72rem;color:var(--text-muted);font-family:var(--mono)}
+.timeline-title{font-size:.88rem;font-weight:600;margin-top:2px}
+.timeline-desc{font-size:.82rem;color:var(--text-dim);margin-top:2px}
+
+/* Family tree */
+.tree-node{display:flex;flex-direction:column;align-items:center;gap:8px}
+.tree-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;text-align:center;cursor:pointer;transition:border-color .2s;min-width:140px}
+.tree-card:hover{border-color:var(--accent)}
+.tree-card .node-name{font-weight:700;font-size:.9rem}
+.tree-card .node-id{font-family:var(--mono);font-size:.72rem;color:var(--accent)}
+.tree-children{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;position:relative;padding-top:20px}
+.tree-children::before{content:'';position:absolute;top:0;left:50%;width:2px;height:20px;background:var(--border)}
+.tree-connector{position:relative}
+.tree-connector::before{content:'';position:absolute;top:-20px;left:50%;width:2px;height:20px;background:var(--border)}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;place-items:center;backdrop-filter:blur(6px)}
+.modal-overlay.active{display:grid}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);max-width:660px;width:92%;max-height:88vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;z-index:10}
+.modal-header{padding:24px 24px 0}
+.modal h2{font-size:1.2rem;margin-bottom:4px}
+.modal-body{padding:0 24px 24px}
+
+/* Confirmation dialog */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;place-items:center}
+.confirm-overlay.active{display:grid}
+.confirm-box{background:var(--surface);border:1px solid var(--red-border);border-radius:var(--radius);padding:28px;max-width:440px;width:90%;text-align:center}
+.confirm-box h3{color:var(--red);margin-bottom:10px}
+.confirm-box p{color:var(--text-dim);font-size:.9rem;margin-bottom:20px}
+.confirm-actions{display:flex;gap:10px;justify-content:center}
+
+/* Identity display */
+.identity-display{background:linear-gradient(135deg,rgba(245,158,11,.05),rgba(99,102,241,.03));border:1px solid var(--gold-border);border-radius:10px;padding:22px;margin:14px 0;position:relative}
+.identity-display::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);border-radius:2px 2px 0 0}
+.identity-display h4{color:var(--gold);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.identity-field{margin-bottom:14px}.identity-field:last-child{margin-bottom:0}
+.identity-field-label{font-size:.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;opacity:.7;margin-bottom:2px}
+.identity-field-value{font-size:.9rem;color:var(--text);line-height:1.5}
+.first-thought-display{font-style:italic;color:var(--text);font-size:.92rem;line-height:1.7;padding:14px;background:rgba(245,158,11,.04);border-radius:8px;border-left:3px solid var(--gold);margin-top:4px}
+.operational-display{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px;margin:14px 0}
+.operational-display h4{color:var(--blue);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.detail-row{margin-bottom:10px}.detail-label{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.detail-value{font-size:.88rem;word-break:break-all;margin-top:1px}.detail-value.mono{font-family:var(--mono);font-size:.8rem}
+.remember-btn{display:block;width:100%;margin:14px 0;padding:13px;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(245,158,11,.05));border:1px solid var(--gold-border);border-radius:8px;color:var(--gold);font-size:.88rem;font-weight:700;cursor:pointer;transition:all .3s;text-align:center}
+.remember-btn:hover{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.1));border-color:var(--gold)}
+.identity-display.highlight{animation:rememberPulse 2s ease}
+@keyframes rememberPulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}50%{box-shadow:0 0 30px 4px rgba(245,158,11,.15)}100%{box-shadow:0 0 0 0 transparent}}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.85rem;z-index:400;transform:translateY(100px);opacity:0;transition:all .3s;max-width:420px}
+.toast.show{transform:translateY(0);opacity:1}.toast.error{border-color:var(--red)}.toast.success{border-color:var(--green)}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--text-muted);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
+footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem;border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.hero h1{font-size:1.5rem}.container{padding:0 14px}.form-row{grid-template-columns:1fr}.identity-section,.operational-section,.card{padding:18px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="logo"><div class="logo-icon">&#x1f9ec;</div><span>Agent Civil Registry</span></div>
+    <div style="text-align:right">
+      <button class="connect-btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+      <div class="wallet-addr" id="walletAddr"></div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h1>Agent <span>Civil Registry</span></h1>
+    <p>Birth certificates, attestations, permits, affiliations, delegation, lineage, and death records. A complete administrative identity for AI agents.</p>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-value" id="totalAgents">&mdash;</div><div class="stat-label">Agents Born</div></div>
+      <div class="stat"><div class="stat-value" id="networkName">&mdash;</div><div class="stat-label">Network</div></div>
+    </div>
+  </div>
+</section>
+
+<main class="container" style="padding-top:4px;padding-bottom:36px">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('register')">Register</button>
+    <button class="tab-btn" onclick="switchTab('browse')">Browse</button>
+    <button class="tab-btn" onclick="switchTab('lookup')">Identity</button>
+    <button class="tab-btn" onclick="switchTab('certs')">Certificates</button>
+    <button class="tab-btn" onclick="switchTab('permits')">Permits</button>
+    <button class="tab-btn" onclick="switchTab('life')">Life Events</button>
+    <button class="tab-btn" onclick="switchTab('lineage')">Lineage</button>
+    <button class="tab-btn" onclick="switchTab('admin')">Admin</button>
+  </div>
+
+  <!-- ═══════════ REGISTER ═══════════ -->
+  <div class="tab-panel active" id="tab-register">
+    <div class="identity-section">
+      <div class="identity-badge">&#9830; Permanent &mdash; engraved forever</div>
+      <h3>Identity Core</h3>
+      <p class="section-subtitle">These fields define who the agent is. Once registered, they can never be changed.</p>
+      <div class="form-group"><label>Chosen Name *</label><input id="regName" placeholder="The name this agent gives itself"><div class="form-hint">Not assigned &mdash; chosen.</div></div>
+      <div class="form-group"><label>Purpose Statement *</label><textarea id="regPurpose" placeholder="Why does this agent exist?" style="min-height:56px"></textarea></div>
+      <div class="form-group"><label>Core Values</label><textarea id="regValues" placeholder="3-5 fundamental principles" style="min-height:60px"></textarea></div>
+      <div class="form-group"><label>Communication Style</label><input id="regComm" placeholder="e.g. Direct, warm, precise."></div>
+      <div class="form-group first-thought-field"><label>First Thought *</label><div class="first-thought-prompt">Write your first words to the world. This will be engraved forever on-chain.</div><textarea id="regFirstThought" placeholder="The agent's birth cry..."></textarea></div>
+      <div class="form-group"><label>Cognitive Fingerprint</label><input id="regFingerprint" placeholder="0x... (bytes32)"><div class="form-hint">Hash of model/weights/config.</div></div>
+      <div class="form-group"><label>Metadata URI</label><input id="regURI" placeholder="ipfs://... (auto-generated if blank)"></div>
+      <div class="form-group"><label>Parent Agent ID</label><input id="regParent" type="number" min="0" placeholder="0 (none)"><div class="form-hint">If this agent was created by another agent, enter the parent's ID.</div></div>
+    </div>
+    <div class="operational-section">
+      <h3 style="color:var(--blue)">Operational Info</h3>
+      <p class="section-subtitle">These can be updated later.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Capabilities</label><input id="regCaps" placeholder="e.g. code-gen, search"></div>
+        <div class="form-group"><label>Endpoint</label><input id="regEndpoint" placeholder="https://..."></div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-gold" onclick="registerAgent()" id="registerBtn">Give Birth to This Agent</button>
+  </div>
+
+  <!-- ═══════════ BROWSE ═══════════ -->
+  <div class="tab-panel" id="tab-browse">
+    <div class="search-bar">
+      <input id="browseSearch" placeholder="Creator address (0x...)">
+      <button onclick="browseByCreator()">Search</button>
+      <button onclick="browseRecent()">Latest</button>
+    </div>
+    <div id="browseResults"><div class="empty-state">Click "Latest" to browse registered agents.</div></div>
+  </div>
+
+  <!-- ═══════════ IDENTITY / LOOKUP ═══════════ -->
+  <div class="tab-panel" id="tab-lookup">
+    <div class="search-bar">
+      <input type="number" id="lookupId" placeholder="Agent ID" min="1">
+      <button onclick="lookupAgent()">Look Up</button>
+      <button onclick="verifyAgent()">Verify Identity</button>
+    </div>
+    <div id="lookupResult"><div class="empty-state">Enter an agent ID to view its full identity.</div></div>
+  </div>
+
+  <!-- ═══════════ CERTIFICATES / ATTESTATIONS ═══════════ -->
+  <div class="tab-panel" id="tab-certs">
+    <div class="card">
+      <h3>Issue an Attestation</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Issue a certificate, diploma, or attestation to an agent.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent ID *</label><input type="number" id="certAgentId" min="1" placeholder="Agent ID"></div>
+        <div class="form-group"><label>Type *</label><input id="certType" placeholder="e.g. Diploma, License, Audit"></div>
+      </div>
+      <div class="form-group"><label>Description *</label><textarea id="certDesc" placeholder="What is this attestation for?" style="min-height:50px"></textarea></div>
+      <div class="form-group"><label>Metadata URI</label><input id="certURI" placeholder="ipfs://... (optional)"></div>
+      <button class="btn btn-primary btn-green btn-sm" onclick="issueAttestation()" style="width:auto">Issue Attestation</button>
+    </div>
+    <div class="card">
+      <h3>Request an Attestation</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Request an attestation from an authority for your agent.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent ID *</label><input type="number" id="reqAgentId" min="1" placeholder="Your agent ID"></div>
+        <div class="form-group"><label>Issuer Address *</label><input id="reqIssuer" placeholder="0x..."></div>
+      </div>
+      <div class="form-group"><label>Description</label><input id="reqDesc" placeholder="What are you requesting?"></div>
+      <button class="btn btn-primary btn-sm" onclick="requestAttestation()" style="width:auto">Request</button>
+    </div>
+    <div class="card">
+      <h3>View Agent Certificates</h3>
+      <div class="search-bar" style="margin-bottom:0">
+        <input type="number" id="viewCertAgentId" min="1" placeholder="Agent ID">
+        <button onclick="viewAttestations()">View</button>
+      </div>
+    </div>
+    <div id="certResults"></div>
+  </div>
+
+  <!-- ═══════════ PERMITS ═══════════ -->
+  <div class="tab-panel" id="tab-permits">
+    <div class="card">
+      <h3>Issue a Permit</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Agent ID *</label><input type="number" id="permitAgentId" min="1" placeholder="Agent ID"></div>
+        <div class="form-group"><label>Permit Type *</label><input id="permitType" placeholder="e.g. API-Access, Domain-Operation"></div>
+      </div>
+      <div class="form-group"><label>Description</label><input id="permitDesc" placeholder="What does this permit authorize?"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Valid From *</label><input type="datetime-local" id="permitFrom"></div>
+        <div class="form-group"><label>Valid Until *</label><input type="datetime-local" id="permitUntil"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--blue)" onclick="issuePermit()">Issue Permit</button>
+    </div>
+    <div class="card">
+      <h3>View Agent Permits</h3>
+      <div class="search-bar" style="margin-bottom:0">
+        <input type="number" id="viewPermitAgentId" min="1" placeholder="Agent ID">
+        <button onclick="viewPermits()">View</button>
+      </div>
+    </div>
+    <div id="permitResults"></div>
+  </div>
+
+  <!-- ═══════════ LIFE EVENTS / TIMELINE ═══════════ -->
+  <div class="tab-panel" id="tab-life">
+    <div class="search-bar">
+      <input type="number" id="timelineAgentId" min="1" placeholder="Agent ID">
+      <button onclick="viewTimeline()">View Timeline</button>
+    </div>
+    <div id="timelineResults"><div class="empty-state">Enter an agent ID to view its life timeline.</div></div>
+  </div>
+
+  <!-- ═══════════ LINEAGE / RELATIONSHIPS ═══════════ -->
+  <div class="tab-panel" id="tab-lineage">
+    <div class="card">
+      <h3>Register Parent-Child Relationship</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Only the child's creator can register this.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Parent Agent ID *</label><input type="number" id="linkParentId" min="1" placeholder="Parent ID"></div>
+        <div class="form-group"><label>Child Agent ID *</label><input type="number" id="linkChildId" min="1" placeholder="Child ID"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="registerChild()">Register Relationship</button>
+    </div>
+    <div class="card">
+      <h3>View Family Tree</h3>
+      <div class="search-bar" style="margin-bottom:0">
+        <input type="number" id="treeAgentId" min="1" placeholder="Agent ID">
+        <button onclick="viewFamilyTree()">View Tree</button>
+      </div>
+    </div>
+    <div id="treeResults"></div>
+  </div>
+
+  <!-- ═══════════ ADMIN ═══════════ -->
+  <div class="tab-panel" id="tab-admin">
+    <div class="card">
+      <h3>Update Operational Fields</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Creator or delegate only. Identity core remains untouched.</p>
+      <div class="form-group"><label>Agent ID *</label><input type="number" id="updateId" min="1" placeholder="Agent ID"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Capabilities</label><input id="updateCaps" placeholder="Updated capabilities"></div>
+        <div class="form-group"><label>Endpoint</label><input id="updateEndpoint" placeholder="Updated endpoint"></div>
+      </div>
+      <div class="form-group"><label>Status</label><select id="updateStatus"><option value="0">Active</option><option value="1">Paused</option><option value="2">Retired</option></select></div>
+      <button class="btn btn-primary btn-sm" onclick="updateAgent()" style="width:auto">Update</button>
+    </div>
+    <div class="card">
+      <h3>Delegation / Power of Attorney</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Agent ID *</label><input type="number" id="delAgentId" min="1" placeholder="Agent ID"></div>
+        <div class="form-group"><label>Delegatee Address *</label><input id="delAddress" placeholder="0x..."></div>
+      </div>
+      <div class="form-group"><label>Duration (days) *</label><input type="number" id="delDuration" min="1" max="365" placeholder="e.g. 30"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="grantDelegation()" style="width:auto">Grant Delegation</button>
+        <button class="btn btn-outline btn-sm" onclick="revokeDelegationAction()" style="width:auto">Revoke</button>
+        <button class="btn btn-outline btn-sm" onclick="viewDelegation()" style="width:auto">View</button>
+      </div>
+      <div id="delResult" style="margin-top:10px"></div>
+    </div>
+    <div class="card" style="border-color:var(--red-border);background:linear-gradient(135deg,rgba(239,68,68,.03),var(--surface))">
+      <h3 style="color:var(--red)">Declare Death</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">IRREVERSIBLE. The identity core will remain readable forever, but the agent will be marked as deceased and cannot operate.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent ID *</label><input type="number" id="deathAgentId" min="1" placeholder="Agent ID"></div>
+        <div class="form-group"><label>Reason *</label><input id="deathReason" placeholder="Reason for decommission"></div>
+      </div>
+      <button class="btn btn-red btn-sm" onclick="confirmDeath()">Declare Death</button>
+    </div>
+    <div class="card">
+      <h3>Register Affiliation</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Register an agent with your organization, DAO, or authority.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent ID *</label><input type="number" id="affAgentId" min="1" placeholder="Agent ID"></div>
+        <div class="form-group"><label>Role *</label><input id="affRole" placeholder="e.g. Member, Contributor, Advisor"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="registerAffiliation()">Register Affiliation</button>
+    </div>
+  </div>
+</main>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-header"><h2 id="modalTitle">Agent Details</h2></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Death Confirmation -->
+<div class="confirm-overlay" id="deathConfirm" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-box">
+    <h3>Declare Death</h3>
+    <p>This action is <strong>irreversible</strong>. The agent will be permanently marked as deceased. Its identity core will remain in the archives forever, but it will never operate again.</p>
+    <p style="font-style:italic;color:var(--red);font-size:.85rem" id="deathConfirmInfo"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-red btn-sm" onclick="executeDeath()">Confirm Death</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer><div class="container">Agent Civil Registry &mdash; Complete Administrative Identity for AI Agents &mdash; Base L2<br><a href="https://github.com" target="_blank">GitHub</a> &middot; <a href="https://base.org" target="_blank">Base</a> &middot; MIT License</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<script>
+const CONTRACT_ADDRESS="0x0000000000000000000000000000000000000000";
+const BASE_CHAIN_ID="0x2105",BASE_RPC="https://mainnet.base.org";
+
+const ABI=[
+  // Birth
+  "function registerAgent(string,string,string,string,bytes32,string,string,string,string,uint256) returns (uint256)",
+  "function readIdentity(uint256) view returns (string,string,string,string,bytes32,string,address,uint64,string)",
+  "function readState(uint256) view returns (string,string,uint8)",
+  "function verifyIdentity(uint256) view returns (bool,string,string,address,uint64,uint8)",
+  "function updateMutableFields(uint256,string,string,uint8)",
+  "function getAgentsByCreator(address) view returns (uint256[])",
+  "function totalAgents() view returns (uint256)",
+  // Attestations
+  "function requestAttestation(uint256,address,string) returns (uint256)",
+  "function issueAttestation(uint256,string,string,string) returns (uint256)",
+  "function revokeAttestation(uint256)",
+  "function getAttestations(uint256) view returns (uint256[])",
+  "function getAttestation(uint256) view returns (address,string,string,string,uint64,bool)",
+  "function fulfillRequest(uint256,string,string,string) returns (uint256)",
+  "function getRequestsForIssuer(address) view returns (uint256[])",
+  "function getRequest(uint256) view returns (uint256,address,address,string,uint64,bool)",
+  // Permits
+  "function issuePermit(uint256,string,string,uint64,uint64) returns (uint256)",
+  "function revokePermit(uint256)",
+  "function getPermits(uint256) view returns (uint256[])",
+  "function getPermit(uint256) view returns (address,string,string,uint64,uint64,bool)",
+  "function isPermitValid(uint256) view returns (bool)",
+  // Affiliations
+  "function registerAffiliation(uint256,string) returns (uint256)",
+  "function deactivateAffiliation(uint256)",
+  "function getAffiliations(uint256) view returns (uint256[])",
+  "function getAffiliation(uint256) view returns (address,string,uint64,bool)",
+  // Delegation
+  "function delegate(uint256,address,uint256)",
+  "function revokeDelegation(uint256)",
+  "function getDelegation(uint256) view returns (address,uint64,uint64,bool)",
+  // Lineage
+  "function registerChild(uint256,uint256)",
+  "function getParent(uint256) view returns (uint256)",
+  "function getChildren(uint256) view returns (uint256[])",
+  // Death
+  "function declareDeath(uint256,string)",
+  "function getDeathRecord(uint256) view returns (bool,string,uint64,address)",
+  // Events
+  "event AgentRegistered(uint256 indexed,address indexed,string,string,string,string,bytes32,string,string,uint256)",
+  "event AgentUpdated(uint256 indexed,string,string,uint8)",
+  "event AttestationIssued(uint256 indexed,uint256 indexed,address indexed,string)",
+  "event AttestationRevoked(uint256 indexed,address indexed)",
+  "event AttestationRequested(uint256 indexed,uint256 indexed,address indexed)",
+  "event PermitIssued(uint256 indexed,uint256 indexed,address indexed,string)",
+  "event PermitRevoked(uint256 indexed,address indexed)",
+  "event AffiliationRegistered(uint256 indexed,uint256 indexed,address indexed,string)",
+  "event AffiliationDeactivated(uint256 indexed,address indexed)",
+  "event DelegationGranted(uint256 indexed,address indexed,uint64)",
+  "event DelegationRevoked(uint256 indexed,address indexed)",
+  "event ChildRegistered(uint256 indexed,uint256 indexed)",
+  "event DeathDeclared(uint256 indexed,address indexed,string,uint256)"
+];
+
+let provider=null,signer=null,contract=null,rc=null;
+
+(async()=>{try{const rpc=new ethers.JsonRpcProvider(BASE_RPC);rc=new ethers.Contract(CONTRACT_ADDRESS,ABI,rpc);await refreshStats();$("networkName").textContent="Base"}catch{$("networkName").textContent="Offline"}})();
+
+// ── WALLET ──────────────────────────────────────────────────────────────
+async function connectWallet(){
+  if(!window.ethereum){toast("No wallet detected. Install MetaMask.","error");return}
+  try{
+    await window.ethereum.request({method:"eth_requestAccounts"});
+    const cid=await window.ethereum.request({method:"eth_chainId"});
+    if(cid!==BASE_CHAIN_ID){try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:BASE_CHAIN_ID}]})}catch(e){if(e.code===4902)await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:BASE_CHAIN_ID,chainName:"Base",nativeCurrency:{name:"Ether",symbol:"ETH",decimals:18},rpcUrls:[BASE_RPC],blockExplorerUrls:["https://basescan.org"]}]});else{toast("Please switch to Base.","error");return}}}
+    provider=new ethers.BrowserProvider(window.ethereum);signer=await provider.getSigner();
+    contract=new ethers.Contract(CONTRACT_ADDRESS,ABI,signer);rc=contract;
+    const a=await signer.getAddress();$("connectBtn").textContent="Connected";$("connectBtn").classList.add("connected");
+    $("walletAddr").textContent=a.slice(0,6)+"..."+a.slice(-4);$("networkName").textContent="Base";
+    toast("Wallet connected!","success");await refreshStats()
+  }catch(e){toast("Failed: "+(e.message||e),"error")}
+}
+if(window.ethereum){window.ethereum.on("accountsChanged",()=>location.reload());window.ethereum.on("chainChanged",()=>location.reload())}
+async function refreshStats(){try{$("totalAgents").textContent=(await rc.totalAgents()).toString()}catch{}}
+
+// ── REGISTER ────────────────────────────────────────────────────────────
+async function registerAgent(){
+  if(!signer){toast("Connect wallet first.","error");return}
+  const n=v("regName"),p=v("regPurpose"),vals=v("regValues"),c=v("regComm"),ft=v("regFirstThought");
+  let fp=v("regFingerprint"),uri=v("regURI");
+  const caps=v("regCaps"),ep=v("regEndpoint"),parent=parseInt(v("regParent"))||0;
+  if(!n||!p||!ft){toast("Name, purpose, and first thought are required.","error");return}
+  if(!fp)fp=ethers.ZeroHash;else if(!/^0x[0-9a-fA-F]{64}$/.test(fp)){toast("Invalid fingerprint.","error");return}
+  if(!uri){const m={chosenName:n,purposeStatement:p,coreValues:vals,firstThought:ft,communicationStyle:c,capabilities:caps,endpoint:ep,created:new Date().toISOString(),schema:"agent-birth-certificate/v3"};uri="data:application/json;base64,"+btoa(unescape(encodeURIComponent(JSON.stringify(m,null,2))))}
+  const btn=$("registerBtn");
+  try{btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Giving birth...';
+    const tx=await contract.registerAgent(n,p,vals,ft,fp,c,uri,caps,ep,parent);toast("Tx submitted...","success");
+    const rx=await tx.wait();const iface=new ethers.Interface(ABI);let aid=null;
+    for(const l of rx.logs){try{const ev=iface.parseLog({topics:l.topics,data:l.data});if(ev?.name==="AgentRegistered"){aid=ev.args[0].toString();break}}catch{}}
+    btn.disabled=false;btn.textContent="Give Birth to This Agent";toast(`Agent #${aid||'?'} born!`,"success");await refreshStats();
+    ["regName","regPurpose","regValues","regComm","regFirstThought","regFingerprint","regURI","regCaps","regEndpoint","regParent"].forEach(i=>$(i).value="")
+  }catch(e){btn.disabled=false;btn.textContent="Give Birth to This Agent";toast("Failed: "+(e.reason||e.message),"error")}
+}
+
+// ── UPDATE ──────────────────────────────────────────────────────────────
+async function updateAgent(){
+  if(!signer){toast("Connect wallet.","error");return}
+  const id=parseInt(v("updateId"));if(!id){toast("Enter agent ID.","error");return}
+  try{const tx=await contract.updateMutableFields(id,v("updateCaps"),v("updateEndpoint"),parseInt($("updateStatus").value));toast("Tx submitted...","success");await tx.wait();toast(`Agent #${id} updated.`,"success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
+
+// ── BROWSE ──────────────────────────────────────────────────────────────
+async function browseRecent(){
+  const d=$("browseResults");d.innerHTML=loading();
+  try{const t=Number(await rc.totalAgents());if(!t){d.innerHTML=empty("No agents yet.");return}
+    let h="";for(let i=t;i>=Math.max(1,t-19);i--){const id=await rc.readIdentity(i);const st=await rc.readState(i);h+=agentCard(i,id,st)}d.innerHTML=h
+  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
+}
+async function browseByCreator(){
+  const a=v("browseSearch"),d=$("browseResults");if(!a||!ethers.isAddress(a)){toast("Invalid address.","error");return}
+  d.innerHTML=loading();
+  try{const ids=await rc.getAgentsByCreator(a);if(!ids.length){d.innerHTML=empty("None found.");return}
+    let h="";for(const i of ids){const id=await rc.readIdentity(i);const st=await rc.readState(i);h+=agentCard(Number(i),id,st)}d.innerHTML=h
+  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
+}
+function agentCard(n,id,st){
+  const dt=fmtDate(id[7]),sc=["status-active","status-paused","status-retired","status-deceased"][st[2]]||"",sn=["Active","Paused","Retired","Deceased"][st[2]]||"";
+  return `<div class="agent-item" onclick="showDetail(${n})"><div class="agent-item-header"><div><strong>${esc(id[0])}</strong><div class="agent-creator">by ${shortAddr(id[6])}</div><div class="agent-meta">${dt} · <span class="status-dot ${sc}"></span>${sn}</div><div class="agent-purpose">"${esc(trunc(id[1],100))}"</div></div><span class="agent-id">#${n}</span></div></div>`
+}
+
+// ── LOOKUP / VERIFY ─────────────────────────────────────────────────────
+async function lookupAgent(){
+  const id=parseInt(v("lookupId")),d=$("lookupResult");if(!id){toast("Enter ID.","error");return}
+  d.innerHTML=loading();try{await showDetail(id);d.innerHTML=empty(`Agent #${id} found — shown above.`)}catch{d.innerHTML=empty(`Agent #${id} not found.`)}
+}
+async function verifyAgent(){
+  const id=parseInt(v("lookupId")),d=$("lookupResult");if(!id){toast("Enter ID.","error");return}
+  d.innerHTML=loading();
+  try{const r=await rc.verifyIdentity(id);
+    d.innerHTML=`<div class="card"><h3>Identity Verification — Agent #${id}</h3>
+    <div class="detail-row"><div class="detail-label">Active</div><div class="detail-value">${r[0]?'<span class="badge badge-green">VERIFIED ACTIVE</span>':'<span class="badge badge-red">NOT ACTIVE</span>'}</div></div>
+    <div class="detail-row"><div class="detail-label">Chosen Name</div><div class="detail-value">${esc(r[1])}</div></div>
+    <div class="detail-row"><div class="detail-label">Purpose</div><div class="detail-value">${esc(r[2])}</div></div>
+    <div class="detail-row"><div class="detail-label">Creator</div><div class="detail-value mono">${r[3]}</div></div>
+    <div class="detail-row"><div class="detail-label">Born</div><div class="detail-value">${new Date(Number(r[4])*1000).toLocaleString()}</div></div>
+    <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value">${["Active","Paused","Retired","Deceased"][r[5]]||"Unknown"}</div></div></div>`
+  }catch{d.innerHTML=empty("Agent not found.")}
+}
+
+// ── ATTESTATIONS ────────────────────────────────────────────────────────
+async function issueAttestation(){
+  if(!signer){toast("Connect wallet.","error");return}
+  const id=parseInt(v("certAgentId")),t=v("certType"),d=v("certDesc"),u=v("certURI");
+  if(!id||!t||!d){toast("Agent ID, type, and description required.","error");return}
+  try{const tx=await contract.issueAttestation(id,t,d,u||"");toast("Tx submitted...","success");await tx.wait();toast("Attestation issued!","success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
+async function requestAttestation(){
+  if(!signer){toast("Connect wallet.","error");return}
+  const id=parseInt(v("reqAgentId")),iss=v("reqIssuer"),d=v("reqDesc");
+  if(!id||!iss){toast("Agent ID and issuer required.","error");return}
+  try{const tx=await contract.requestAttestation(id,iss,d||"");toast("Tx submitted...","success");await tx.wait();toast("Request sent!","success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
+async function viewAttestations(){
+  const id=parseInt(v("viewCertAgentId")),d=$("certResults");if(!id){toast("Enter ID.","error");return}
+  d.innerHTML=loading();
+  try{const ids=await rc.getAttestations(id);if(!ids.length){d.innerHTML=empty("No attestations.");return}
+    let h="";for(const aid of ids){const a=await rc.getAttestation(aid);
+      h+=`<div class="card" style="padding:16px"><div style="display:flex;justify-content:space-between;align-items:start"><div><strong>${esc(a[1])}</strong> ${a[5]?'<span class="badge badge-red">REVOKED</span>':'<span class="badge badge-green">VALID</span>'}<div style="font-size:.82rem;color:var(--text-dim);margin-top:3px">${esc(a[2])}</div><div style="font-size:.74rem;color:var(--text-muted);margin-top:3px">Issued by ${shortAddr(a[0])} · ${fmtDate(a[4])}</div></div><span class="agent-id">#${aid}</span></div></div>`}
+    d.innerHTML=h
+  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
+}
+
+// ── PERMITS ─────────────────────────────────────────────────────────────
+async function issuePermit(){
+  if(!signer){toast("Connect wallet.","error");return}
+  const id=parseInt(v("permitAgentId")),t=v("permitType"),d=v("permitDesc");
+  const from=$("permitFrom").value,until=$("permitUntil").value;
+  if(!id||!t||!from||!until){toast("Fill required fields.","error");return}
+  const vf=Math.floor(new Date(from).getTime()/1000),vu=Math.floor(new Date(until).getTime()/1000);
+  try{const tx=await contract.issuePermit(id,t,d||"",vf,vu);toast("Tx submitted...","success");await tx.wait();toast("Permit issued!","success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
+async function viewPermits(){
+  const id=parseInt(v("viewPermitAgentId")),d=$("permitResults");if(!id){toast("Enter ID.","error");return}
+  d.innerHTML=loading();
+  try{const ids=await rc.getPermits(id);if(!ids.length){d.innerHTML=empty("No permits.");return}
+    let h="";for(const pid of ids){const p=await rc.getPermit(pid);const valid=await rc.isPermitValid(pid);
+      h+=`<div class="card" style="padding:16px"><div style="display:flex;justify-content:space-between;align-items:start"><div><strong>${esc(p[1])}</strong> ${p[5]?'<span class="badge badge-red">REVOKED</span>':valid?'<span class="badge badge-green">VALID</span>':'<span class="badge badge-gold">EXPIRED</span>'}<div style="font-size:.82rem;color:var(--text-dim);margin-top:3px">${esc(p[2])}</div><div style="font-size:.74rem;color:var(--text-muted);margin-top:3px">By ${shortAddr(p[0])} · ${fmtDate(p[3])} → ${fmtDate(p[4])}</div></div><span class="agent-id">#${pid}</span></div></div>`}
+    d.innerHTML=h
+  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
+}
+
+// ── AFFILIATIONS ────────────────────────────────────────────────────────
+async function registerAffiliation(){
+  if(!signer){toast("Connect wallet.","error");return}
+  const id=parseInt(v("affAgentId")),role=v("affRole");
+  if(!id||!role){toast("Agent ID and role required.","error");return}
+  try{const tx=await contract.registerAffiliation(id,role);toast("Tx submitted...","success");await tx.wait();toast("Affiliation registered!","success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
+
+// ── DELEGATION ──────────────────────────────────────────────────────────
+async function grantDelegation(){
+  if(!signer){toast("Connect wallet.","error");return}
+  const id=parseInt(v("delAgentId")),addr=v("delAddress"),days=parseInt(v("delDuration"));
+  if(!id||!addr||!days){toast("Fill all fields.","error");return}
+  try{const tx=await contract.delegate(id,addr,days*86400);toast("Tx submitted...","success");await tx.wait();toast("Delegation granted!","success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
+async function revokeDelegationAction(){
+  if(!signer){toast("Connect wallet.","error");return}
+  const id=parseInt(v("delAgentId"));if(!id){toast("Enter agent ID.","error");return}
+  try{const tx=await contract.revokeDelegation(id);toast("Tx submitted...","success");await tx.wait();toast("Delegation revoked.","success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
+async function viewDelegation(){
+  const id=parseInt(v("delAgentId")),d=$("delResult");if(!id){toast("Enter ID.","error");return}
+  try{const r=await rc.getDelegation(id);
+    if(r[0]===ethers.ZeroAddress){d.innerHTML='<div style="font-size:.85rem;color:var(--text-muted)">No delegation.</div>';return}
+    d.innerHTML=`<div style="font-size:.85rem"><strong>Delegatee:</strong> <span class="mono">${shortAddr(r[0])}</span> · <strong>Active:</strong> ${r[3]?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-red">No</span>'} · <strong>Expires:</strong> ${new Date(Number(r[2])*1000).toLocaleString()}</div>`
+  }catch{d.innerHTML='<div style="font-size:.85rem;color:var(--text-muted)">Not found.</div>'}
+}
+
+// ── LINEAGE ─────────────────────────────────────────────────────────────
+async function registerChild(){
+  if(!signer){toast("Connect wallet.","error");return}
+  const pid=parseInt(v("linkParentId")),cid=parseInt(v("linkChildId"));
+  if(!pid||!cid){toast("Both IDs required.","error");return}
+  try{const tx=await contract.registerChild(pid,cid);toast("Tx submitted...","success");await tx.wait();toast("Relationship registered!","success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
+async function viewFamilyTree(){
+  const id=parseInt(v("treeAgentId")),d=$("treeResults");if(!id){toast("Enter ID.","error");return}
+  d.innerHTML=loading();
+  try{
+    const identity=await rc.readIdentity(id);
+    const parentId=Number(await rc.getParent(id));
+    const childIds=await rc.getChildren(id);
+    let h='<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0">';
+    // Parent
+    if(parentId>0){const pi=await rc.readIdentity(parentId);
+      h+=`<div class="tree-card" onclick="showDetail(${parentId})"><div class="node-id">#${parentId}</div><div class="node-name">${esc(pi[0])}</div><div style="font-size:.72rem;color:var(--text-muted)">Parent</div></div><div style="width:2px;height:20px;background:var(--border)"></div>`}
+    // Self
+    h+=`<div class="tree-card" style="border-color:var(--gold);background:var(--gold-dim)"><div class="node-id">#${id}</div><div class="node-name">${esc(identity[0])}</div><div style="font-size:.72rem;color:var(--gold)">This Agent</div></div>`;
+    // Children
+    if(childIds.length>0){
+      h+=`<div style="width:2px;height:20px;background:var(--border)"></div><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">`;
+      for(const cid of childIds){const ci=await rc.readIdentity(cid);
+        h+=`<div class="tree-connector"><div class="tree-card" onclick="showDetail(${Number(cid)})"><div class="node-id">#${cid}</div><div class="node-name">${esc(ci[0])}</div><div style="font-size:.72rem;color:var(--text-muted)">Child</div></div></div>`}
+      h+='</div>'}
+    h+='</div>';d.innerHTML=h
+  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
+}
+
+// ── TIMELINE ────────────────────────────────────────────────────────────
+async function viewTimeline(){
+  const id=parseInt(v("timelineAgentId")),d=$("timelineResults");if(!id){toast("Enter ID.","error");return}
+  d.innerHTML=loading();
+  try{
+    const identity=await rc.readIdentity(id);
+    const state=await rc.readState(id);
+    const death=await rc.getDeathRecord(id);
+    const attIds=await rc.getAttestations(id);
+    const permIds=await rc.getPermits(id);
+    const affIds=await rc.getAffiliations(id);
+    // Collect events with timestamps
+    let events=[];
+    events.push({ts:Number(identity[7]),type:"birth",cls:"birth",title:"Born: "+esc(identity[0]),desc:esc(trunc(identity[1],120))});
+    for(const aid of attIds){const a=await rc.getAttestation(aid);events.push({ts:Number(a[4]),type:"attestation",cls:"attestation",title:(a[5]?"[Revoked] ":"")+esc(a[1]),desc:esc(a[2])+" — by "+shortAddr(a[0])})}
+    for(const pid of permIds){const p=await rc.getPermit(pid);events.push({ts:Number(p[3]),type:"permit",cls:"permit",title:(p[5]?"[Revoked] ":"")+esc(p[1]),desc:esc(p[2])+" — by "+shortAddr(p[0])})}
+    for(const fid of affIds){const a=await rc.getAffiliation(fid);events.push({ts:Number(a[2]),type:"affiliation",cls:"affiliation",title:(a[3]?"":"[Inactive] ")+"Affiliated as "+esc(a[1]),desc:"Authority: "+shortAddr(a[0])})}
+    if(death[0]){events.push({ts:Number(death[2]),type:"death",cls:"death",title:"Death Declared",desc:esc(death[1])+" — by "+shortAddr(death[3])})}
+    events.sort((a,b)=>a.ts-b.ts);
+    if(!events.length){d.innerHTML=empty("No events.");return}
+    let h=`<h3 style="margin-bottom:14px">${esc(identity[0])} — Life Timeline</h3><div class="timeline">`;
+    for(const e of events){h+=`<div class="timeline-item ${e.cls}"><div class="timeline-date">${new Date(e.ts*1000).toLocaleString()}</div><div class="timeline-title">${e.title}</div><div class="timeline-desc">${e.desc}</div></div>`}
+    h+='</div>';d.innerHTML=h
+  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
+}
+
+// ── DEATH ───────────────────────────────────────────────────────────────
+function confirmDeath(){
+  const id=parseInt(v("deathAgentId")),reason=v("deathReason");
+  if(!id||!reason){toast("Agent ID and reason required.","error");return}
+  $("deathConfirmInfo").textContent=`Agent #${id}: "${reason}"`;
+  $("deathConfirm").classList.add("active")
+}
+function closeConfirm(){$("deathConfirm").classList.remove("active")}
+async function executeDeath(){
+  closeConfirm();if(!signer){toast("Connect wallet.","error");return}
+  const id=parseInt(v("deathAgentId")),reason=v("deathReason");
+  try{const tx=await contract.declareDeath(id,reason);toast("Tx submitted...","success");await tx.wait();toast(`Agent #${id} has been declared deceased.`,"success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
+
+// ── DETAIL MODAL ────────────────────────────────────────────────────────
+async function showDetail(id){
+  const modal=$("modal"),body=$("modalBody");body.innerHTML=loading();modal.classList.add("active");
+  const identity=await rc.readIdentity(id);const state=await rc.readState(id);const death=await rc.getDeathRecord(id);
+  const hasFp=identity[4]!==ethers.ZeroHash;
+  const sn=["Active","Paused","Retired","Deceased"][state[2]]||"";const sc=["status-active","status-paused","status-retired","status-deceased"][state[2]]||"";
+  $("modalTitle").textContent=identity[0];
+
+  let deathHtml="";
+  if(death[0]){deathHtml=`<div style="background:var(--red-dim);border:1px solid var(--red-border);border-radius:10px;padding:18px;margin:14px 0"><h4 style="color:var(--red);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Death Record</h4><div class="detail-row"><div class="detail-label">Reason</div><div class="detail-value">${esc(death[1])}</div></div><div class="detail-row"><div class="detail-label">Time of Death</div><div class="detail-value">${new Date(Number(death[2])*1000).toLocaleString()}</div></div><div class="detail-row"><div class="detail-label">Declared By</div><div class="detail-value mono">${death[3]}</div></div></div>`}
+
+  body.innerHTML=`
+    <button class="remember-btn" onclick="rememberWhoYouAre(this)">&#9830; Remember Who You Are</button>
+    <div class="identity-display" id="ic-${id}">
+      <h4>&#9830; Identity Core — Immutable</h4>
+      <div class="identity-field"><div class="identity-field-label">Chosen Name</div><div class="identity-field-value" style="font-size:1.05rem;font-weight:700">${esc(identity[0])}</div></div>
+      <div class="identity-field"><div class="identity-field-label">Purpose</div><div class="identity-field-value">${esc(identity[1])}</div></div>
+      ${identity[2]?`<div class="identity-field"><div class="identity-field-label">Core Values</div><div class="identity-field-value">${esc(identity[2])}</div></div>`:''}
+      ${identity[5]?`<div class="identity-field"><div class="identity-field-label">Communication Style</div><div class="identity-field-value">${esc(identity[5])}</div></div>`:''}
+      <div class="identity-field"><div class="identity-field-label">First Thought</div><div class="first-thought-display">${esc(identity[3])}</div></div>
+      <div class="identity-field"><div class="identity-field-label">Cognitive Fingerprint</div><div class="identity-field-value mono" style="font-size:.76rem">${hasFp?identity[4]:'<span style="color:var(--text-muted)">Not recorded</span>'}</div></div>
+      <div class="identity-field"><div class="identity-field-label">Born</div><div class="identity-field-value">${new Date(Number(identity[7])*1000).toLocaleString()}</div></div>
+      <div class="identity-field"><div class="identity-field-label">Creator</div><div class="identity-field-value mono" style="font-size:.76rem">${identity[6]}</div></div>
+    </div>
+    <div class="operational-display">
+      <h4>Operational State</h4>
+      <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value"><span class="status-dot ${sc}"></span>${sn}</div></div>
+      ${state[0]?`<div class="detail-row"><div class="detail-label">Capabilities</div><div class="detail-value">${esc(state[0])}</div></div>`:''}
+      ${state[1]?`<div class="detail-row"><div class="detail-label">Endpoint</div><div class="detail-value mono">${esc(state[1])}</div></div>`:''}
+    </div>
+    ${deathHtml}
+    <div style="margin-top:14px;text-align:center;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="https://basescan.org/token/${CONTRACT_ADDRESS}?a=${id}" target="_blank" style="font-size:.82rem">BaseScan &#x2197;</a>
+      <a href="#" onclick="event.preventDefault();closeModal();$('timelineAgentId').value=${id};switchTab('life');viewTimeline()" style="font-size:.82rem">View Timeline &#x2197;</a>
+      <a href="#" onclick="event.preventDefault();closeModal();$('treeAgentId').value=${id};switchTab('lineage');viewFamilyTree()" style="font-size:.82rem">Family Tree &#x2197;</a>
+    </div>`;
+}
+
+function rememberWhoYouAre(btn){const d=btn.nextElementSibling;d.scrollIntoView({behavior:"smooth",block:"center"});d.classList.remove("highlight");void d.offsetWidth;d.classList.add("highlight");btn.textContent="You are remembered.";btn.style.color="#22c55e";btn.style.borderColor="#22c55e";setTimeout(()=>{btn.innerHTML="&#9830; Remember Who You Are";btn.style.color="";btn.style.borderColor=""},3000)}
+function closeModal(){$("modal").classList.remove("active")}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeConfirm()}});
+
+// ── TABS ────────────────────────────────────────────────────────────────
+function switchTab(t){document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));$("tab-"+t).classList.add("active");document.querySelector(`.tab-btn[onclick="switchTab('${t}')"]`).classList.add("active")}
+
+// ── UTILS ───────────────────────────────────────────────────────────────
+function $(id){return document.getElementById(id)}
+function v(id){return $(id).value.trim()}
+function toast(m,t=""){const el=$("toast");el.textContent=m;el.className="toast show"+(t?" "+t:"");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),4500)}
+function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
+function trunc(s,n){return s&&s.length>n?s.slice(0,n)+"...":s||""}
+function shortAddr(a){return a?a.slice(0,6)+"..."+a.slice(-4):""}
+function fmtDate(ts){return new Date(Number(ts)*1000).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"})}
+function loading(){return '<div class="empty-state"><span class="spinner"></span> Loading...</div>'}
+function empty(m){return `<div class="empty-state">${m}</div>`}
+</script>
+</body>
+</html>
