@@ -1,0 +1,31 @@
+{
+  "name": "agent-registry",
+  "version": "1.0.0",
+  "description": "> A complete on-chain administrative identity system for AI agents. Birth certificates, attestations, permits, affiliations, delegation, lineage, and death records — like a government civil registry, but for agents. Permissionless. Immutable. Decentralized.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rsilvestre/agent-birth-certificate.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rsilvestre/agent-birth-certificate/issues"
+  },
+  "homepage": "https://github.com/rsilvestre/agent-birth-certificate#readme",
+  "devDependencies": {
+    "hardhat": "^3.4.0",
+    "solc": "^0.8.24"
+  },
+  "type": "module",
+  "dependencies": {
+    "ethers": "^6.16.0"
+  }
+}
