@@ -1,20 +1,22 @@
 # Dependencies
 node_modules/
-lib/
 
-# Build artifacts
-out/
-cache/
-artifacts/
-typechain-types/
-
-# Foundry
+# Foundry libs are managed as git submodules — don't ignore lib/
+# But ignore local forge caches
 cache_forge/
+forge-out/
+foundry.lock
+
+# solc-js compile output (regenerate with `node compile*.mjs`)
+build/
 
 # Hardhat
+artifacts/
+typechain-types/
+cache/
 cache_hardhat/
 
-# Environment
+# Environment (never commit secrets)
 .env
 .env.local
 .env.*.local
@@ -34,3 +36,6 @@ Thumbs.db
 coverage/
 coverage.json
 lcov.info
+
+# Temp
+/tmp/

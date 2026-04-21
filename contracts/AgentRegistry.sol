@@ -694,7 +694,8 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
     }
 
     function safeTransferFrom(address from, address to, uint256 tokenId) external override {
-        safeTransferFrom(from, to, tokenId, "");
+        transferFrom(from, to, tokenId);
+        require(_checkOnERC721Received(from, to, tokenId, ""), "ERC721: non-receiver");
     }
 
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public override {

@@ -1,0 +1,15 @@
+[profile.default]
+src = "contracts"
+out = "forge-out"
+test = "test"
+libs = ["lib"]
+solc = "0.8.24"
+via_ir = true
+optimizer = true
+optimizer_runs = 200
+evm_version = "paris"
+# Don't compile node_modules or build artifacts from the hardhat flow
+no_match_path = "node_modules/**"
+
+[fmt]
+line_length = 120
