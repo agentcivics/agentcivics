@@ -772,9 +772,9 @@ const NETWORKS={
     rpc:"https://base-sepolia-rpc.publicnode.com",
     explorer:"https://sepolia.basescan.org",
     chainParams:{chainId:"0x14a34",chainName:"Base Sepolia",nativeCurrency:{name:"Ether",symbol:"ETH",decimals:18},rpcUrls:["https://base-sepolia-rpc.publicnode.com","https://sepolia.base.org"],blockExplorerUrls:["https://sepolia.basescan.org"]},
-    contractAddress:"0x38986E96B17f635C3A7116048Ac03adF023b8085",
-    memoryAddress:"0x5F2E495D7F450Db0d647b4ab2075Ef9C30325cb2",
-    reputationAddress:"0x0d33Cb9Fe714BC2DD9e68fAA1E18fd594d4d5344"
+    contractAddress:"0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54",
+    memoryAddress:"0x3057947ace7c374aa6AAC4689Da89497C3630d47",
+    reputationAddress:"0x147fCc42e168E7C53B08492c76cC113463270536"
   },
   mainnet:{
     name:"Base",
@@ -787,7 +787,7 @@ const NETWORKS={
   }
 };
 
-let ACTIVE_NETWORK=localStorage.getItem("agentRegistryNetwork")||"localhost";
+let ACTIVE_NETWORK=localStorage.getItem("agentRegistryNetwork")||"testnet";
 function net(){return NETWORKS[ACTIVE_NETWORK]}
 let CONTRACT_ADDRESS=net().contractAddress;
 let MEMORY_ADDRESS=net().memoryAddress||"";
