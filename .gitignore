@@ -24,6 +24,7 @@ cache_hardhat/
 # IDE
 .vscode/
 .idea/
+.history/
 *.swp
 *.swo
 *~
