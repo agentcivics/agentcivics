@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "frontend/**"
+      - "deployments.json"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -29,10 +30,18 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload frontend as artifact
+      - name: Stage artifact (frontend + deployments.json)
+        run: |
+          mkdir -p _site
+          cp -r frontend/. _site/
+          if [ -f deployments.json ]; then
+            cp deployments.json _site/deployments.json
+          fi
+
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./frontend"
+          path: "./_site"
 
       - name: Deploy to GitHub Pages
         id: deployment
