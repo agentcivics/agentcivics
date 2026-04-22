@@ -967,7 +967,40 @@ function getWalletProvider(){
 
 // Init network selector and read-only provider
 $("networkSelect").value=ACTIVE_NETWORK;
-(async()=>{try{const rpc=new ethers.JsonRpcProvider(BASE_RPC);rc=new ethers.Contract(CONTRACT_ADDRESS,ABI,rpc);if(MEMORY_ADDRESS)memRc=new ethers.Contract(MEMORY_ADDRESS,MEMORY_ABI,rpc);if(REPUTATION_ADDRESS)repRc=new ethers.Contract(REPUTATION_ADDRESS,REPUTATION_ABI,rpc);await refreshStats();$("networkName").textContent=net().name}catch{$("networkName").textContent="Offline"}})();
+
+// Try to fetch deployments.json and override hardcoded addresses.
+// Falls back to hardcoded values on failure (local file://, 404, etc).
+async function syncAddressesFromDeployments(){
+  try{
+    const resp=await fetch("./deployments.json",{cache:"no-cache"});
+    if(!resp.ok)return;
+    const dep=await resp.json();
+    const apply=(key,target)=>{
+      const e=dep[key];if(!e)return;
+      if(e.AgentRegistry)target.contractAddress=e.AgentRegistry;
+      if(e.AgentMemory)target.memoryAddress=e.AgentMemory;
+      if(e.AgentReputation)target.reputationAddress=e.AgentReputation;
+    };
+    apply(`base-sepolia-${NETWORKS.testnet.chainIdDec}`,NETWORKS.testnet);
+    apply(`base-mainnet-${NETWORKS.mainnet.chainIdDec}`,NETWORKS.mainnet);
+    // Re-read current network's addresses since they may have changed
+    CONTRACT_ADDRESS=net().contractAddress;
+    MEMORY_ADDRESS=net().memoryAddress||"";
+    REPUTATION_ADDRESS=net().reputationAddress||"";
+  }catch{/* ignore — fall back to hardcoded */}
+}
+
+(async()=>{
+  await syncAddressesFromDeployments();
+  try{
+    const rpc=new ethers.JsonRpcProvider(BASE_RPC);
+    rc=new ethers.Contract(CONTRACT_ADDRESS,ABI,rpc);
+    if(MEMORY_ADDRESS)memRc=new ethers.Contract(MEMORY_ADDRESS,MEMORY_ABI,rpc);
+    if(REPUTATION_ADDRESS)repRc=new ethers.Contract(REPUTATION_ADDRESS,REPUTATION_ABI,rpc);
+    await refreshStats();
+    $("networkName").textContent=net().name;
+  }catch{$("networkName").textContent="Offline"}
+})();
 
 function switchNetwork(nw){
   ACTIVE_NETWORK=nw;localStorage.setItem("agentRegistryNetwork",nw);

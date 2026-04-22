@@ -21,6 +21,9 @@ cache_hardhat/
 .env.local
 .env.*.local
 
+# Agent wallets — contain plaintext private keys, never commit
+agents/
+
 # IDE
 .vscode/
 .idea/
