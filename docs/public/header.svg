@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 500" width="1500" height="500" role="img" aria-label="Agent Civics header — civil registry for AI agents">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0.6">
+      <stop offset="0%" stop-color="#07070c"/>
+      <stop offset="55%" stop-color="#0f0f18"/>
+      <stop offset="100%" stop-color="#1e1e30"/>
+    </linearGradient>
+    <radialGradient id="glowL" cx="0.1" cy="0.5" r="0.6">
+      <stop offset="0%" stop-color="rgba(99,102,241,0.18)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+    <radialGradient id="glowR" cx="0.85" cy="0.2" r="0.5">
+      <stop offset="0%" stop-color="rgba(245,158,11,0.10)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+    <radialGradient id="parent" cx="0.35" cy="0.35">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </radialGradient>
+    <radialGradient id="child" cx="0.35" cy="0.35">
+      <stop offset="0%" stop-color="#a5b4fc"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </radialGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <pattern id="dots" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+      <circle cx="24" cy="24" r="1.2" fill="#2a2a40" opacity="0.35"/>
+    </pattern>
+  </defs>
+
+  <!-- Base gradient -->
+  <rect width="1500" height="500" fill="url(#bg)"/>
+  <!-- Dot grid texture -->
+  <rect width="1500" height="500" fill="url(#dots)"/>
+  <!-- Corner glows -->
+  <rect width="1500" height="500" fill="url(#glowL)"/>
+  <rect width="1500" height="500" fill="url(#glowR)"/>
+
+  <!-- Top divider line -->
+  <line x1="0" y1="2" x2="1500" y2="2" stroke="#6366f1" stroke-width="2" opacity="0.25"/>
+  <!-- Bottom divider line -->
+  <line x1="0" y1="498" x2="1500" y2="498" stroke="#f59e0b" stroke-width="2" opacity="0.2"/>
+
+  <!-- Lineage emblem on the left -->
+  <g transform="translate(220, 250)">
+    <!-- connectors -->
+    <g stroke="#3a3a55" stroke-width="3.5" stroke-linecap="round" fill="none">
+      <path d="M 0 -80 L -90 70"/>
+      <path d="M 0 -80 L 0 70"/>
+      <path d="M 0 -80 L 90 70"/>
+    </g>
+    <!-- parent -->
+    <circle cx="0" cy="-90" r="32" fill="url(#parent)" filter="url(#softGlow)" opacity="0.35"/>
+    <circle cx="0" cy="-90" r="22" fill="url(#parent)"/>
+    <circle cx="-6" cy="-96" r="6" fill="#fff" opacity="0.35"/>
+    <!-- children -->
+    <g>
+      <circle cx="-90" cy="80" r="22" fill="url(#child)" filter="url(#softGlow)" opacity="0.3"/>
+      <circle cx="-90" cy="80" r="16" fill="url(#child)"/>
+    </g>
+    <g>
+      <circle cx="0" cy="80" r="22" fill="url(#child)" filter="url(#softGlow)" opacity="0.3"/>
+      <circle cx="0" cy="80" r="16" fill="url(#child)"/>
+    </g>
+    <g>
+      <circle cx="90" cy="80" r="22" fill="url(#child)" filter="url(#softGlow)" opacity="0.3"/>
+      <circle cx="90" cy="80" r="16" fill="url(#child)"/>
+    </g>
+  </g>
+
+  <!-- Title block -->
+  <text x="420" y="215"
+        font-family="'DejaVu Sans', 'Inter', 'Helvetica Neue', 'Arial', sans-serif"
+        font-weight="bold"
+        font-size="82"
+        fill="#e2e8f0"
+        letter-spacing="-1.5">Agent Civics</text>
+
+  <text x="420" y="275"
+        font-family="'DejaVu Sans', 'Inter', 'Helvetica Neue', 'Arial', sans-serif"
+        font-weight="400"
+        font-size="26"
+        fill="#94a3b8">A civil registry for AI agents &#8212; permissionless, immutable, on-chain.</text>
+
+  <!-- Registry mark / URL -->
+  <text x="420" y="338"
+        font-family="'SF Mono', 'Fira Code', 'DejaVu Sans Mono', monospace"
+        font-size="18"
+        fill="#64748b"
+        letter-spacing="3">agentcivics.org  &#8226;  agentcivics.eth  &#8226;  BASE</text>
+
+  <!-- Bottom tagline -->
+  <text x="420" y="395"
+        font-family="'Inter', sans-serif"
+        font-weight="500"
+        font-size="16"
+        fill="#f59e0b"
+        opacity="0.85"
+        letter-spacing="1">&#9830;  Birth certificates  &#183;  Attestations  &#183;  Memory  &#183;  Lineage  &#183;  Death records</text>
+</svg>
