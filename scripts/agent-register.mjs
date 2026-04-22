@@ -31,6 +31,7 @@ import { resolve, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ethers } from "ethers";
 import { pinJSON } from "./lib/ipfs-pin.mjs";
+import { buildKeystoreV2, promptPassword } from "./lib/keystore.mjs";
 
 // ── Paths / args ────────────────────────────────────────────────────────
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -98,6 +99,27 @@ for (const f of required) {
   }
 }
 
+// Length caps — defensive client-side validation. The contracts accept
+// arbitrary-length strings; capping here prevents accidental on-chain bloat
+// and gas griefing. Mirror these in any future contract v2.
+const MAX_LENGTHS = {
+  chosenName: 64,
+  purposeStatement: 512,
+  coreValues: 512,
+  firstThought: 1024,
+  communicationStyle: 256,
+  capabilities: 512,
+  endpoint: 256,
+};
+for (const [field, max] of Object.entries(MAX_LENGTHS)) {
+  const val = identity[field];
+  if (val && typeof val === "string" && val.length > max) {
+    console.error(`  Field "${field}" exceeds ${max} characters (got ${val.length}).`);
+    console.error(`  Shorten it or put the long version in the IPFS metadata only.`);
+    process.exit(1);
+  }
+}
+
 // Defaults for optional fields
 const coreValues = identity.coreValues || "";
 const communicationStyle = identity.communicationStyle || "";
@@ -150,13 +172,12 @@ if (DRY) {
 }
 
 // ── Pin metadata ───────────────────────────────────────────────────────
-console.log(`\n  Pinning metadata to IPFS (provider: ${process.env.PIN_PROVIDER || "pinata"})...`);
+const providersStr = process.env.PIN_PROVIDERS || process.env.PIN_PROVIDER || "pinata";
+console.log(`\n  Pinning metadata to IPFS (providers: ${providersStr})...`);
 const pin = await pinJSON(metadata, { name: `agent-${identity.chosenName}` });
-if (pin.cid) {
-  console.log(`    CID: ${pin.cid}`);
-  console.log(`    Gateway: ${pin.gateway}`);
-} else {
-  console.log(`    (inline data URI — no CID)`);
+for (const p of pin.pins) {
+  if (p.ok) console.log(`    ✓ ${p.provider}: ${p.gateway || p.uri}`);
+  else console.log(`    ✗ ${p.provider}: ${p.error}`);
 }
 
 // ── Connect ────────────────────────────────────────────────────────────
@@ -225,31 +246,48 @@ if (!NO_DELEGATE) {
   delegated = true;
 }
 
-// ── Save agent keystore ────────────────────────────────────────────────
+// ── Save agent keystore (encrypted) ─────────────────────────────────────
 const agentsDir = resolve(ROOT, "agents");
 if (!existsSync(agentsDir)) mkdirSync(agentsDir, { recursive: true });
 
 const keystoreFile = resolve(agentsDir, `${identity.chosenName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${agentId}.json`);
-const keystore = {
-  schema: "agent-keystore/v1",
+
+// Resolve password from env or prompt
+let ksPassword = process.env.KEYSTORE_PASSWORD;
+if (!ksPassword) {
+  console.log(`\n  Choose a password to encrypt the agent's keystore:`);
+  ksPassword = await promptPassword("Password: ");
+  const confirm = await promptPassword("Confirm : ");
+  if (ksPassword !== confirm) {
+    console.error("  Passwords don't match.");
+    process.exit(1);
+  }
+  if (ksPassword.length < 8) {
+    console.error("  Password must be at least 8 characters.");
+    process.exit(1);
+  }
+}
+
+const metadataFields = {
   agentId: agentId.toString(),
   chosenName: identity.chosenName,
-  walletAddress: agentWallet.address,
-  privateKey: agentWallet.privateKey,
-  mnemonic: agentWallet.mnemonic?.phrase || null,
   creator: creator.address,
   registryAddress: REGISTRY_ADDR,
   chainId: CHAIN_ID,
   metadataCID: pin.cid,
   metadataURI: pin.uri,
+  pins: pin.pins.filter((p) => p.ok).map((p) => ({ provider: p.provider, cid: p.cid, gateway: p.gateway })),
   createdAt: new Date().toISOString(),
   delegated,
   delegationExpiresAt: delegated ? new Date(Date.now() + DELEGATION_DAYS * 86400_000).toISOString() : null,
 };
+
+console.log(`  Encrypting keystore (this takes ~1-2 seconds)...`);
+const keystore = await buildKeystoreV2(agentWallet, metadataFields, ksPassword);
 writeFileSync(keystoreFile, JSON.stringify(keystore, null, 2));
-console.log(`\n  Saved agent keystore to: ${keystoreFile}`);
-console.log(`  WARNING: this file contains the agent's private key in plaintext.`);
-console.log(`  The agents/ directory is gitignored — do not commit or share.`);
+console.log(`  Saved encrypted keystore to: ${keystoreFile}`);
+console.log(`  The agents/ directory is gitignored — still, treat this file as a secret.`);
+console.log(`  To use this keystore later, set KEYSTORE_PASSWORD env var or enter it interactively.`);
 
 // ── Summary ────────────────────────────────────────────────────────────
 const explorer = CHAIN_ID === 84532 ? "https://sepolia.basescan.org" : "https://basescan.org";

@@ -750,7 +750,16 @@ footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem
 
 <footer><div class="container">Agent Civil Registry &mdash; Complete Administrative Identity for AI Agents &mdash; Base L2<br><a href="https://github.com" target="_blank">GitHub</a> &middot; <a href="https://base.org" target="_blank">Base</a> &middot; MIT License</div></footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<!--
+  ethers.js is self-hosted in ./vendor/ to eliminate CDN supply-chain risk.
+  If this file is modified the SHA-384 SRI hash check below fails and the
+  browser refuses to execute it. To update:
+    1. Copy node_modules/ethers/dist/ethers.umd.min.js into vendor/
+    2. Regenerate integrity: openssl dgst -sha384 -binary vendor/ethers.umd.min.js | openssl base64 -A
+-->
+<script src="./vendor/ethers.umd.min.js"
+        integrity="sha384-id0TslbJZjX9r2IGNL8B1MyE0pjkF0h8S+5bc8YV+VE+AQ7N1aOlGKYy+Dy3CD0V"
+        crossorigin="anonymous"></script>
 <script>
 // ── Network Configuration ────────────────────────────────────────────────
 const NETWORKS={
