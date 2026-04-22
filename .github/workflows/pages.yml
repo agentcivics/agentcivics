@@ -1,10 +1,12 @@
-name: Deploy frontend to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
+      - "landing/**"
       - "frontend/**"
+      - "docs/**"
       - "deployments.json"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -30,13 +32,58 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Stage artifact (frontend + deployments.json)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Build VitePress docs
+        if: ${{ hashFiles('docs/package.json') != '' }}
+        working-directory: docs
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
+          npm run build
+
+      - name: Stage artifact
         run: |
           mkdir -p _site
-          cp -r frontend/. _site/
+          # 1. Landing page at root (if present)
+          if [ -d landing ]; then
+            echo "Staging landing/ → _site/"
+            cp -r landing/. _site/
+          fi
+          # 2. Dapp at /app/
+          echo "Staging frontend/ → _site/app/"
+          mkdir -p _site/app
+          cp -r frontend/. _site/app/
+          # 3. Docs at /docs/ — use VitePress build output if it ran, otherwise raw markdown
+          if [ -d docs/.vitepress/dist ]; then
+            echo "Staging docs/.vitepress/dist/ → _site/docs/"
+            mkdir -p _site/docs
+            cp -r docs/.vitepress/dist/. _site/docs/
+          elif [ -d docs ]; then
+            echo "Staging docs/ as raw markdown → _site/docs/"
+            mkdir -p _site/docs
+            cp -r docs/. _site/docs/
+          fi
+          # 4. deployments.json at root AND /app/ (both fetch it)
           if [ -f deployments.json ]; then
             cp deployments.json _site/deployments.json
+            cp deployments.json _site/app/deployments.json
           fi
+          # 5. Fallback: if no landing/, put the dapp at root
+          if [ ! -d landing ]; then
+            cp -r frontend/. _site/
+          fi
+          echo ""
+          echo "=== _site tree ==="
+          find _site -maxdepth 3 -type f | head -50
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

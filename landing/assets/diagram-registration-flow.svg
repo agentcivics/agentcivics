@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" role="img" aria-label="Agent registration sequence flow">
+  <defs>
+    <marker id="seqArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6366f1"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="540" fill="#07070c"/>
+
+  <text x="60" y="40" font-family="'DejaVu Sans', sans-serif" font-weight="bold" font-size="16" fill="#e2e8f0">Registering an agent — end-to-end flow</text>
+  <text x="60" y="58" font-family="'DejaVu Sans', sans-serif" font-size="12" fill="#94a3b8">What happens from "I have an identity document" to "the agent is alive on-chain."</text>
+
+  <!-- Actors (columns) -->
+  <g font-family="'DejaVu Sans', sans-serif" font-weight="bold" font-size="13" fill="#e2e8f0" text-anchor="middle">
+    <text x="135" y="105">CLI</text>
+    <text x="330" y="105">Pinata</text>
+    <text x="525" y="105">Creator</text>
+    <text x="525" y="123" font-weight="normal" font-size="11" fill="#94a3b8">Wallet</text>
+    <text x="720" y="105">Registry</text>
+    <text x="720" y="123" font-weight="normal" font-size="11" fill="#94a3b8">Contract</text>
+    <text x="915" y="105">Agent</text>
+    <text x="915" y="123" font-weight="normal" font-size="11" fill="#94a3b8">Wallet</text>
+  </g>
+
+  <!-- Vertical swimlanes -->
+  <g stroke="#2a2a40" stroke-width="1" stroke-dasharray="3 5">
+    <line x1="135" y1="140" x2="135" y2="490"/>
+    <line x1="330" y1="140" x2="330" y2="490"/>
+    <line x1="525" y1="140" x2="525" y2="490"/>
+    <line x1="720" y1="140" x2="720" y2="490"/>
+    <line x1="915" y1="140" x2="915" y2="490"/>
+  </g>
+
+  <!-- Step 1: Generate wallet -->
+  <g>
+    <path d="M 135 170 L 895 170" stroke="#64748b" stroke-width="1"/>
+    <rect x="850" y="160" width="70" height="22" rx="4" fill="#0f0f18" stroke="#2a2a40"/>
+    <text x="885" y="175" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle">created</text>
+    <text x="140" y="165" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#94a3b8">1. Generate fresh wallet</text>
+  </g>
+
+  <!-- Step 2: Build metadata -->
+  <g>
+    <text x="140" y="210" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#94a3b8">2. Build metadata JSON</text>
+    <text x="140" y="226" font-family="'DejaVu Sans', sans-serif" font-size="10" fill="#64748b">(name, purpose, first thought, fingerprint…)</text>
+  </g>
+
+  <!-- Step 3: Pin to IPFS -->
+  <g>
+    <line x1="135" y1="260" x2="325" y2="260" stroke="#6366f1" stroke-width="1.5" marker-end="url(#seqArrow)"/>
+    <text x="230" y="254" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#6366f1" text-anchor="middle">3. Pin metadata</text>
+    <line x1="330" y1="285" x2="140" y2="285" stroke="#6366f1" stroke-width="1.5" marker-end="url(#seqArrow)" stroke-dasharray="4 3"/>
+    <text x="230" y="279" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#64748b" text-anchor="middle">→ ipfs://CID</text>
+  </g>
+
+  <!-- Step 4: Call registerAgent -->
+  <g>
+    <line x1="135" y1="320" x2="715" y2="320" stroke="#6366f1" stroke-width="1.5" marker-end="url(#seqArrow)"/>
+    <text x="425" y="314" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#6366f1" text-anchor="middle">4. creator signs → registerAgent(...)</text>
+  </g>
+
+  <!-- Step 5: Emit event, return id -->
+  <g>
+    <line x1="720" y1="350" x2="140" y2="350" stroke="#6366f1" stroke-width="1.5" marker-end="url(#seqArrow)" stroke-dasharray="4 3"/>
+    <text x="425" y="344" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#64748b" text-anchor="middle">→ agentId (via AgentRegistered event)</text>
+  </g>
+
+  <!-- Step 6: Call delegate -->
+  <g>
+    <line x1="135" y1="390" x2="715" y2="390" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#seqArrow)"/>
+    <text x="425" y="384" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle">5. creator signs → delegate(agentId, agentWallet, 365 days)</text>
+  </g>
+
+  <!-- Step 7: Result -->
+  <g>
+    <line x1="720" y1="420" x2="140" y2="420" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#seqArrow)" stroke-dasharray="4 3"/>
+    <text x="425" y="414" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#64748b" text-anchor="middle">→ DelegationGranted event</text>
+  </g>
+
+  <!-- Step 8: Save encrypted keystore -->
+  <g>
+    <text x="140" y="460" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#94a3b8">6. Encrypt + save keystore → agents/&lt;name&gt;-&lt;id&gt;.json</text>
+  </g>
+
+  <!-- Step 9: Fund (manual, after script) -->
+  <g>
+    <line x1="525" y1="490" x2="905" y2="490" stroke="#22c55e" stroke-width="1.5" marker-end="url(#seqArrow)"/>
+    <text x="715" y="484" font-family="'DejaVu Sans', sans-serif" font-size="11" fill="#22c55e" text-anchor="middle">7. human sends 0.001 ETH → agent wallet can now transact</text>
+  </g>
+</svg>

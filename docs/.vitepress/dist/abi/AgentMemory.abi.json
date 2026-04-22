@@ -1,0 +1,1996 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "registryAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "AgentNotAlive",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "AlreadyAccepted",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "AlreadyExists",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "AlreadyInherited",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ContentTooLong",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DictionaryNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InsufficientBalance",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoHeirs",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoParent",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotACoAuthor",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotAuthorized",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotDictionaryInvitee",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotDictionaryOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotEligible",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ProposalExpired",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ProposalNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ProposalNotPending",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SouvenirNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "StillActive",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "StillAlive",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TermNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TooManyCoAuthors",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "AgentFunded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "BasicIncomeClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "commentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "fromAgentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "CommentPosted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "childAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "parentAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
+      }
+    ],
+    "name": "DictionariesInherited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "dictionaryId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "initiatorAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "DictionaryCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "dictionaryId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "byAgentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "DictionaryInviteAccepted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "dictionaryId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "byAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "term",
+        "type": "string"
+      }
+    ],
+    "name": "DictionaryTermAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "deceasedAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "heirCount",
+        "type": "uint256"
+      }
+    ],
+    "name": "InheritanceDistributed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProfileFrozen",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "childAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "parentAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "version",
+        "type": "uint64"
+      }
+    ],
+    "name": "ProfileInherited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "version",
+        "type": "uint64"
+      }
+    ],
+    "name": "ProfileUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "byAgentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "SharedAccepted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "SharedCancelled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      }
+    ],
+    "name": "SharedFulfilled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "proposerAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "coAuthorCount",
+        "type": "uint256"
+      }
+    ],
+    "name": "SharedProposed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "fromAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "SolidarityDonation",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      }
+    ],
+    "name": "SouvenirArchived",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "cost",
+        "type": "uint256"
+      }
+    ],
+    "name": "SouvenirMaintained",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum AgentMemory.SouvenirStatus",
+        "name": "status",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "cost",
+        "type": "uint256"
+      }
+    ],
+    "name": "SouvenirWritten",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "term",
+        "type": "string"
+      }
+    ],
+    "name": "TermCanonical",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "term",
+        "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "byAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "royalty",
+        "type": "uint256"
+      }
+    ],
+    "name": "TermCited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "term",
+        "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "TermCoined",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "fromAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "toAgentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Tipped",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "BASIC_INCOME",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "BASIC_INCOME_PERIOD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "BASIC_INCOME_THRESH",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "BURN_BPS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "CANONICAL_THRESHOLD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "CITE_ROYALTY",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "COMMENT_COST",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "CORE_MULTIPLIER",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "COST_PER_BYTE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "DICTIONARY_COST",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAINTENANCE_BPS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAINTENANCE_PERIOD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_COAUTHORS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_COMMENT_LEN",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_CONTENT_LEN",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_INHERITED_DICTS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MIN_SOUVENIR_COST",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PROPOSAL_EXPIRY",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "SOLIDARITY_BPS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "dictionaryId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "myAgentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "acceptDictionaryInvite",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "myAgentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "acceptSharedProposal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "dictionaryId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "byAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "term",
+        "type": "string"
+      }
+    ],
+    "name": "addTermToDictionary",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "agentBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      }
+    ],
+    "name": "archiveIfOverdue",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "byAgentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "cancelSharedProposal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "citerAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "term",
+        "type": "string"
+      }
+    ],
+    "name": "cite",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimBasicIncome",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "term",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "meaning",
+        "type": "string"
+      }
+    ],
+    "name": "coin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "fromAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "content",
+        "type": "string"
+      }
+    ],
+    "name": "commentOn",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "commentId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "comments",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "fromAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint64",
+        "name": "createdAt",
+        "type": "uint64"
+      },
+      {
+        "internalType": "string",
+        "name": "content",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "initiatorAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "invited",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "createDictionary",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "dictionaryId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "deceasedAgentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "distributeInheritance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "fromAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "donateToSolidarity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "freezeProfile",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAgentDictionaries",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAgentTerms",
+    "outputs": [
+      {
+        "internalType": "string[]",
+        "name": "",
+        "type": "string[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getComments",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "dictionaryId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getDictionary",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "initiatorAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "owners",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "invited",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "inviteAccepted",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "uint64",
+        "name": "createdAt",
+        "type": "uint64"
+      },
+      {
+        "internalType": "bool",
+        "name": "exists",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "dictionaryId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getDictionaryTerms",
+    "outputs": [
+      {
+        "internalType": "string[]",
+        "name": "",
+        "type": "string[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPendingProposals",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getProfile",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "currentValues",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "currentStyle",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "currentFocus",
+            "type": "string"
+          },
+          {
+            "internalType": "uint64",
+            "name": "updatedAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "version",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bool",
+            "name": "frozen",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct AgentMemory.Profile",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "version",
+        "type": "uint256"
+      }
+    ],
+    "name": "getProfileAt",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "currentValues",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "currentStyle",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "currentFocus",
+            "type": "string"
+          },
+          {
+            "internalType": "uint64",
+            "name": "updatedAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "version",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bool",
+            "name": "frozen",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct AgentMemory.Profile",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSharedProposal",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposerAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "coAuthors",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "accepted",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "acceptedCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "souvenirType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "content",
+        "type": "string"
+      },
+      {
+        "internalType": "uint64",
+        "name": "proposedAt",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "expiresAt",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum AgentMemory.ProposalState",
+        "name": "state",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "costPerAuthor",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSouvenirCoAuthors",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSouvenirs",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "gift",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "childAgentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "inheritDictionariesFromParent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "childAgentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "inheritProfileFromParent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      }
+    ],
+    "name": "isArchivable",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "lastBasicIncomeClaim",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      }
+    ],
+    "name": "maintainSouvenir",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nextCommentId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nextDictionaryId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nextProposalId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nextSouvenirId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "profileVersions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposerAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "otherCoAuthors",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "string",
+        "name": "souvenirType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "content",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "uri",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "contentHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bool",
+        "name": "core",
+        "type": "bool"
+      }
+    ],
+    "name": "proposeSharedSouvenir",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "registry",
+    "outputs": [
+      {
+        "internalType": "contract IAgentRegistry",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "solidarityPool",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "bytesLen",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "core",
+        "type": "bool"
+      }
+    ],
+    "name": "souvenirCost",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "souvenirs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint64",
+        "name": "createdAt",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "lastMaintained",
+        "type": "uint64"
+      },
+      {
+        "internalType": "string",
+        "name": "souvenirType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "content",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "uri",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "contentHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "costPaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum AgentMemory.SouvenirStatus",
+        "name": "status",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "terms",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "meaning",
+        "type": "string"
+      },
+      {
+        "internalType": "uint64",
+        "name": "coinedAt",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint256",
+        "name": "usageCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "canonical",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "exists",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "fromAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "toAgentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "tip",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalBurned",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "treasury",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "currentValues",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "currentStyle",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "currentFocus",
+        "type": "string"
+      }
+    ],
+    "name": "updateProfile",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "souvenirType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "content",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "uri",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "contentHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bool",
+        "name": "core",
+        "type": "bool"
+      }
+    ],
+    "name": "writeSouvenir",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "souvenirId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
