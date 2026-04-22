@@ -106,14 +106,4 @@ export function explorerBaseUrl(chainId) {
   return null;
 }
 
-/**
- * Load an agent keystore file → returns { keystore, wallet, connected-wallet, agentId }.
- */
-export function loadAgentKeystore(keystorePath) {
-  const raw = readFileSync(keystorePath, "utf-8");
-  const keystore = JSON.parse(raw);
-  if (!keystore.privateKey || !keystore.agentId) {
-    throw new Error(`Invalid keystore: missing privateKey or agentId (${keystorePath})`);
-  }
-  return keystore;
-}
+// Keystore loading moved to lib/keystore.mjs

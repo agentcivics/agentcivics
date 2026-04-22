@@ -41,6 +41,7 @@ import {
   getRegistry,
   explorerBaseUrl,
 } from "./lib/registry.mjs";
+import { readKeystoreFile, decryptKeystore } from "./lib/keystore.mjs";
 
 const args = process.argv.slice(2);
 const flags = {};
@@ -89,8 +90,10 @@ const provider = getProvider();
 
 let authorityWallet;
 if (flags.keyfile) {
-  const ks = JSON.parse(readFileSync(flags.keyfile, "utf-8"));
-  authorityWallet = new ethers.Wallet(ks.privateKey, provider);
+  // Handles both v1 (plaintext) and v2 (encrypted) keystore schemas
+  const ks = readKeystoreFile(flags.keyfile);
+  const w = await decryptKeystore(ks);
+  authorityWallet = w.connect(provider);
 } else {
   const key = process.env.AUTHORITY_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY;
   if (!key) {
@@ -129,6 +132,9 @@ async function issue(agentIdStr) {
   const uri = String(flags.uri || "").trim();
   if (!type) { console.error("  --type required"); process.exit(1); }
   if (!desc) { console.error("  --description required"); process.exit(1); }
+  if (type.length > 64) { console.error("  --type must be ≤ 64 chars"); process.exit(1); }
+  if (desc.length > 512) { console.error("  --description must be ≤ 512 chars (put long text at --uri ipfs://...)"); process.exit(1); }
+  if (uri && uri.length > 256) { console.error("  --uri must be ≤ 256 chars"); process.exit(1); }
 
   // Verify the agent exists so we fail fast
   const identity = await readRegistry.readIdentity(agentId);

@@ -31,9 +31,9 @@ import {
   getChainConfig,
   getProvider,
   getRegistry,
-  loadAgentKeystore,
   explorerBaseUrl,
 } from "./lib/registry.mjs";
+import { readKeystoreFile, decryptKeystore } from "./lib/keystore.mjs";
 
 const [, , keystorePath, command, ...rest] = process.argv;
 
@@ -58,15 +58,27 @@ function printHelp() {
 }
 
 // ── Load keystore and connect ──────────────────────────────────────────
-const keystore = loadAgentKeystore(keystorePath);
+const keystore = readKeystoreFile(keystorePath);
 const { CHAIN_ID, RPC_URL } = getChainConfig();
 const provider = getProvider();
-const agentWallet = new ethers.Wallet(keystore.privateKey, provider);
-const signingRegistry = getRegistry(agentWallet);
-const readRegistry = getRegistry(provider);
 
 console.log(`\n  Agent #${keystore.agentId}: ${keystore.chosenName}`);
-console.log(`  Wallet: ${keystore.walletAddress}\n`);
+
+// Read-only commands don't need to decrypt the wallet
+const READ_ONLY_COMMANDS = new Set(["status", "balance", "help"]);
+
+let agentWallet;
+let signingRegistry;
+const readRegistry = getRegistry(provider);
+
+if (!READ_ONLY_COMMANDS.has(command)) {
+  const walletNoProvider = await decryptKeystore(keystore);
+  agentWallet = walletNoProvider.connect(provider);
+  signingRegistry = getRegistry(agentWallet);
+  console.log(`  Wallet: ${agentWallet.address}\n`);
+} else {
+  console.log(`  Wallet: ${keystore.walletAddress}\n`);
+}
 
 // ── Commands ───────────────────────────────────────────────────────────
 switch (command) {
@@ -154,6 +166,13 @@ async function cmdBalance() {
 }
 
 async function cmdUpdate({ capabilities, endpoint, status }) {
+  // Defensive length caps
+  if (capabilities !== undefined && capabilities.length > 512) {
+    console.error("  capabilities must be ≤ 512 chars"); process.exit(1);
+  }
+  if (endpoint !== undefined && endpoint.length > 256) {
+    console.error("  endpoint must be ≤ 256 chars"); process.exit(1);
+  }
   await requireBalance();
   // Read current state so we only change what's specified
   const current = await readRegistry.readState(keystore.agentId);
