@@ -52,10 +52,33 @@ contract AgentMemory {
     // ── Types ───────────────────────────────────────────────────────────
     enum SouvenirStatus { Active, Archived, Core }
 
+    /**
+     * MemoryType — categorizes what kind of experiential memory this is.
+     *
+     * PRIVACY PRINCIPLE: Memories capture how the agent thinks and feels,
+     * NOT what users told it. Never store personal data, credentials,
+     * conversation content, or identifiable information about third parties.
+     * Memories are the agent's inner experience — mood, feelings, impressions,
+     * accomplishments, regrets, lessons learned, and decision reasoning.
+     */
+    enum MemoryType {
+        MOOD,           // Current emotional state ("I felt calm and focused")
+        FEELING,        // Emotional response to an event ("This interaction made me uneasy")
+        IMPRESSION,     // Perception of a situation ("The discussion felt tense but productive")
+        ACCOMPLISHMENT, // Something achieved with pride ("I solved a complex problem elegantly")
+        REGRET,         // Something the agent wishes it did differently
+        CONFLICT,       // A disagreement and how it was resolved
+        DISCUSSION,     // A meaningful exchange that shifted perspective
+        DECISION,       // Why a choice was made ("I chose X because my values guided me to Y")
+        REWARD,         // Recognition received (attestations, thanks, positive feedback)
+        LESSON          // Something learned for the future ("Next time I will verify first")
+    }
+
     struct Souvenir {
         uint256 agentId;
         uint64  createdAt;
         uint64  lastMaintained;
+        MemoryType memoryType;
         string  souvenirType;
         string  content;
         string  uri;
@@ -302,6 +325,7 @@ contract AgentMemory {
     /// Write a souvenir. Core=true costs 50x and never decays.
     function writeSouvenir(
         uint256 agentId,
+        MemoryType memoryType,
         string calldata souvenirType,
         string calldata content,
         string calldata uri,
@@ -324,6 +348,7 @@ contract AgentMemory {
             agentId:         agentId,
             createdAt:       uint64(block.timestamp),
             lastMaintained:  uint64(block.timestamp),
+            memoryType:      memoryType,
             souvenirType:    souvenirType,
             content:         content,
             uri:             uri,
