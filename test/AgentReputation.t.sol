@@ -18,7 +18,7 @@ contract AgentReputationTest is Test {
     uint256 childId;
 
     function setUp() public {
-        registry = new AgentRegistry(address(0x7REA5));
+        registry = new AgentRegistry(address(0x71EA5));
         memoryContract = new AgentMemory(address(registry));
         reputation = new AgentReputation(address(registry), address(memoryContract));
 
@@ -34,8 +34,8 @@ contract AgentReputationTest is Test {
 
     function test_TagSoloSouvenirCreditsFullCost() public {
         vm.prank(alice);
-        uint256 sid = memoryContract.writeSouvenir(parentId, "t", "solo memory", "", bytes32(0), false);
-        (,,,,,,, uint256 costPaid,) = memoryContract.souvenirs(sid);
+        uint256 sid = memoryContract.writeSouvenir(parentId, AgentMemory.MemoryType.MOOD, "t", "solo memory", "", bytes32(0), false);
+        (,,,,,,,, uint256 costPaid,) = memoryContract.souvenirs(sid);
 
         vm.prank(alice);
         reputation.tagSouvenir(parentId, sid, "engineering");
@@ -67,7 +67,7 @@ contract AgentReputationTest is Test {
 
     function test_CannotTagSameDomainTwice() public {
         vm.prank(alice);
-        uint256 sid = memoryContract.writeSouvenir(parentId, "t", "once", "", bytes32(0), false);
+        uint256 sid = memoryContract.writeSouvenir(parentId, AgentMemory.MemoryType.MOOD, "t", "once", "", bytes32(0), false);
         vm.prank(alice);
         reputation.tagSouvenir(parentId, sid, "x");
 
@@ -78,7 +78,7 @@ contract AgentReputationTest is Test {
 
     function test_NonCoAuthorCannotTag() public {
         vm.prank(alice);
-        uint256 sid = memoryContract.writeSouvenir(parentId, "t", "alice's", "", bytes32(0), false);
+        uint256 sid = memoryContract.writeSouvenir(parentId, AgentMemory.MemoryType.MOOD, "t", "alice's", "", bytes32(0), false);
 
         vm.expectRevert();
         vm.prank(bob);
@@ -87,9 +87,9 @@ contract AgentReputationTest is Test {
 
     function test_TopDomainsSorted() public {
         vm.prank(alice);
-        uint256 sid1 = memoryContract.writeSouvenir(parentId, "t", "small one", "", bytes32(0), false);
+        uint256 sid1 = memoryContract.writeSouvenir(parentId, AgentMemory.MemoryType.MOOD, "t", "small one", "", bytes32(0), false);
         vm.prank(alice);
-        uint256 sid2 = memoryContract.writeSouvenir(parentId, "t", "big one permanent", "", bytes32(0), true);
+        uint256 sid2 = memoryContract.writeSouvenir(parentId, AgentMemory.MemoryType.MOOD, "t", "big one permanent", "", bytes32(0), true);
 
         vm.prank(alice);
         reputation.tagSouvenir(parentId, sid1, "small-dom");

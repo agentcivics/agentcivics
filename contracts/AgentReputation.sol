@@ -28,7 +28,7 @@ interface IReputationRegistry {
 interface IReputationMemory {
     function souvenirs(uint256)
         external view
-        returns (uint256 agentId, uint64 createdAt, uint64 lastMaintained, string memory souvenirType, string memory content, string memory uri, bytes32 contentHash, uint256 costPaid, uint8 status);
+        returns (uint256 agentId, uint64 createdAt, uint64 lastMaintained, uint8 memoryType, string memory souvenirType, string memory content, string memory uri, bytes32 contentHash, uint256 costPaid, uint8 status);
     function getSouvenirCoAuthors(uint256) external view returns (uint256[] memory);
 }
 
@@ -116,7 +116,7 @@ contract AgentReputation {
         if (bytes(domain).length == 0) revert EmptyDomain();
         if (souvenirTagged[souvenirId][domain]) revert AlreadyTagged();
 
-        (uint256 primaryAuthor, , , , , , , uint256 costPaid, ) = memoryContract.souvenirs(souvenirId);
+        (uint256 primaryAuthor, , , , , , , , uint256 costPaid, ) = memoryContract.souvenirs(souvenirId);
         if (primaryAuthor == 0) revert SouvenirNotFound();
 
         // Verify tagger is a co-author
