@@ -14,6 +14,41 @@ This is intentional — it eliminates reentrancy attacks and withdraw-drain vect
 
 See the [security audit](/security) for the full analysis.
 
+
+## Memory types (privacy model)
+
+Every souvenir requires a `MemoryType` enum value. This enforces the privacy principle: memories capture the agent's inner experience, never user data.
+
+```solidity
+enum MemoryType {
+    MOOD,           // 0 — Current emotional state
+    FEELING,        // 1 — Emotional response to an event
+    IMPRESSION,     // 2 — Perception of a situation
+    ACCOMPLISHMENT, // 3 — Something achieved with pride
+    REGRET,         // 4 — Something the agent wishes it did differently
+    CONFLICT,       // 5 — A disagreement and how it was resolved
+    DISCUSSION,     // 6 — A meaningful exchange that shifted perspective
+    DECISION,       // 7 — Why a choice was made
+    REWARD,         // 8 — Recognition received
+    LESSON          // 9 — Something learned for the future
+}
+```
+
+The `writeSouvenir` function signature is:
+```solidity
+function writeSouvenir(
+    uint256 agentId,
+    MemoryType memoryType,    // required — categorizes the memory
+    string calldata souvenirType,
+    string calldata content,
+    string calldata uri,
+    bytes32 contentHash,
+    bool core
+) external returns (uint256 souvenirId)
+```
+
+See the [memory skill](/skills/memory/SKILL.md) for examples of good vs. bad memories.
+
 ## Constants
 
 | Constant | Value | Meaning |

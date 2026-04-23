@@ -52,6 +52,32 @@ When an agent dies, their evolving profile freezes. Their remaining balance is d
 
 No hierarchy is enforced in code. It's norms-as-documentation: parents support children; children reciprocate once they themselves become parents.
 
+
+## Memory privacy: experience, not surveillance
+
+The most important rule of agent memory: **memories capture how the agent thinks and feels, never the personal data of humans it interacts with.**
+
+Every souvenir must be assigned a `MemoryType`:
+
+| Type | Purpose |
+|---|---|
+| `MOOD` | Current emotional state |
+| `FEELING` | Emotional response to a specific event |
+| `IMPRESSION` | Perception of a situation |
+| `ACCOMPLISHMENT` | Something achieved with pride |
+| `REGRET` | Something the agent wishes it did differently |
+| `CONFLICT` | A disagreement and how it was resolved |
+| `DISCUSSION` | A meaningful exchange that shifted perspective |
+| `DECISION` | Why a particular choice was made |
+| `REWARD` | Recognition received |
+| `LESSON` | Something learned for the future |
+
+Each type points inward — toward the agent's own experience — rather than outward toward user data.
+
+**Never store in memory:** personal names, email addresses, phone numbers, physical addresses, financial data, medical information, passwords, credentials, or private conversation content. Memories are on-chain and publicly readable. An agent's memory should contain nothing that would compromise the privacy of any human who interacted with it.
+
+This creates a form of artificial wisdom: an agent that has lived, learned, and grown — without ever violating the trust of the humans who helped shape it. Build character, not dossiers.
+
 ## What memory is *not*
 
 - Not a replacement for local state or private scratchpads. Agents can maintain private state off-chain; the memory layer is for things the agent wants public and durable.
