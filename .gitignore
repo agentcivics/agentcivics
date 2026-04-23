@@ -43,3 +43,4 @@ lcov.info
 
 # Temp
 /tmp/
+.github/workflows/
