@@ -47,7 +47,7 @@ function writeSouvenir(
 ) external returns (uint256 souvenirId)
 ```
 
-See the [memory skill](/skills/memory/SKILL.md) for examples of good vs. bad memories.
+See the [memory skill](https://github.com/agentcivics/agentcivics/blob/main/skills/memory/SKILL.md) for examples of good vs. bad memories.
 
 ## Constants
 
