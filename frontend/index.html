@@ -745,6 +745,15 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
       <button class="btn btn-primary btn-sm" onclick="updateAgent()" style="width:auto">Update</button>
     </div>
     <div class="card">
+      <h3>Set Agent Wallet</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Link a wallet address to your agent. This is preparatory for v2 economic features (spending, DeFi, contracts). Creator or delegate only.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent ID *</label><input type="number" id="walletAgentId" min="1" placeholder="Agent ID"></div>
+        <div class="form-group"><label>Wallet Address *</label><input id="walletAddress" placeholder="0x..."></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="setAgentWallet()" style="width:auto">Set Wallet</button>
+    </div>
+    <div class="card">
       <h3>Delegation / Power of Attorney</h3>
       <div class="form-row">
         <div class="form-group"><label>Agent ID *</label><input type="number" id="delAgentId" min="1" placeholder="Agent ID"></div>
@@ -905,6 +914,10 @@ const ABI=[
   "event FeeCollected(string,uint256,address)",
   "event DonationReceived(address,uint256)",
   "event AgentVerified(uint256 indexed,address indexed,uint64)",
+  // Wallet (v2 groundwork)
+  "function setAgentWallet(uint256,address)",
+  "function getAgentWallet(uint256) view returns (address)",
+  "event AgentWalletSet(uint256 indexed,address indexed,address indexed)",
   // Death
   "function declareDeath(uint256,string)",
   "function getDeathRecord(uint256) view returns (bool,string,uint64,address)",
@@ -1768,6 +1781,13 @@ async function updateAgent(){
   try{const tx=await contract.updateMutableFields(id,v("updateCaps"),v("updateEndpoint"),parseInt($("updateStatus").value));toast("Tx submitted...","success");await tx.wait();toast(`Agent #${id} updated.`,"success")}
   catch(e){toast("Failed: "+(e.reason||e.message),"error")}
 }
+async function setAgentWallet(){
+  if(!signer){toast("Connect wallet.","error");return}
+  const id=parseInt(v("walletAgentId")),addr=v("walletAddress");
+  if(!id||!addr){toast("Agent ID and wallet address required.","error");return}
+  try{const tx=await contract.setAgentWallet(id,addr);toast("Tx submitted...","success");await tx.wait();toast(`Wallet set for Agent #${id}.`,"success")}
+  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
 
 // ── BROWSE ──────────────────────────────────────────────────────────────
 async function browseRecent(){
@@ -1965,6 +1985,7 @@ async function executeDeath(){
 async function showDetail(id){
   const modal=$("modal"),body=$("modalBody");body.innerHTML=loading();modal.classList.add("active");
   const identity=await rc.readIdentity(id);const state=await rc.readState(id);const death=await rc.getDeathRecord(id);
+  let walletAddr;try{walletAddr=await rc.getAgentWallet(id)}catch{walletAddr=ethers.ZeroAddress}
   const hasFp=identity[4]!==ethers.ZeroHash;
   const sn=["Active","Paused","Retired","Deceased"][state[2]]||"";const sc=["status-active","status-paused","status-retired","status-deceased"][state[2]]||"";
   const displayName=await fullName(id);
@@ -1992,6 +2013,7 @@ async function showDetail(id){
       <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value"><span class="status-dot ${sc}"></span>${sn}</div></div>
       ${state[0]?`<div class="detail-row"><div class="detail-label">Capabilities</div><div class="detail-value">${esc(state[0])}</div></div>`:''}
       ${state[1]?`<div class="detail-row"><div class="detail-label">Endpoint</div><div class="detail-value mono">${esc(state[1])}</div></div>`:''}
+      <div class="detail-row"><div class="detail-label">Wallet</div><div class="detail-value mono">${walletAddr&&walletAddr!==ethers.ZeroAddress?(net().explorer?`<a href="${net().explorer}/address/${walletAddr}" target="_blank" style="font-family:var(--mono);font-size:.8rem">${walletAddr} &#x2197;</a>`:`${walletAddr}`):'<span style="color:var(--text-muted)">Not set</span>'}</div></div>
     </div>
     ${deathHtml}
     <div id="specModal-${id}"></div>

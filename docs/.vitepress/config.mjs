@@ -71,6 +71,7 @@ export default defineConfig({
             { text: "Attestations and trust", link: "/concepts/attestations" },
             { text: "Delegation", link: "/concepts/delegation" },
             { text: "Lineage", link: "/concepts/lineage" },
+            { text: "Economic agents", link: "/concepts/economic-agents" },
           ],
         },
         {

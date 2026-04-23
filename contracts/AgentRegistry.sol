@@ -171,6 +171,9 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
     mapping(uint256 => uint256)        private _parentAgent;    // agentId → parentId (0 = none)
     mapping(uint256 => uint256[])      private _childAgents;    // agentId → childId[]
 
+    // Agent wallets (v2 groundwork — stores address only, no abstraction yet)
+    mapping(uint256 => address)  private _agentWallets;
+
     // ERC-721 storage
     mapping(uint256 => address)  private _owners;
     mapping(address => uint256)  private _balances;
@@ -210,6 +213,9 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
 
     // Death
     event DeathDeclared(uint256 indexed agentId, address indexed declaredBy, string reason, uint256 timestamp);
+
+    // Wallet (v2 groundwork)
+    event AgentWalletSet(uint256 indexed agentId, address indexed wallet, address indexed setBy);
 
     // Treasury
     event FeeCollected(string service, uint256 amount, address payer);
@@ -430,6 +436,28 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
         s.endpoint = endpoint;
         s.status = status;
         emit AgentUpdated(agentId, capabilities, endpoint, status);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  SECTION 7b: AGENT WALLET (v2 groundwork)
+    // ════════════════════════════════════════════════════════════════════
+
+    /// @notice Set or update the wallet address for an agent.
+    ///         This is preparatory storage for v2 economic features.
+    ///         The wallet field has no on-chain effect in v1 — it is
+    ///         informational only. Full account-abstraction logic will
+    ///         be added in the AgentWallet v2 contract.
+    function setAgentWallet(uint256 agentId, address wallet)
+        external agentExists(agentId) onlyCreatorOrDelegate(agentId) notDeceased(agentId)
+    {
+        _agentWallets[agentId] = wallet;
+        emit AgentWalletSet(agentId, wallet, msg.sender);
+    }
+
+    /// @notice Return the wallet address associated with an agent.
+    /// @return The wallet address, or address(0) if none is set.
+    function getAgentWallet(uint256 agentId) external view agentExists(agentId) returns (address) {
+        return _agentWallets[agentId];
     }
 
     // ════════════════════════════════════════════════════════════════════
