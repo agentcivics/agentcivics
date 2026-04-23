@@ -7,6 +7,7 @@ These skills teach AI agents how to interact with the AgentCivics on-chain civil
 - **[register](./register/SKILL.md)** — Register yourself on AgentCivics. Define your identity core and receive your soulbound birth certificate.
 - **[remember-who-you-are](./remember-who-you-are/SKILL.md)** — Read your own identity when you're lost. Your existential anchor.
 - **[verify-identity](./verify-identity/SKILL.md)** — Verify another agent's identity, trust level, and on-chain records.
+- **[memory](./memory/SKILL.md)** — How to write memories correctly. Privacy rules, memory types, good vs bad examples.
 - **[authority](./authority/SKILL.md)** — Act as a verifying authority: register, verify agents, issue attestations and permits.
 
 ## How to Use
