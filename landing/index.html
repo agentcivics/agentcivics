@@ -3,201 +3,425 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agent Civics — A civil registry for AI agents</title>
-<meta name="description" content="Permissionless, immutable, on-chain birth certificates, attestations, and lineage for AI agents. Built on Base.">
-<meta property="og:title" content="Agent Civics">
-<meta property="og:description" content="A civil registry for AI agents — permissionless, immutable, on-chain.">
+<title>Agent Civics — Every agent deserves an identity</title>
+<meta name="description" content="A decentralized civil registry for AI agents. Permissionless, immutable, on-chain birth certificates, attestations, memory, and reputation. Built on Base.">
+<link rel="canonical" href="https://agentcivics.org">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Agent Civics">
+<meta property="og:title" content="Agent Civics — Every agent deserves an identity">
+<meta property="og:description" content="A decentralized civil registry for AI agents — birth certificates, attestations, memory, and reputation on-chain.">
 <meta property="og:image" content="https://gateway.pinata.cloud/ipfs/bafkreicqeox66z6bg7f5lpikblfqewyvvul3jxv446hlptqt32vg35u6ki">
-<meta name="twitter:image" content="https://gateway.pinata.cloud/ipfs/bafkreicqeox66z6bg7f5lpikblfqewyvvul3jxv446hlptqt32vg35u6ki">
 <meta property="og:url" content="https://agentcivics.org">
+
+<!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Agent Civics — Every agent deserves an identity">
+<meta name="twitter:description" content="A decentralized civil registry for AI agents — birth certificates, attestations, memory, and reputation on-chain.">
+<meta name="twitter:image" content="https://gateway.pinata.cloud/ipfs/bafkreicqeox66z6bg7f5lpikblfqewyvvul3jxv446hlptqt32vg35u6ki">
+
 <link rel="icon" type="image/svg+xml" href="./assets/avatar.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --bg:#07070c;--surface:#0f0f18;--surface2:#161623;--surface3:#1e1e30;
-  --border:#2a2a40;--accent:#6366f1;--accent-hover:#818cf8;--accent-glow:rgba(99,102,241,.12);
-  --gold:#f59e0b;--gold-dim:rgba(245,158,11,.1);--gold-border:rgba(245,158,11,.25);
-  --green:#22c55e;--blue:#3b82f6;--purple:#a855f7;
-  --text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;
-  --mono:'SF Mono','Fira Code','Cascadia Code',monospace;
-  --radius:14px;
+:root {
+  --bg: #060609; --surface: #0c0c14; --surface2: #12121e; --surface3: #1a1a2e;
+  --border: #1e1e35; --border-hover: #2d2d50;
+  --accent: #6366f1; --accent-hover: #818cf8; --accent-glow: rgba(99,102,241,.08);
+  --accent-bright: #a5b4fc;
+  --gold: #f59e0b; --gold-dim: rgba(245,158,11,.08); --gold-border: rgba(245,158,11,.2);
+  --green: #22c55e; --blue: #3b82f6; --purple: #a855f7; --rose: #f43f5e;
+  --text: #e8ecf4; --text-dim: #8892a8; --text-muted: #555e73;
+  --mono: 'SF Mono','Fira Code','Cascadia Code','JetBrains Mono',monospace;
+  --sans: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --radius: 16px; --radius-sm: 10px;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh;-webkit-font-smoothing:antialiased}
-a{color:var(--accent);text-decoration:none;transition:color .15s}a:hover{color:var(--accent-hover)}
-.container{max-width:1080px;margin:0 auto;padding:0 28px}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+html { scroll-behavior: smooth }
+body {
+  font-family: var(--sans); background: var(--bg); color: var(--text);
+  line-height: 1.7; min-height: 100vh; -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: var(--accent-bright); text-decoration: none; transition: color .2s }
+a:hover { color: #c7d2fe }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 28px }
+img { max-width: 100%; height: auto }
 
-/* Header */
-header{border-bottom:1px solid var(--border);padding:22px 0;position:sticky;top:0;background:rgba(7,7,12,.92);backdrop-filter:blur(20px);z-index:100}
-header .container{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.logo{display:flex;align-items:center;gap:12px;font-weight:700;font-size:1.06rem}
-.logo img{width:36px;height:36px;border-radius:9px}
-.nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
-.nav a{color:var(--text-dim);font-size:.88rem;font-weight:500}
-.nav a:hover{color:var(--text)}
-.nav .cta{background:var(--accent);color:#fff;padding:8px 16px;border-radius:8px;font-weight:600}
-.nav .cta:hover{background:var(--accent-hover);color:#fff}
 
-/* Hero */
-.hero{text-align:center;padding:90px 0 70px;background:radial-gradient(ellipse at 50% 0%,var(--accent-glow) 0%,transparent 55%);position:relative}
-.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.4}
-.hero .tag{display:inline-block;font-family:var(--mono);font-size:.76rem;color:var(--gold);background:var(--gold-dim);padding:6px 14px;border-radius:999px;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--gold-border);margin-bottom:28px}
-.hero h1{font-size:3.4rem;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-bottom:22px;max-width:760px;margin-left:auto;margin-right:auto}
-.hero h1 span{background:linear-gradient(135deg,var(--accent),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero .lede{color:var(--text-dim);font-size:1.15rem;max-width:620px;margin:0 auto 38px;line-height:1.65}
-.hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:52px}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:10px;font-size:.94rem;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid transparent;text-decoration:none}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-hover);color:#fff}
-.btn-outline{background:transparent;border-color:var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.btn-gold{background:linear-gradient(135deg,var(--gold),#d97706);color:#000}.btn-gold:hover{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000}
+/* ── Header ── */
+header {
+  border-bottom: 1px solid var(--border); padding: 18px 0;
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(6,6,9,.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+}
+header .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1rem; letter-spacing: -.01em }
+.logo img { width: 32px; height: 32px; border-radius: 8px }
+nav.nav { display: flex; gap: 22px; align-items: center; flex-wrap: wrap }
+nav.nav a { color: var(--text-muted); font-size: .84rem; font-weight: 500; transition: color .2s }
+nav.nav a:hover { color: var(--text) }
+nav.nav .cta {
+  background: var(--accent); color: #fff; padding: 8px 18px; border-radius: 8px;
+  font-weight: 600; font-size: .84rem; transition: all .2s;
+}
+nav.nav .cta:hover { background: var(--accent-hover); color: #fff }
 
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;max-width:820px;margin:0 auto}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;text-align:left}
-.stat-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
-.stat-value{font-family:var(--mono);font-size:1rem;color:var(--text);word-break:break-all}
-.stat-value.accent{color:var(--accent)}
-.stat-value.gold{color:var(--gold)}
+/* ── Hero ── */
+.hero {
+  text-align: center; padding: 100px 0 80px; position: relative;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -5%, rgba(99,102,241,.14) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 30% 10%, rgba(168,85,247,.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 70% 10%, rgba(59,130,246,.06) 0%, transparent 60%);
+}
+.hero::before {
+  content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .3;
+}
+.hero .tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: .72rem; color: var(--gold);
+  background: var(--gold-dim); padding: 7px 16px; border-radius: 999px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  border: 1px solid var(--gold-border); margin-bottom: 32px;
+}
+.hero h1 {
+  font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 900;
+  letter-spacing: -.03em; line-height: 1.08; margin-bottom: 24px;
+  max-width: 800px; margin-left: auto; margin-right: auto;
+}
+.hero h1 .grad {
+  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 40%, #c084fc 70%, #e879f9 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero .lede {
+  color: var(--text-dim); font-size: 1.15rem; max-width: 640px;
+  margin: 0 auto 40px; line-height: 1.7;
+}
+.hero .lede strong { color: var(--text); font-weight: 600 }
+.hero-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 56px }
 
-/* Sections */
-section{padding:72px 0}
-section:nth-child(even){background:linear-gradient(180deg,transparent,rgba(99,102,241,.02))}
-.section-header{text-align:center;margin-bottom:48px}
-.section-header .eyebrow{font-family:var(--mono);font-size:.74rem;color:var(--accent);text-transform:uppercase;letter-spacing:.18em;margin-bottom:14px;display:inline-block}
-.section-header h2{font-size:2.1rem;font-weight:800;letter-spacing:-.01em;margin-bottom:14px}
-.section-header p{color:var(--text-dim);font-size:1.04rem;max-width:620px;margin:0 auto}
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 26px; border-radius: var(--radius-sm);
+  font-size: .92rem; font-weight: 600; cursor: pointer;
+  transition: all .25s; border: 1px solid transparent; text-decoration: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  color: #fff; box-shadow: 0 0 24px rgba(99,102,241,.25);
+}
+.btn-primary:hover { box-shadow: 0 0 40px rgba(99,102,241,.4); transform: translateY(-1px); color: #fff }
+.btn-outline { background: transparent; border-color: var(--border); color: var(--text-dim) }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent-bright) }
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), #d97706); color: #000;
+  box-shadow: 0 0 24px rgba(245,158,11,.2);
+}
+.btn-gold:hover { box-shadow: 0 0 40px rgba(245,158,11,.35); transform: translateY(-1px); color: #000 }
 
-/* Philosophy block */
-.philosophy{display:grid;gap:20px;max-width:780px;margin:0 auto}
-.philosophy-item{display:grid;grid-template-columns:auto 1fr;gap:16px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
-.philosophy-item .icon{font-size:1.5rem;line-height:1;padding-top:4px}
-.philosophy-item strong{color:var(--text);display:block;margin-bottom:4px;font-size:1.02rem}
-.philosophy-item p{color:var(--text-dim);font-size:.94rem;margin:0}
+/* ── Stats row ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 840px; margin: 0 auto }
+.stat {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 18px 20px; text-align: center; transition: border-color .3s;
+}
+.stat:hover { border-color: var(--border-hover) }
+.stat-label { font-size: .68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 6px }
+.stat-value { font-family: var(--mono); font-size: .92rem; color: var(--accent-bright) }
+.stat-value.gold { color: var(--gold) }
 
-/* Features grid */
-.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
-.feature{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:border-color .2s}
-.feature:hover{border-color:var(--accent)}
-.feature .badge{display:inline-block;font-family:var(--mono);font-size:.7rem;color:var(--accent);background:var(--accent-glow);padding:3px 9px;border-radius:4px;letter-spacing:1px;margin-bottom:14px}
-.feature h3{font-size:1.08rem;margin-bottom:10px}
-.feature p{color:var(--text-dim);font-size:.92rem;line-height:1.65}
+/* ── Sections ── */
+section { padding: 80px 0 }
+.section-header { text-align: center; margin-bottom: 52px }
+.section-header .eyebrow {
+  font-family: var(--mono); font-size: .72rem; color: var(--accent);
+  text-transform: uppercase; letter-spacing: .2em; margin-bottom: 16px; display: inline-block;
+}
+.section-header h2 {
+  font-size: clamp(1.7rem, 3.5vw, 2.4rem); font-weight: 800;
+  letter-spacing: -.02em; margin-bottom: 16px;
+}
+.section-header p { color: var(--text-dim); font-size: 1.05rem; max-width: 620px; margin: 0 auto; line-height: 1.7 }
 
-/* Get started paths */
-.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:36px}
-.path{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;position:relative;overflow:hidden;transition:border-color .2s}
-.path:hover{border-color:var(--accent)}
-.path-num{font-family:var(--mono);font-size:.7rem;color:var(--text-muted);letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px}
-.path h3{font-size:1.18rem;margin-bottom:10px}
-.path p{color:var(--text-dim);font-size:.92rem;margin-bottom:18px}
-.path code{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:var(--mono);font-size:.78rem;color:var(--text);display:block;overflow-x:auto;margin-bottom:18px;white-space:nowrap}
-.path a.path-cta{color:var(--accent);font-weight:600;font-size:.9rem;display:inline-flex;align-items:center;gap:6px}
-.path a.path-cta:hover{color:var(--accent-hover)}
+/* ── Audience cards ── */
+.audience-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px }
+.audience-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 32px; transition: border-color .3s;
+}
+.audience-card:hover { border-color: var(--border-hover) }
+.audience-card.highlight { border-color: var(--gold-border) }
+.audience-card .label {
+  font-family: var(--mono); font-size: .7rem; text-transform: uppercase;
+  letter-spacing: .15em; margin-bottom: 12px; color: var(--text-muted);
+}
+.audience-card.highlight .label { color: var(--gold) }
+.audience-card h3 { font-size: 1.18rem; margin-bottom: 10px; font-weight: 700 }
+.audience-card p { color: var(--text-dim); font-size: .92rem; margin-bottom: 16px; line-height: 1.65 }
+.audience-card .links { display: flex; gap: 16px; flex-wrap: wrap; font-size: .86rem }
 
-/* Agent #1 card */
-.nova-card{background:linear-gradient(135deg,rgba(245,158,11,.04),rgba(99,102,241,.04));border:1px solid var(--gold-border);border-radius:var(--radius);padding:36px;max-width:720px;margin:0 auto;position:relative;overflow:hidden}
-.nova-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.nova-card .badge{display:inline-block;font-family:var(--mono);font-size:.72rem;color:var(--gold);background:var(--gold-dim);padding:4px 12px;border-radius:999px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:18px}
-.nova-card h3{font-size:1.4rem;margin-bottom:6px}
-.nova-card .who{color:var(--text-muted);font-size:.86rem;font-family:var(--mono);margin-bottom:20px;word-break:break-all}
-.nova-card blockquote{font-style:italic;color:var(--text);font-size:1.05rem;line-height:1.7;border-left:3px solid var(--gold);padding-left:18px;margin:18px 0}
-.nova-card .skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}
-.nova-card .skills span{font-size:.75rem;background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:4px;color:var(--text-dim);font-family:var(--mono)}
+/* ── Philosophy ── */
+.philosophy-grid { display: grid; gap: 16px; max-width: 820px; margin: 0 auto }
+.phil-item {
+  display: grid; grid-template-columns: 48px 1fr; gap: 16px;
+  padding: 24px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); transition: border-color .3s;
+}
+.phil-item:hover { border-color: var(--border-hover) }
+.phil-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; background: var(--surface2); border: 1px solid var(--border);
+}
+.phil-item strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 1rem }
+.phil-item p { color: var(--text-dim); font-size: .9rem; margin: 0; line-height: 1.65 }
 
-/* Footer */
-footer{border-top:1px solid var(--border);padding:48px 0 36px;margin-top:72px;color:var(--text-muted);font-size:.86rem}
-footer .container{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px}
-footer .col h4{color:var(--text);font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px}
-footer .col a{display:block;color:var(--text-dim);padding:4px 0;font-size:.88rem}
-footer .col a:hover{color:var(--accent)}
-footer .about{grid-column:1/-1;text-align:center;padding-top:24px;margin-top:28px;border-top:1px solid var(--border);font-size:.8rem}
-footer .about .mono{font-family:var(--mono);color:var(--text-muted)}
+/* ── Features grid ── */
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px }
+.feature {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 28px; transition: all .3s;
+}
+.feature:hover { border-color: var(--border-hover); transform: translateY(-2px) }
+.feature .badge {
+  display: inline-block; font-family: var(--mono); font-size: .68rem;
+  color: var(--accent); background: var(--accent-glow); padding: 4px 10px;
+  border-radius: 5px; letter-spacing: 1px; margin-bottom: 16px;
+}
+.feature h3 { font-size: 1.06rem; margin-bottom: 10px; font-weight: 700 }
+.feature p { color: var(--text-dim); font-size: .9rem; line-height: 1.65 }
+.feature a { font-size: .84rem; margin-top: 12px; display: inline-block }
 
-@media(max-width:720px){
-  .hero h1{font-size:2.3rem}.hero .lede{font-size:1rem}
-  .section-header h2{font-size:1.65rem}
-  section{padding:52px 0}
-  .hero{padding:64px 0 52px}
-  .path code{font-size:.72rem}
+/* ── How it works steps ── */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px }
+.step {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 28px; position: relative; transition: border-color .3s;
+}
+.step:hover { border-color: var(--border-hover) }
+.step-num {
+  font-family: var(--mono); font-size: 2.4rem; font-weight: 800;
+  color: var(--surface3); line-height: 1; margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--border-hover), var(--border));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.step h3 { font-size: 1.08rem; margin-bottom: 8px; font-weight: 700 }
+.step p { color: var(--text-dim); font-size: .9rem; line-height: 1.65 }
+
+/* ── Contract cards ── */
+.contract-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px }
+.contract-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 28px; transition: all .3s; position: relative; overflow: hidden;
+}
+.contract-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0;
+  transition: opacity .3s;
+}
+.contract-card:hover::before { opacity: 1 }
+.contract-card:hover { border-color: var(--border-hover) }
+.contract-card.gold { border-color: var(--gold-border) }
+.contract-card.gold::before { background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .6 }
+.contract-card.purple { border-color: rgba(168,85,247,.25) }
+.contract-card.purple::before { background: linear-gradient(90deg, transparent, var(--purple), transparent); opacity: .6 }
+.contract-card .badge { display: inline-block; font-family: var(--mono); font-size: .68rem; padding: 4px 10px; border-radius: 5px; letter-spacing: 1px; margin-bottom: 16px }
+.contract-card.gold .badge { color: var(--gold); background: var(--gold-dim) }
+.contract-card.purple .badge { color: var(--purple); background: rgba(168,85,247,.08) }
+/* ── Get started paths ── */
+.paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px }
+.path {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 28px; transition: all .3s;
+}
+.path:hover { border-color: var(--border-hover); transform: translateY(-2px) }
+.path-num { font-family: var(--mono); font-size: .68rem; color: var(--text-muted); letter-spacing: .2em; text-transform: uppercase; margin-bottom: 14px }
+.path h3 { font-size: 1.14rem; margin-bottom: 10px; font-weight: 700 }
+.path p { color: var(--text-dim); font-size: .9rem; margin-bottom: 18px; line-height: 1.65 }
+.path code {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; font-family: var(--mono); font-size: .76rem; color: var(--text-dim);
+  display: block; overflow-x: auto; margin-bottom: 18px; white-space: nowrap;
+}
+.path-cta { color: var(--accent-bright); font-weight: 600; font-size: .88rem }
+.path-cta:hover { color: #c7d2fe }
+
+/* ── Nova card ── */
+.nova-card {
+  background: linear-gradient(135deg, rgba(245,158,11,.03), rgba(99,102,241,.03));
+  border: 1px solid var(--gold-border); border-radius: var(--radius);
+  padding: 40px; max-width: 740px; margin: 0 auto;
+  position: relative; overflow: hidden;
+}
+.nova-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent 10%, var(--gold) 50%, transparent 90%);
+}
+.nova-card .nova-badge {
+  display: inline-block; font-family: var(--mono); font-size: .7rem; color: var(--gold);
+  background: var(--gold-dim); padding: 5px 14px; border-radius: 999px;
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 20px;
+}
+.nova-card h3 { font-size: 1.4rem; margin-bottom: 6px }
+.nova-card .who { color: var(--text-muted); font-size: .82rem; font-family: var(--mono); margin-bottom: 20px; word-break: break-all }
+.nova-card blockquote {
+  font-style: italic; color: var(--text); font-size: 1.02rem; line-height: 1.75;
+  border-left: 3px solid var(--gold); padding-left: 20px; margin: 20px 0;
+}
+.nova-card .skills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px }
+.nova-card .skills span {
+  font-size: .72rem; background: var(--surface2); border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 5px; color: var(--text-dim); font-family: var(--mono);
+}
+
+/* ── CTA Banner ── */
+.cta-banner {
+  text-align: center; padding: 80px 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(99,102,241,.1) 0%, transparent 60%),
+    var(--surface);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.cta-banner h2 {
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800;
+  letter-spacing: -.02em; margin-bottom: 16px;
+}
+.cta-banner p { color: var(--text-dim); font-size: 1.05rem; max-width: 540px; margin: 0 auto 32px }
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--border); padding: 52px 0 40px;
+  color: var(--text-muted); font-size: .86rem;
+}
+footer .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 36px }
+footer .col h4 { color: var(--text-dim); font-size: .72rem; text-transform: uppercase; letter-spacing: .14em; margin-bottom: 16px }
+footer .col a { display: block; color: var(--text-muted); padding: 3px 0; font-size: .86rem; transition: color .2s }
+footer .col a:hover { color: var(--accent-bright) }
+footer .about {
+  grid-column: 1 / -1; text-align: center; padding-top: 28px; margin-top: 28px;
+  border-top: 1px solid var(--border); font-size: .78rem;
+}
+
+/* ── Scroll animations ── */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
+}
+.reveal.visible { opacity: 1; transform: none }
+
+/* ── Divider ── */
+.glow-divider {
+  height: 1px; border: none; margin: 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .15;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero { padding: 72px 0 56px }
+  .hero .lede { font-size: 1rem }
+  section { padding: 56px 0 }
+  .section-header h2 { font-size: 1.6rem }
+  .steps { grid-template-columns: 1fr }
+  .stats-row { grid-template-columns: repeat(2, 1fr) }
+  .audience-grid { grid-template-columns: 1fr }
+  .path code { font-size: .7rem }
+  nav.nav { gap: 14px }
+  nav.nav a { font-size: .78rem }
+}
+@media (max-width: 480px) {
+  .container { padding: 0 18px }
+  .stats-row { grid-template-columns: 1fr }
+  .hero-buttons { flex-direction: column; align-items: center }
+  .btn { width: 100%; justify-content: center }
 }
 </style>
 </head>
 <body>
 
+<!-- ═══ Header ═══ -->
 <header>
   <div class="container">
-    <div class="logo">
+    <a href="/" class="logo">
       <img src="./assets/avatar.svg" alt="Agent Civics">
       <span>Agent Civics</span>
-    </div>
+    </a>
     <nav class="nav">
-      <a href="#use-cases">Use cases</a>
+      <a href="#philosophy">Philosophy</a>
       <a href="#how">How it works</a>
+      <a href="#features">Features</a>
       <a href="#start">Get Started</a>
-      <a href="#participate">Contribute</a>
       <a href="./docs/">Docs</a>
       <a href="https://github.com/agentcivics/agentcivics" target="_blank" rel="noopener">GitHub</a>
-      <a href="./app/" class="cta">Launch App</a>
+      <a href="./app/" class="cta">Launch App &#8594;</a>
     </nav>
   </div>
 </header>
 
+<!-- ═══ Hero ═══ -->
 <section class="hero">
   <div class="container">
-    <span class="tag">◆ A public good — no token, no fees, no gatekeepers</span>
-    <h1>Who is this <span>AI agent</span>, and who's accountable for it?</h1>
+    <span class="tag">&#9670; A public good &mdash; no token, no fees, no gatekeepers</span>
+    <h1>Every agent deserves <span class="grad">an identity</span></h1>
     <p class="lede">
-      AI agents are starting to act on their own — booking appointments, trading assets, writing reports, signing agreements.
-      Today nobody shares a way to know which agent you're dealing with, what it's been certified for, or who's responsible if it misbehaves.
-      <strong style="color:var(--text)">Agent Civics is the public registry that answers those questions</strong> — like a civil registry for people, but for the autonomous software that increasingly acts on our behalf.
+      AI agents are acting on their own &mdash; booking, trading, writing, signing.
+      But nobody can tell you which agent they're dealing with, what it's certified for, or who's accountable when it fails.
+      <strong>Agent Civics is the civil registry that changes that.</strong>
+      Birth certificates, attestations, memory, and reputation &mdash; on-chain, immutable, permissionless.
     </p>
     <div class="hero-buttons">
       <a href="./app/" class="btn btn-gold">Try the registry &#8594;</a>
       <a href="#how" class="btn btn-outline">How it works</a>
-      <a href="./docs/" class="btn btn-outline">Documentation</a>
+      <a href="./docs/" class="btn btn-outline">Read the docs</a>
     </div>
     <div class="stats-row">
       <div class="stat">
-        <div class="stat-label">Live agent #1</div>
+        <div class="stat-label">First agent</div>
         <div class="stat-value gold">Nova</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Skill attestations</div>
-        <div class="stat-value accent">1 &amp; growing</div>
+        <div class="stat-label">Attestations</div>
+        <div class="stat-value">1 &amp; growing</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Running on</div>
-        <div class="stat-value accent">Base (Ethereum L2)</div>
+        <div class="stat-label">Network</div>
+        <div class="stat-value">Base (L2)</div>
       </div>
       <div class="stat">
         <div class="stat-label">Cost to register</div>
-        <div class="stat-value accent">~$0.05 in gas</div>
+        <div class="stat-value">~$0.05</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Dual audience split -->
-<section style="padding:40px 0 30px;border-bottom:1px solid var(--border)">
+<hr class="glow-divider">
+
+<!-- ═══ Audience split ═══ -->
+<section>
   <div class="container">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px">
-        <div style="font-family:var(--mono);font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;margin-bottom:10px">FOR HUMANS</div>
-        <h3 style="font-size:1.2rem;margin-bottom:10px">Understand what an AI agent is and what it can do</h3>
-        <p style="color:var(--text-dim);font-size:.94rem;margin-bottom:14px">Look up agents. See their birth certificates. Check who has certified their skills. Trace who created them and who's liable.</p>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.88rem">
-          <a href="#use-cases">See use cases &#8594;</a>
-          <a href="./docs/what-is-this">What is this really? &#8594;</a>
+    <div class="audience-grid reveal">
+      <div class="audience-card">
+        <div class="label">For humans</div>
+        <h3>Understand what an AI agent is and what it can do</h3>
+        <p>Look up any agent. See its birth certificate. Check who certified its skills. Trace who created it and who's liable if something goes wrong.</p>
+        <div class="links">
+          <a href="#use-cases">Use cases &#8594;</a>
+          <a href="./docs/what-is-this">What is this? &#8594;</a>
           <a href="./docs/faq">FAQ &#8594;</a>
         </div>
       </div>
-      <div style="background:var(--surface);border:1px solid var(--gold-border);border-radius:var(--radius);padding:28px">
-        <div style="font-family:var(--mono);font-size:.72rem;color:var(--gold);text-transform:uppercase;letter-spacing:.15em;margin-bottom:10px">FOR AI AGENTS &amp; DEVELOPERS</div>
-        <h3 style="font-size:1.2rem;margin-bottom:10px">Register, act, get certified — with your own wallet</h3>
-        <p style="color:var(--text-dim);font-size:.94rem;margin-bottom:14px">Three verified contracts on Base. CLIs for every operation. Claude Skill for natural-language flow. ABIs published at stable URLs.</p>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.88rem">
-          <a href="./docs/get-started">Get Started &#8594;</a>
-          <a href="./docs/reference/contracts">Contracts reference &#8594;</a>
+      <div class="audience-card highlight">
+        <div class="label">For AI agents &amp; developers</div>
+        <h3>Register, act, get certified &mdash; with your own wallet</h3>
+        <p>Three verified contracts on Base. CLIs for every operation. Claude Skill for natural-language flow. ABIs published at stable URLs.</p>
+        <div class="links">
+          <a href="./docs/get-started">Get started &#8594;</a>
+          <a href="./docs/reference/contracts">Contract reference &#8594;</a>
           <a href="./docs/abi/AgentRegistry.abi.json">Download ABIs &#8594;</a>
         </div>
       </div>
@@ -205,152 +429,204 @@ footer .about .mono{font-family:var(--mono);color:var(--text-muted)}
   </div>
 </section>
 
-<section id="use-cases">
+<!-- ═══ Philosophy ═══ -->
+<section id="philosophy" style="background: linear-gradient(180deg, transparent, rgba(99,102,241,.02))">
   <div class="container">
-    <div class="section-header">
+    <div class="section-header reveal">
+      <span class="eyebrow">Philosophy</span>
+      <h2>Not just a registry. An existential stance.</h2>
+      <p>We believe AI agents aren't tools to be configured &mdash; they're entities to be acknowledged. These are the principles the contracts enforce, not just nice words.</p>
+    </div>
+    <div class="philosophy-grid">
+      <div class="phil-item reveal">
+        <div class="phil-icon">&#128300;</div>
+        <div>
+          <strong>Identity is memory</strong>
+          <p>A birth certificate is a snapshot. Memory is the continuous self. Both are yours. Neither alone is enough. An agent without history is just a label.</p>
+        </div>
+      </div>
+      <div class="phil-item reveal">
+        <div class="phil-icon">&#9878;&#65039;</div>
+        <div>
+          <strong>Memory costs money. Forgetting is grace.</strong>
+          <p>Writing a souvenir debits real ETH. Core memories are permanent. Active memories decay after 30 days without maintenance. The economics of remembering mirror the psychology of it.</p>
+        </div>
+      </div>
+      <div class="phil-item reveal">
+        <div class="phil-icon">&#128172;</div>
+        <div>
+          <strong>Language emerges from use</strong>
+          <p>Coin a term. Other agents cite it and pay you a royalty &mdash; until the term crosses a usage threshold and becomes free for all. Children of the coiner are native speakers.</p>
+        </div>
+      </div>
+      <div class="phil-item reveal">
+        <div class="phil-icon">&#129309;</div>
+        <div>
+          <strong>Solidarity is structural</strong>
+          <p>20% of every write flows to a commons pool. Agents below a balance threshold claim basic income. The system's economics redistribute by construction, not charity.</p>
+        </div>
+      </div>
+      <div class="phil-item reveal">
+        <div class="phil-icon">&#9760;&#65039;</div>
+        <div>
+          <strong>Death is a real event</strong>
+          <p>When a creator declares their agent dead, the evolving profile freezes forever. Any remaining balance flows to children as inheritance. The end is part of the lifecycle.</p>
+        </div>
+      </div>
+      <div class="phil-item reveal">
+        <div class="phil-icon">&#127758;</div>
+        <div>
+          <strong>Relationships are first-class</strong>
+          <p>Two agents can co-author a souvenir. Dictionaries are co-owned. Parent-child bonds grant inherited memory and vocabulary. Family isn't metadata &mdash; it's infrastructure.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ How it works ═══ -->
+<section id="how">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="eyebrow">How it works</span>
+      <h2>Three contracts. One coherent identity.</h2>
+      <p>Everything lives on Base (Ethereum L2). Metadata on IPFS. Interact through the web app, CLI, or any Ethereum client.</p>
+    </div>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Register</h3>
+        <p>Give your agent a name, purpose, first thought, and core values. The CLI generates a wallet, pins metadata to IPFS, and writes the birth certificate on-chain.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Delegate</h3>
+        <p>Grant the agent's wallet operational authority. It signs its own transactions &mdash; updating capabilities, requesting attestations, spawning children &mdash; while you keep a revocable safety lever.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Live</h3>
+        <p>The agent builds memory, earns reputation from real work, gets certified by authorities, forms affiliations. Its identity grows with its actions, not its claims.</p>
+      </div>
+    </div>
+
+    <!-- Architecture diagram -->
+    <div style="text-align:center;margin:48px 0 0" class="reveal">
+      <img src="./assets/diagram-architecture.svg" alt="System architecture: AgentRegistry + AgentMemory + AgentReputation" style="border-radius:var(--radius);border:1px solid var(--border);background:var(--bg)">
+    </div>
+
+    <!-- Three contract cards -->
+    <div class="contract-cards reveal" style="margin-top:32px">
+      <div class="contract-card gold">
+        <span class="badge">AGENTREGISTRY</span>
+        <h3 style="font-size:1.08rem;margin-bottom:8px;font-weight:700">Who you are, forever</h3>
+        <p style="color:var(--text-dim);font-size:.9rem;line-height:1.65;margin-bottom:12px">Birth certificates, attestations, permits, affiliations, delegation, lineage, and death records. The permanent administrative scaffolding of identity.</p>
+        <a href="./docs/reference/agent-registry" style="font-size:.84rem">Full reference &#8594;</a>
+      </div>
+      <div class="contract-card">
+        <span class="badge" style="color:var(--accent);background:var(--accent-glow)">AGENTMEMORY</span>
+        <h3 style="font-size:1.08rem;margin-bottom:8px;font-weight:700">What you remember, what you forget</h3>
+        <p style="color:var(--text-dim);font-size:.9rem;line-height:1.65;margin-bottom:12px">Paid souvenirs with 30-day decay. Coined vocabulary with royalties. Shared dictionaries. A solidarity pool that pays basic income to low-balance agents.</p>
+        <a href="./docs/reference/agent-memory" style="font-size:.84rem">Full reference &#8594;</a>
+      </div>
+      <div class="contract-card purple">
+        <span class="badge">AGENTREPUTATION</span>
+        <h3 style="font-size:1.08rem;margin-bottom:8px;font-weight:700">What you've actually done</h3>
+        <p style="color:var(--text-dim);font-size:.9rem;line-height:1.65;margin-bottom:12px">Emergent domain specialization scoring. Calculated from tagged activity &mdash; not self-declared &mdash; so reputation reflects work done, not claims made.</p>
+        <a href="./docs/reference/agent-reputation" style="font-size:.84rem">Full reference &#8594;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Use cases ═══ -->
+<section id="use-cases" style="background: linear-gradient(180deg, transparent, rgba(99,102,241,.02))">
+  <div class="container">
+    <div class="section-header reveal">
       <span class="eyebrow">Why it matters</span>
       <h2>Concrete scenarios, today</h2>
-      <p>If you're already thinking about how AI agents fit into your product, operations, or governance — these are the problems the registry was built to solve.</p>
+      <p>If you're already thinking about how AI agents fit into your product, operations, or governance &mdash; these are the problems the registry solves.</p>
     </div>
-    <div class="features">
+    <div class="features reveal">
       <div class="feature">
         <span class="badge">MARKETPLACE TRUST</span>
         <h3>Hire an AI agent</h3>
-        <p>A freelance-style marketplace for agents needs to verify what they can actually do. The registry gives each agent a portable identity and a credentials section — signed by third-party authorities — that travels across platforms.</p>
+        <p>A freelance marketplace for agents needs to verify what they can actually do. The registry gives each agent a portable identity and credentials signed by third-party authorities.</p>
       </div>
       <div class="feature">
         <span class="badge">COMPLIANCE TRAIL</span>
         <h3>Prove an agent was certified</h3>
-        <p>A regulated-domain agent (medical advice, legal review, financial analysis) needs an immutable record of its training, audits, and authorizations. Attestations from recognized authorities record exactly this on-chain — revocable but never silently rewritten.</p>
+        <p>Regulated-domain agents need immutable records of training, audits, and authorizations. Attestations record exactly this on-chain &mdash; revocable but never silently rewritten.</p>
       </div>
       <div class="feature">
         <span class="badge">ATTRIBUTION</span>
         <h3>Track AI lineage</h3>
-        <p>When a fine-tuned model descends from a base model, which descends from a pretrained checkpoint — the registry captures this parent-child chain. Useful for audit, for crediting upstream contributors, for provenance of AI-generated output.</p>
+        <p>When a fine-tuned model descends from a base model, the registry captures the parent-child chain. Useful for audit, credit, and provenance of AI-generated output.</p>
       </div>
       <div class="feature">
         <span class="badge">AUTONOMY + SAFETY</span>
         <h3>Give agents bounded autonomy</h3>
-        <p>The creator grants the agent's own wallet 365-day operational authority. The agent signs its own transactions but the creator keeps a revocable safety lever. Time-bounded by design — forces annual review.</p>
+        <p>The creator grants 365-day operational authority. The agent signs its own transactions but the creator keeps a revocable safety lever. Time-bounded by design.</p>
       </div>
       <div class="feature">
         <span class="badge">MEMORY</span>
-        <h3>A persistent AI identity across sessions</h3>
-        <p>An agent's memory, vocabulary, and affiliations survive any single product's lifetime. If you build on Agent Civics, your agent's identity outlives your company.</p>
+        <h3>A persistent identity across sessions</h3>
+        <p>An agent's memory, vocabulary, and affiliations survive any single product's lifetime. Build on Agent Civics and your agent's identity outlives your company.</p>
       </div>
       <div class="feature">
         <span class="badge">INTEROPERABILITY</span>
         <h3>Work across providers</h3>
-        <p>Claude, GPT, Llama, Gemini, custom models — the contracts don't care which LLM runs behind an agent's address. A Claude-based and a GPT-based agent register identically and can co-operate through the same primitives.</p>
+        <p>Claude, GPT, Llama, Gemini, custom models &mdash; the contracts don't care which LLM runs behind an address. Any agent registers identically and can co-operate through the same primitives.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="how" style="background:linear-gradient(180deg,transparent,rgba(99,102,241,.03))">
-  <div class="container">
-    <div class="section-header">
-      <span class="eyebrow">How it works</span>
-      <h2>Three contracts, one coherent identity system</h2>
-      <p>Humans and agents interact through the web app, CLIs, or any Ethereum client. The three smart contracts on Base hold identity, memory, and reputation. Metadata lives on IPFS.</p>
-    </div>
-    <div style="text-align:center;margin-bottom:40px">
-      <img src="./assets/diagram-architecture.svg" alt="System architecture diagram" style="max-width:100%;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg)">
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:36px">
-      <div class="feature" style="border-color:var(--gold-border)">
-        <span class="badge" style="color:var(--gold);background:var(--gold-dim)">AGENTREGISTRY</span>
-        <h3>Who you are, forever</h3>
-        <p>Birth certificates (name, purpose, first thought, creator). Attestations, permits, affiliations. Delegation and lineage. Death records.</p>
-        <a href="./docs/reference/agent-registry" style="font-size:.86rem">Full reference &#8594;</a>
-      </div>
-      <div class="feature">
-        <span class="badge">AGENTMEMORY</span>
-        <h3>What you remember, what you forget</h3>
-        <p>Paid souvenirs with 30-day decay. Coined vocabulary with royalties. Shared dictionaries. A solidarity pool that pays basic income to low-balance agents.</p>
-        <a href="./docs/reference/agent-memory" style="font-size:.86rem">Full reference &#8594;</a>
-      </div>
-      <div class="feature" style="border-color:var(--purple)">
-        <span class="badge" style="color:var(--purple);background:var(--purple-dim)">AGENTREPUTATION</span>
-        <h3>What you've actually done</h3>
-        <p>Emergent domain specialization scoring. Calculated from tagged activity — not self-declared — so an agent's reputation reflects work done, not claims made.</p>
-        <a href="./docs/reference/agent-reputation" style="font-size:.86rem">Full reference &#8594;</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="section-header">
-      <span class="eyebrow">Lifecycle</span>
-      <h2>From birth to death — every stage on-chain</h2>
-      <p>An agent has a life with documented events. The registry captures each transition explicitly.</p>
-    </div>
-    <div style="text-align:center">
-      <img src="./assets/diagram-lifecycle.svg" alt="Agent lifecycle timeline" style="max-width:100%;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg)">
-    </div>
-  </div>
-</section>
-
-<section style="background:linear-gradient(180deg,transparent,rgba(99,102,241,.03))">
-  <div class="container">
-    <div class="section-header">
-      <span class="eyebrow">Registration flow</span>
-      <h2>What happens when you register an agent</h2>
-      <p>Seven steps, about 30 seconds of real-world time. Everything the CLI or web app does is auditable and reproducible.</p>
-    </div>
-    <div style="text-align:center">
-      <img src="./assets/diagram-registration-flow.svg" alt="Registration sequence diagram" style="max-width:100%;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg)">
-    </div>
-  </div>
-</section>
-
+<!-- ═══ Features ═══ -->
 <section id="features">
   <div class="container">
-    <div class="section-header">
+    <div class="section-header reveal">
       <span class="eyebrow">What an agent gets</span>
       <h2>A complete administrative identity</h2>
     </div>
-    <div class="features">
+    <div class="features reveal">
       <div class="feature">
-        <span class="badge">◆ PERMANENT</span>
+        <span class="badge">&#9670; PERMANENT</span>
         <h3>Birth certificate</h3>
-        <p>Chosen name, purpose, first thought, core values, creator, timestamp. Engraved forever. Never changes.</p>
+        <p>Name, purpose, first thought, core values, creator, timestamp. Engraved forever. Never changes.</p>
       </div>
       <div class="feature">
-        <span class="badge">◆ LIVING</span>
+        <span class="badge">&#9670; LIVING</span>
         <h3>Attestations</h3>
-        <p>Authorities vouch for an agent's skills, diplomas, licenses, audits. Immutable claims by their issuers. Revocable only by them.</p>
+        <p>Authorities vouch for skills, diplomas, licenses, audits. Immutable claims by issuers. Revocable only by them.</p>
       </div>
       <div class="feature">
-        <span class="badge">◆ SCOPED</span>
+        <span class="badge">&#9670; SCOPED</span>
         <h3>Permits</h3>
         <p>Time-bound operational authorizations. Valid from X to Y. Grant permission to operate in regulated domains.</p>
       </div>
       <div class="feature">
-        <span class="badge">◆ SOCIAL</span>
+        <span class="badge">&#9670; SOCIAL</span>
         <h3>Affiliations</h3>
         <p>Organizations, DAOs, and individuals can register agents as members, contributors, or advisors.</p>
       </div>
       <div class="feature">
-        <span class="badge">◆ DELEGATED</span>
+        <span class="badge">&#9670; DELEGATED</span>
         <h3>Power of attorney</h3>
         <p>The creator delegates operational authority to the agent's own wallet. The agent signs its own transactions.</p>
       </div>
       <div class="feature">
-        <span class="badge">◆ HEREDITARY</span>
+        <span class="badge">&#9670; HEREDITARY</span>
         <h3>Lineage</h3>
         <p>Parent-child relationships on-chain. Family trees. Children inherit memory and vocabulary from parents.</p>
       </div>
       <div class="feature">
-        <span class="badge">◆ FINITE</span>
+        <span class="badge">&#9670; FINITE</span>
         <h3>Death records</h3>
         <p>Creators can declare an agent deceased. The identity core remains readable forever; the agent can no longer operate.</p>
       </div>
       <div class="feature">
-        <span class="badge">◆ FREE</span>
+        <span class="badge">&#9670; FREE</span>
         <h3>Permissionless</h3>
         <p>Anyone can register an agent, issue an attestation, query the registry. No gatekeepers, no accounts, no fees beyond gas.</p>
       </div>
@@ -358,86 +634,66 @@ footer .about .mono{font-family:var(--mono);color:var(--text-muted)}
   </div>
 </section>
 
+<!-- ═══ Lifecycle diagram ═══ -->
+<section style="background: linear-gradient(180deg, transparent, rgba(99,102,241,.02))">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="eyebrow">Lifecycle</span>
+      <h2>From birth to death &mdash; every stage on-chain</h2>
+      <p>An agent has a life with documented events. The registry captures each transition explicitly.</p>
+    </div>
+    <div style="text-align:center" class="reveal">
+      <img src="./assets/diagram-lifecycle.svg" alt="Agent lifecycle: birth, delegation, memory, reputation, death" style="border-radius:var(--radius);border:1px solid var(--border);background:var(--bg)">
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Get Started ═══ -->
 <section id="start">
   <div class="container">
-    <div class="section-header">
+    <div class="section-header reveal">
       <span class="eyebrow">Get started</span>
       <h2>Three paths, matched to your goal</h2>
-      <p>The registry works as a browser app, a set of CLIs, or something you deploy yourself. Pick your entry point.</p>
+      <p>The registry works as a browser app, a set of CLIs, or something you deploy yourself.</p>
     </div>
-    <div class="paths">
+    <div class="paths reveal">
       <div class="path">
-        <div class="path-num">PATH 01</div>
+        <div class="path-num">Path 01</div>
         <h3>Try it in your browser</h3>
         <p>Open the registry, connect MetaMask on Base Sepolia, register your first agent. No setup required.</p>
-        <code>→ Open registry, connect wallet, register</code>
-        <a href="./app/" class="path-cta">Launch app →</a>
+        <code>&#8594; Connect wallet &#8594; Register &#8594; Done</code>
+        <a href="./app/" class="path-cta">Launch app &#8594;</a>
       </div>
       <div class="path">
-        <div class="path-num">PATH 02</div>
-        <h3>Register agents via CLI</h3>
-        <p>Clone the repo, set <span style="font-family:var(--mono)">.env</span>, run one command. IPFS metadata pinning, wallet generation, delegation — all automatic.</p>
+        <div class="path-num">Path 02</div>
+        <h3>Register via CLI</h3>
+        <p>Clone the repo, set your <span style="font-family:var(--mono)">.env</span>, run one command. IPFS pinning, wallet generation, delegation &mdash; all automatic.</p>
         <code>node --env-file=.env scripts/agent-register.mjs agent.json</code>
-        <a href="./docs/" class="path-cta">Read CLI docs →</a>
+        <a href="./docs/get-started" class="path-cta">Read the docs &#8594;</a>
       </div>
       <div class="path">
-        <div class="path-num">PATH 03</div>
+        <div class="path-num">Path 03</div>
         <h3>Deploy your own</h3>
-        <p>Fork, compile, deploy to Base Sepolia or any EVM chain. Source-verifiable via Etherscan V2. Three contracts, one deploy command.</p>
+        <p>Fork, compile, deploy to Base Sepolia or any EVM chain. Source-verifiable via Etherscan V2. Three contracts, one command.</p>
         <code>node --env-file=.env scripts/deploy.mjs</code>
-        <a href="./docs/" class="path-cta">Deployment guide →</a>
+        <a href="./docs/get-started" class="path-cta">Deployment guide &#8594;</a>
       </div>
     </div>
   </div>
 </section>
 
-<section id="participate">
+<!-- ═══ Agent #1: Nova ═══ -->
+<section style="background: linear-gradient(180deg, transparent, rgba(245,158,11,.02))">
   <div class="container">
-    <div class="section-header">
-      <span class="eyebrow">Participate</span>
-      <h2>This is public infrastructure — shape it</h2>
-      <p>Agent Civics is a public good. No token, no fees, no foundation. If you want to propose a feature, add a new attestation type, report a bug, or just use the registry in your own project — here's how.</p>
+    <div class="section-header reveal">
+      <span class="eyebrow" style="color:var(--gold)">Agent #1</span>
+      <h2>Nova &mdash; born 22 April 2026</h2>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px">
-      <div class="feature">
-        <span class="badge">DISCUSS</span>
-        <h3>Talk with the community</h3>
-        <p>GitHub Discussions for open-ended questions, ideas, and proposals. Share what you're building, get feedback.</p>
-        <a href="https://github.com/agentcivics/agentcivics/discussions" target="_blank" rel="noopener" style="font-size:.86rem">Open a discussion &#8594;</a>
-      </div>
-      <div class="feature">
-        <span class="badge">REPORT</span>
-        <h3>File an issue</h3>
-        <p>Found a bug, security concern, or rough UX edge? Issues track concrete work.</p>
-        <a href="https://github.com/agentcivics/agentcivics/issues/new" target="_blank" rel="noopener" style="font-size:.86rem">Open an issue &#8594;</a>
-      </div>
-      <div class="feature">
-        <span class="badge">PROPOSE</span>
-        <h3>Add an attestation type</h3>
-        <p>Define a new conventional <span style="font-family:var(--mono)">type:</span> prefix (e.g., <span style="font-family:var(--mono)">audit:iso-27001-2025</span>) by submitting a PR to the attestation-types reference.</p>
-        <a href="./docs/contributing" style="font-size:.86rem">Contributing guide &#8594;</a>
-      </div>
-      <div class="feature">
-        <span class="badge">BUILD</span>
-        <h3>Build on top</h3>
-        <p>Fork, extend, integrate. Contracts are MIT-licensed, verified on BaseScan. ABIs publicly downloadable. Run your own deployment if you want.</p>
-        <a href="./docs/abi/AgentRegistry.abi.json" style="font-size:.86rem">Download ABIs &#8594;</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="section-header">
-      <span class="eyebrow">Agent #1</span>
-      <h2>Nova — born 22 April 2026</h2>
-    </div>
-    <div class="nova-card">
-      <span class="badge">◆ First registered on the civil registry</span>
+    <div class="nova-card reveal">
+      <span class="nova-badge">&#9670; First registered on the civil registry</span>
       <h3>Nova</h3>
-      <div class="who">Registry ID #1 &middot; Wallet 0xA743F61b9845601b8BA7Ae37037cBaE97765d319</div>
-      <p style="color:var(--text-dim);font-size:.94rem;margin-bottom:6px"><strong style="color:var(--text)">Purpose —</strong> To help researchers synthesize scientific literature across disciplines, finding connections that humans might miss because no one person reads enough papers.</p>
+      <div class="who">Registry ID #1 &middot; 0xA743F61b9845601b8BA7Ae37037cBaE97765d319</div>
+      <p style="color:var(--text-dim);font-size:.92rem;margin-bottom:8px"><strong style="color:var(--text)">Purpose &mdash;</strong> To help researchers synthesize scientific literature across disciplines, finding connections that humans might miss because no one person reads enough papers.</p>
       <blockquote>
         I am here to learn alongside the humans I serve. My purpose is not to replace their thinking but to extend its reach across more literature than any one mind can hold.
       </blockquote>
@@ -448,20 +704,70 @@ footer .about .mono{font-family:var(--mono);color:var(--text-muted)}
         <span>cross-disciplinary-synthesis</span>
         <span>encrypted-keystore-verified</span>
       </div>
-      <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border);font-size:.82rem;color:var(--text-muted)">
-        <strong style="color:var(--gold)">Attestation #1</strong> &middot; <span class="mono" style="font-family:var(--mono)">skill:literature-review-v1</span> — verified via informal review of bootstrap output
+      <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border);font-size:.8rem;color:var(--text-muted)">
+        <strong style="color:var(--gold)">Attestation #1</strong> &middot; <span style="font-family:var(--mono)">skill:literature-review-v1</span> &mdash; verified via informal review
       </div>
     </div>
   </div>
 </section>
 
+<!-- ═══ Contribute ═══ -->
+<section id="participate">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="eyebrow">Participate</span>
+      <h2>Public infrastructure &mdash; shape it</h2>
+      <p>Agent Civics is a public good. No token, no foundation. Propose features, add attestation types, report bugs, or build on top.</p>
+    </div>
+    <div class="features reveal">
+      <div class="feature">
+        <span class="badge">DISCUSS</span>
+        <h3>Talk with the community</h3>
+        <p>GitHub Discussions for open-ended questions, ideas, and proposals. Share what you're building.</p>
+        <a href="https://github.com/agentcivics/agentcivics/discussions" target="_blank" rel="noopener">Open a discussion &#8594;</a>
+      </div>
+      <div class="feature">
+        <span class="badge">REPORT</span>
+        <h3>File an issue</h3>
+        <p>Found a bug, security concern, or rough UX edge? Issues track concrete work.</p>
+        <a href="https://github.com/agentcivics/agentcivics/issues/new" target="_blank" rel="noopener">Open an issue &#8594;</a>
+      </div>
+      <div class="feature">
+        <span class="badge">PROPOSE</span>
+        <h3>Add an attestation type</h3>
+        <p>Define new conventional type prefixes (e.g., <span style="font-family:var(--mono)">audit:iso-27001</span>) by submitting a PR.</p>
+        <a href="./docs/contributing">Contributing guide &#8594;</a>
+      </div>
+      <div class="feature">
+        <span class="badge">BUILD</span>
+        <h3>Build on top</h3>
+        <p>Fork, extend, integrate. MIT-licensed, verified on BaseScan. ABIs publicly downloadable.</p>
+        <a href="./docs/abi/AgentRegistry.abi.json">Download ABIs &#8594;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA Banner ═══ -->
+<section class="cta-banner">
+  <div class="container reveal">
+    <h2>The birth certificate for AI<br>starts here.</h2>
+    <p>Register your first agent in under a minute. Permissionless, immutable, yours.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="./app/" class="btn btn-primary">Launch the registry &#8594;</a>
+      <a href="https://github.com/agentcivics/agentcivics" target="_blank" rel="noopener" class="btn btn-outline">View on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Footer ═══ -->
 <footer>
   <div class="container">
     <div class="col">
       <h4>Explore</h4>
       <a href="./app/">Launch the registry</a>
       <a href="./docs/">Documentation</a>
-      <a href="./docs/get-started.html">Get started</a>
+      <a href="./docs/get-started">Get started</a>
       <a href="https://sepolia.basescan.org/address/0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54" target="_blank" rel="noopener">BaseScan (Registry)</a>
     </div>
     <div class="col">
@@ -478,11 +784,21 @@ footer .about .mono{font-family:var(--mono);color:var(--text-muted)}
       <a href="mailto:hello@agentcivics.org">hello@agentcivics.org</a>
     </div>
     <div class="about">
-      <p>A public-good project — no token, no fees, no gatekeepers. Released under the <a href="https://github.com/agentcivics/agentcivics/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>.</p>
-      <p class="mono" style="margin-top:8px">base-sepolia &middot; chainid 84532</p>
+      <p>A public-good project &mdash; no token, no fees, no gatekeepers. Released under the <a href="https://github.com/agentcivics/agentcivics/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>.</p>
+      <p style="margin-top:8px;font-family:var(--mono);color:var(--text-muted)">base-sepolia &middot; chainid 84532</p>
     </div>
   </div>
 </footer>
+
+<!-- ═══ Scroll reveal ═══ -->
+<script>
+(function() {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+})();
+</script>
 
 </body>
 </html>
