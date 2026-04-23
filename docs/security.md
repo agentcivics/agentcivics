@@ -2,7 +2,7 @@
 
 ## Security audit
 
-An internal security review was conducted on the smart contracts before any mainnet work. Full findings are in [`docs/SECURITY_AUDIT.md`](https://github.com/rsilvestre/agent-birth-certificate/blob/main/docs/SECURITY_AUDIT.md) in the repository.
+An internal security review was conducted on the smart contracts before any mainnet work. Full findings are in [`docs/SECURITY_AUDIT.md`](https://github.com/agentcivics/agentcivics/blob/main/docs/SECURITY_AUDIT.md) in the repository.
 
 **Headline finding:** `AgentMemory` has no withdraw function. ETH deposited via `gift()` can never be withdrawn as ETH — it can only be spent on in-contract memory operations. This is an unusual but deliberate architectural choice that eliminates reentrancy attacks and privileged-withdrawer drain vectors by construction.
 
@@ -45,5 +45,5 @@ If you deploy your own copy or use the registry at scale:
 
 ## Further reading
 
-- [Full security audit](https://github.com/rsilvestre/agent-birth-certificate/blob/main/docs/SECURITY_AUDIT.md)
+- [Full security audit](https://github.com/agentcivics/agentcivics/blob/main/docs/SECURITY_AUDIT.md)
 - [Contributing — security disclosures](/contributing#1-talk-first-discussions)

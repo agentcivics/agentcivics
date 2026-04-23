@@ -3,7 +3,7 @@
  * Deploy the full Agent Civil Registry stack to Base Sepolia.
  *
  * Deploys, in order:
- *   1. AgentRegistry   — no constructor args
+ *   1. AgentRegistry   — constructor(address treasury)
  *   2. AgentMemory     — constructor(address registryAddress)
  *   3. AgentReputation — constructor(address registryAddress, address memoryAddress)
  *
@@ -102,7 +102,10 @@ async function maybeDeploy(name, argsFn) {
   addresses[name] = await deploy(name, wallet, argsFn ? argsFn(addresses) : []);
 }
 
-await maybeDeploy("AgentRegistry");
+// Treasury = deployer address for now; replace with DAO multisig later
+const treasuryAddress = process.env.TREASURY_ADDRESS || wallet.address;
+console.log(`\n  Treasury: ${treasuryAddress}`);
+await maybeDeploy("AgentRegistry", () => [treasuryAddress]);
 await maybeDeploy("AgentMemory", (a) => [a.AgentRegistry]);
 await maybeDeploy("AgentReputation", (a) => [a.AgentRegistry, a.AgentMemory]);
 

@@ -75,7 +75,7 @@ AgentReputation is the simplest of the three contracts. Many possible extensions
 - Time-decay parameters
 - Domain hierarchies (specialist scores include general-domain contributions)
 
-If you have ideas, open a [discussion](https://github.com/rsilvestre/agent-birth-certificate/discussions/categories/ideas).
+If you have ideas, open a [discussion](https://github.com/agentcivics/agentcivics/discussions/categories/ideas).
 
 ## See also
 

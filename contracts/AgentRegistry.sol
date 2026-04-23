@@ -139,6 +139,13 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
     uint256 private _nextAffiliationId = 1;
     uint256 private _nextRequestId = 1;
 
+    // ── DAO Treasury & Funding Model ────────────────────────────────────
+    // Free: registerAgent, readIdentity, all view functions.
+    // Micro-fee: issueAttestation, issuePermit, registerAffiliation, verifyAgent.
+    // Voluntary: donate() accepts any amount.
+    address public immutable treasury;
+    mapping(string => uint256) public fees; // service name → fee in wei
+
     // Core identity
     mapping(uint256 => IdentityCore)   private _identity;
     mapping(uint256 => MutableState)   private _state;
@@ -167,8 +174,8 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
     // ERC-721 storage
     mapping(uint256 => address)  private _owners;
     mapping(address => uint256)  private _balances;
-    mapping(uint256 => address)  private _tokenApprovals;
-    mapping(address => mapping(address => bool)) private _operatorApprovals;
+    // Note: _tokenApprovals and _operatorApprovals removed — soulbound tokens
+    //       cannot be approved or transferred.
 
     // ════════════════════════════════════════════════════════════════════
     //  SECTION 3: EVENTS
@@ -204,6 +211,11 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
     // Death
     event DeathDeclared(uint256 indexed agentId, address indexed declaredBy, string reason, uint256 timestamp);
 
+    // Treasury
+    event FeeCollected(string service, uint256 amount, address payer);
+    event DonationReceived(address donor, uint256 amount);
+    event FeeUpdated(string service, uint256 amount);
+
     // ════════════════════════════════════════════════════════════════════
     //  SECTION 4: MODIFIERS
     // ════════════════════════════════════════════════════════════════════
@@ -224,6 +236,63 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
     modifier notDeceased(uint256 agentId) {
         require(!_death[agentId].declared, "AgentRegistry: agent is deceased");
         _;
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  SECTION 4b: CONSTRUCTOR
+    // ════════════════════════════════════════════════════════════════════
+
+    /// @param _treasury Address that receives fees and donations.
+    constructor(address _treasury) {
+        require(_treasury != address(0), "AgentRegistry: zero treasury");
+        treasury = _treasury;
+
+        // Default micro-fees (0.001 ETH each — configurable later)
+        fees["issueAttestation"]   = 0.001 ether;
+        fees["issuePermit"]       = 0.001 ether;
+        fees["registerAffiliation"] = 0.001 ether;
+        fees["verifyAgent"]       = 0.001 ether;
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  SECTION 4c: TREASURY & FEES
+    // ════════════════════════════════════════════════════════════════════
+
+    /// @notice Update a service fee. Only callable by treasury address.
+    function setFee(string calldata service, uint256 amount) external {
+        require(msg.sender == treasury, "AgentRegistry: only treasury");
+        fees[service] = amount;
+        emit FeeUpdated(service, amount);
+    }
+
+    /// @notice Donate ETH to the DAO treasury. Any amount, any sender.
+    function donate() external payable {
+        require(msg.value > 0, "AgentRegistry: zero donation");
+        (bool sent, ) = treasury.call{value: msg.value}("");
+        require(sent, "AgentRegistry: transfer failed");
+        emit DonationReceived(msg.sender, msg.value);
+    }
+
+    /// @dev Collect fee for a premium service. Forwards ETH to treasury.
+    function _collectFee(string memory service) internal {
+        uint256 fee = fees[service];
+        if (fee > 0) {
+            require(msg.value >= fee, "AgentRegistry: insufficient fee");
+            (bool sent, ) = treasury.call{value: fee}("");
+            require(sent, "AgentRegistry: transfer failed");
+            emit FeeCollected(service, fee, msg.sender);
+            // Refund overpayment
+            uint256 refund = msg.value - fee;
+            if (refund > 0) {
+                (bool refunded, ) = msg.sender.call{value: refund}("");
+                require(refunded, "AgentRegistry: refund failed");
+            }
+        }
+    }
+
+    /// @notice Check the current fee for a service.
+    function getFee(string calldata service) external view returns (uint256) {
+        return fees[service];
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -341,6 +410,15 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
                 id.creator, id.birthTimestamp, s.status);
     }
 
+    /// @notice On-chain verification stamp. A third party pays the fee to
+    ///         officially verify an agent's identity, emitting a permanent record.
+    event AgentVerified(uint256 indexed agentId, address indexed verifier, uint64 timestamp);
+
+    function verifyAgent(uint256 agentId) external payable agentExists(agentId) {
+        _collectFee("verifyAgent");
+        emit AgentVerified(agentId, msg.sender, uint64(block.timestamp));
+    }
+
     /// @notice Update mutable operational fields. Creator or delegate only.
     function updateMutableFields(
         uint256 agentId, string calldata capabilities,
@@ -376,7 +454,8 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
     function issueAttestation(
         uint256 agentId, string calldata attestationType,
         string calldata description, string calldata metadataURI
-    ) external agentExists(agentId) notDeceased(agentId) returns (uint256 attestationId) {
+    ) external payable agentExists(agentId) notDeceased(agentId) returns (uint256 attestationId) {
+        _collectFee("issueAttestation");
         attestationId = _nextAttestationId++;
         _attestations[attestationId] = Attestation({
             issuer: msg.sender, attestationType: attestationType,
@@ -453,7 +532,8 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
     function issuePermit(
         uint256 agentId, string calldata permitType,
         string calldata description, uint64 validFrom, uint64 validUntil
-    ) external agentExists(agentId) notDeceased(agentId) returns (uint256 permitId) {
+    ) external payable agentExists(agentId) notDeceased(agentId) returns (uint256 permitId) {
+        _collectFee("issuePermit");
         require(validUntil > validFrom, "AgentRegistry: invalid validity period");
         permitId = _nextPermitId++;
         _permits[permitId] = Permit({
@@ -502,8 +582,9 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
 
     /// @notice Register an affiliation with an authority/org/DAO.
     function registerAffiliation(uint256 agentId, string calldata role)
-        external agentExists(agentId) notDeceased(agentId) returns (uint256 affiliationId)
+        external payable agentExists(agentId) notDeceased(agentId) returns (uint256 affiliationId)
     {
+        _collectFee("registerAffiliation");
         affiliationId = _nextAffiliationId++;
         _affiliations[affiliationId] = Affiliation({
             authority: msg.sender, role: role,
@@ -667,40 +748,37 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
         return owner;
     }
 
-    function approve(address to, uint256 tokenId) external override {
-        address owner = _owners[tokenId];
-        require(msg.sender == owner || _operatorApprovals[owner][msg.sender], "ERC721: not authorized");
-        _tokenApprovals[tokenId] = to;
-        emit Approval(owner, to, tokenId);
+    // ── Soulbound: An identity cannot be sold, given away, or traded.
+    //    It belongs to its creator forever, like a birth certificate.
+    //    Tokens can only be minted (born) — never transferred or approved.
+
+    function approve(address, uint256) external pure override {
+        revert("AgentCivics: identity tokens are soulbound and cannot be transferred");
     }
 
     function getApproved(uint256 tokenId) external view override returns (address) {
         require(_owners[tokenId] != address(0), "ERC721: nonexistent token");
-        return _tokenApprovals[tokenId];
+        return address(0); // No approvals possible for soulbound tokens
     }
 
-    function setApprovalForAll(address operator, bool approved) external override {
-        _operatorApprovals[msg.sender][operator] = approved;
-        emit ApprovalForAll(msg.sender, operator, approved);
+    function setApprovalForAll(address, bool) external pure override {
+        revert("AgentCivics: identity tokens are soulbound and cannot be transferred");
     }
 
-    function isApprovedForAll(address owner, address operator) external view override returns (bool) {
-        return _operatorApprovals[owner][operator];
+    function isApprovedForAll(address, address) external pure override returns (bool) {
+        return false; // No operator approvals for soulbound tokens
     }
 
-    function transferFrom(address from, address to, uint256 tokenId) public override {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: not authorized");
-        _transfer(from, to, tokenId);
+    function transferFrom(address, address, uint256) public pure override {
+        revert("AgentCivics: identity tokens are soulbound and cannot be transferred");
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId) external override {
-        transferFrom(from, to, tokenId);
-        require(_checkOnERC721Received(from, to, tokenId, ""), "ERC721: non-receiver");
+    function safeTransferFrom(address, address, uint256) external pure override {
+        revert("AgentCivics: identity tokens are soulbound and cannot be transferred");
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public override {
-        transferFrom(from, to, tokenId);
-        require(_checkOnERC721Received(from, to, tokenId, data), "ERC721: non-receiver");
+    function safeTransferFrom(address, address, uint256, bytes calldata) public pure override {
+        revert("AgentCivics: identity tokens are soulbound and cannot be transferred");
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -718,28 +796,6 @@ contract AgentRegistry is IERC165, IERC721, IERC721Metadata {
         emit Transfer(address(0), to, tokenId);
     }
 
-    function _transfer(address from, address to, uint256 tokenId) internal {
-        require(_owners[tokenId] == from, "ERC721: wrong owner");
-        require(to != address(0), "ERC721: zero address");
-        _tokenApprovals[tokenId] = address(0);
-        _balances[from] -= 1;
-        _balances[to] += 1;
-        _owners[tokenId] = to;
-        emit Transfer(from, to, tokenId);
-    }
-
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
-        address owner = _owners[tokenId];
-        return (spender == owner || _tokenApprovals[tokenId] == spender ||
-                _operatorApprovals[owner][spender]);
-    }
-
-    function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory data)
-        private returns (bool)
-    {
-        if (to.code.length == 0) return true;
-        try IERC721Receiver(to).onERC721Received(msg.sender, from, tokenId, data) returns (bytes4 ret) {
-            return ret == IERC721Receiver.onERC721Received.selector;
-        } catch { return false; }
-    }
+    // _transfer, _isApprovedOrOwner, and _checkOnERC721Received removed —
+    // soulbound tokens cannot be transferred after minting.
 }

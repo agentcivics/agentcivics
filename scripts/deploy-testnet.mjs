@@ -76,8 +76,10 @@ async function deploy(name, abi, bytecode, args = []) {
   return addr;
 }
 
-// 1. Registry (no constructor args)
-const registryAddr = await deploy("AgentRegistry", regAbi, regBin);
+// 1. Registry (treasury = deployer for now; replace with DAO multisig later)
+const treasuryAddress = baseWallet.address;
+console.log(`  Treasury    : ${treasuryAddress} (deployer)\n`);
+const registryAddr = await deploy("AgentRegistry", regAbi, regBin, [treasuryAddress]);
 
 // 2. Memory (takes registry address)
 const memoryAddr = await deploy("AgentMemory", memAbi, memBin, [registryAddr]);

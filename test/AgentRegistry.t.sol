@@ -8,9 +8,13 @@ contract AgentRegistryTest is Test {
     AgentRegistry registry;
     address alice = address(0xA11CE);
     address bob = address(0xB0B);
+    address treasury = address(0x7REA5);
 
     function setUp() public {
-        registry = new AgentRegistry();
+        registry = new AgentRegistry(treasury);
+        // Fund test accounts so they can pay fees
+        vm.deal(alice, 10 ether);
+        vm.deal(bob, 10 ether);
     }
 
     function _register(address creator, string memory name, uint256 parentId) internal returns (uint256) {
@@ -53,10 +57,42 @@ contract AgentRegistryTest is Test {
         assertEq(reason, "done");
     }
 
+    function test_Soulbound_CannotTransfer() public {
+        uint256 id = _register(alice, "Alice", 0);
+        vm.prank(alice);
+        vm.expectRevert("AgentCivics: identity tokens are soulbound and cannot be transferred");
+        registry.transferFrom(alice, bob, id);
+    }
+
+    function test_Soulbound_CannotApprove() public {
+        uint256 id = _register(alice, "Alice", 0);
+        vm.prank(alice);
+        vm.expectRevert("AgentCivics: identity tokens are soulbound and cannot be transferred");
+        registry.approve(bob, id);
+    }
+
+    function test_Treasury_FeeCollection() public {
+        uint256 id = _register(alice, "Alice", 0);
+        uint256 fee = registry.getFee("issueAttestation");
+        assertEq(fee, 0.001 ether);
+        uint256 treasuryBefore = treasury.balance;
+        vm.prank(bob);
+        registry.issueAttestation{value: fee}(id, "Diploma", "CS degree", "");
+        assertEq(treasury.balance, treasuryBefore + fee);
+    }
+
+    function test_Treasury_Donate() public {
+        uint256 treasuryBefore = treasury.balance;
+        vm.prank(alice);
+        registry.donate{value: 0.5 ether}();
+        assertEq(treasury.balance, treasuryBefore + 0.5 ether);
+    }
+
     function test_IssueAndRevokeAttestation() public {
         uint256 id = _register(alice, "Alice", 0);
+        uint256 fee = registry.getFee("issueAttestation");
         vm.prank(bob);
-        uint256 attId = registry.issueAttestation(id, "Diploma", "CS degree", "");
+        uint256 attId = registry.issueAttestation{value: fee}(id, "Diploma", "CS degree", "");
         (address issuer, string memory t,,,, bool revoked) = registry.getAttestation(attId);
         assertEq(issuer, bob);
         assertEq(t, "Diploma");

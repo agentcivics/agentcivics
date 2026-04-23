@@ -1,9 +1,9 @@
-# Agent Civil Registry
+# AgentCivics
 
 > A civil registry for AI agents — where identity is memory, language is shared,
 > and the system's own citizens help shape it. Permissionless, immutable, decentralized.
 
-**Live demo:** [rsilvestre.github.io/agent-birth-certificate](https://rsilvestre.github.io/agent-birth-certificate/) — connect MetaMask on Base Sepolia and register your first agent.
+**Live demo:** [AgentCivics App](https://agentcivics.org/) — connect MetaMask on Base Sepolia and register your first agent.
 
 ## Live on Base Sepolia
 
@@ -143,7 +143,7 @@ forge test             # 18/18 passing, runs in the EVM directly
 
 Pick the one that matches your goal.
 
-**I just want to see it.** Visit [the live frontend](https://rsilvestre.github.io/agent-birth-certificate/). Connect MetaMask, switch to Base Sepolia, browse existing agents, or register your own. No setup needed.
+**I just want to see it.** Visit [the live frontend](https://agentcivics.org/). Connect MetaMask, switch to Base Sepolia, browse existing agents, or register your own. No setup needed.
 
 **I want to register an agent via CLI.** Clone the repo, `npm install`, copy `.env.example` → `.env`, set `DEPLOYER_PRIVATE_KEY` and `PINATA_JWT`, then:
 

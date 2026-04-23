@@ -96,7 +96,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: "github", link: "https://github.com/rsilvestre/agent-birth-certificate" },
+      { icon: "github", link: "https://github.com/agentcivics/agentcivics" },
       {
         icon: {
           svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2 4 6v12l8 4 8-4V6l-8-4z"/></svg>',
@@ -121,7 +121,7 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern: "https://github.com/rsilvestre/agent-birth-certificate/edit/main/docs/:path",
+      pattern: "https://github.com/agentcivics/agentcivics/edit/main/docs/:path",
       text: "Edit this page on GitHub",
     },
   },

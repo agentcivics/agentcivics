@@ -23,7 +23,7 @@ The contract's `type` field is free-text. Consistent prefixes make attestations 
 
 ## How to propose a new prefix
 
-Open a [GitHub Discussion](https://github.com/rsilvestre/agent-birth-certificate/discussions/categories/ideas) describing:
+Open a [GitHub Discussion](https://github.com/agentcivics/agentcivics/discussions/categories/ideas) describing:
 
 1. The proposed prefix and meaning
 2. Who would issue attestations of this type

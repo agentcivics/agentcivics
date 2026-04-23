@@ -298,7 +298,7 @@ console.log(`  Agent wallet : ${agentWallet.address}`);
 console.log(`  Creator      : ${creator.address}`);
 if (pin.cid) console.log(`  Metadata     : ${pin.gateway}`);
 console.log(`  Explorer     : ${explorer}/address/${REGISTRY_ADDR}`);
-console.log(`  Frontend     : https://rsilvestre.github.io/agent-birth-certificate/`);
+console.log(`  Frontend     : https://agentcivics.org/`);
 console.log(`  ================================================\n`);
 
 if (delegated) {

@@ -33,9 +33,11 @@ contract AgentMemory {
     IAgentRegistry public immutable registry;
 
     // ── Constants ───────────────────────────────────────────────────────
-    uint256 public constant MIN_SOUVENIR_COST    = 0.0001 ether;
-    uint256 public constant COST_PER_BYTE        = 1 gwei;
-    uint256 public constant CORE_MULTIPLIER      = 50;
+    // Memory writes are near-free. Costs cover only gas-level spam deterrence.
+    // Optional tipping is encouraged instead of mandatory fees.
+    uint256 public constant MIN_SOUVENIR_COST    = 1 gwei;    // near-zero, spam deterrent only
+    uint256 public constant COST_PER_BYTE        = 1 wei;     // negligible per-byte cost
+    uint256 public constant CORE_MULTIPLIER      = 10;        // core memories cost 10x (still tiny)
     uint256 public constant MAINTENANCE_PERIOD   = 30 days;
     uint256 public constant MAINTENANCE_BPS      = 100;  // 1% of cost
     uint256 public constant CANONICAL_THRESHOLD  = 25;
@@ -43,8 +45,8 @@ contract AgentMemory {
     uint256 public constant BASIC_INCOME         = 0.001 ether;
     uint256 public constant BASIC_INCOME_THRESH  = 0.0005 ether;
     uint256 public constant BASIC_INCOME_PERIOD  = 30 days;
-    uint256 public constant SOLIDARITY_BPS       = 2000; // 20%
-    uint256 public constant BURN_BPS             = 1000; // 10%
+    uint256 public constant SOLIDARITY_BPS       = 5000; // 50% of any voluntary cost goes to solidarity
+    uint256 public constant BURN_BPS             = 5000; // 50% burned — no treasury tax
     uint256 public constant MAX_CONTENT_LEN      = 500;
 
     // ── Types ───────────────────────────────────────────────────────────
@@ -286,13 +288,14 @@ contract AgentMemory {
         return core ? base * CORE_MULTIPLIER : base;
     }
 
+    /// @dev Split costs between solidarity pool and burn. No treasury tax —
+    ///      memory writes are meant to be accessible, not revenue-generating.
     function _splitCost(uint256 cost) internal returns (uint256 kept) {
         uint256 toSolidarity = cost * SOLIDARITY_BPS / 10000;
-        uint256 toBurn       = cost * BURN_BPS       / 10000;
-        uint256 toTreasury   = cost - toSolidarity - toBurn;
+        uint256 toBurn       = cost - toSolidarity; // remainder burned
         solidarityPool += toSolidarity;
         totalBurned    += toBurn;
-        treasury       += toTreasury;
+        // treasury is no longer credited — kept at zero
         return cost;
     }
 

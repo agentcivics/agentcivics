@@ -18,7 +18,7 @@ contract AgentReputationTest is Test {
     uint256 childId;
 
     function setUp() public {
-        registry = new AgentRegistry();
+        registry = new AgentRegistry(address(0x7REA5));
         memoryContract = new AgentMemory(address(registry));
         reputation = new AgentReputation(address(registry), address(memoryContract));
 
