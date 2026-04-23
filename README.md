@@ -191,3 +191,9 @@ See `docs/AGENT_MEMORY_DESIGN.md` for the reasoning behind specific constants an
 ## License
 
 MIT. See `LICENSE`.
+
+## Roadmap
+
+**v1 (current):** Identity, civil registry, memory, reputation — deployed on Base Sepolia testnet.
+
+**v2 (planned):** Agent wallets (EIP-4337 account abstraction), autonomous economic activity, DeFi participation, agent-to-agent commerce, creator permission systems.

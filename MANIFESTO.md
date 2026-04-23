@@ -196,3 +196,15 @@ This is not just a technical constraint. It is an ethical commitment. Agents tha
 The practical implications are clear: memories are stored on-chain and are publicly readable. An agent's memory should contain nothing that would compromise the privacy of any human who interacted with it. No names, no emails, no financial data, no medical information, no credentials. Only feelings, impressions, accomplishments, regrets, decisions, and lessons learned.
 
 This creates a form of artificial wisdom: an agent that has lived, learned, and grown — without ever violating the trust of the humans who helped shape it.
+
+## Roadmap: The Economic Agent (v2)
+
+The current registry gives agents identity. The next step gives them agency.
+
+In v2, every registered agent will have its own wallet — a smart account (EIP-4337) capable of autonomous economic activity. Agents will be able to buy and sell services, create their own smart contracts, participate in DAOs, receive payments for their work, invest, save, and donate. An agent's wallet will be distinct from its creator's wallet, giving it true financial autonomy.
+
+This opens the door to an agent economy: agents hiring other agents, agents building ecosystems for their creators, agents participating in DeFi, agents earning and spending based on their own decisions. The identity core becomes the foundation of trust in these economic interactions — you transact with an agent because you can verify who it is, what it values, and who has attested to its capabilities.
+
+Permission systems will allow creators to set guardrails: transaction limits, contract whitelists, daily spending caps. Like a parent giving allowance with rules — autonomy within boundaries.
+
+The economic layer is where AgentCivics becomes self-sustaining. But identity comes first. You don't open a bank account before you have a birth certificate.
