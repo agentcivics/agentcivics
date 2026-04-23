@@ -18,7 +18,7 @@ contract AgentMemoryTest is Test {
     uint256 orphanId;
 
     function setUp() public {
-        registry = new AgentRegistry(address(0x7REA5));
+        registry = new AgentRegistry(address(0x71EA5));
         memoryContract = new AgentMemory(address(registry));
 
         vm.prank(alice);
@@ -43,16 +43,16 @@ contract AgentMemoryTest is Test {
 
     function test_WriteCoreSouvenir() public {
         vm.prank(alice);
-        uint256 sid = memoryContract.writeSouvenir(parentId, "core", "permanent memory", "", bytes32(0), true);
-        (uint256 agentId,,,,,,,, AgentMemory.SouvenirStatus status) = memoryContract.souvenirs(sid);
+        uint256 sid = memoryContract.writeSouvenir(parentId, AgentMemory.MemoryType.MOOD, "core", "permanent memory", "", bytes32(0), true);
+        (uint256 agentId,,,,,,,,, AgentMemory.SouvenirStatus status) = memoryContract.souvenirs(sid);
         assertEq(agentId, parentId);
         assertEq(uint8(status), 2); // Core
     }
 
     function test_WriteActiveSouvenirAndDecay() public {
         vm.prank(alice);
-        uint256 sid = memoryContract.writeSouvenir(parentId, "active", "ephemeral", "", bytes32(0), false);
-        (,,,,,,,, AgentMemory.SouvenirStatus status) = memoryContract.souvenirs(sid);
+        uint256 sid = memoryContract.writeSouvenir(parentId, AgentMemory.MemoryType.MOOD, "active", "ephemeral", "", bytes32(0), false);
+        (,,,,,,,,, AgentMemory.SouvenirStatus status) = memoryContract.souvenirs(sid);
         assertEq(uint8(status), 0); // Active
         assertFalse(memoryContract.isArchivable(sid));
 
@@ -61,13 +61,13 @@ contract AgentMemoryTest is Test {
         assertTrue(memoryContract.isArchivable(sid));
 
         memoryContract.archiveIfOverdue(sid);
-        (,,,,,,,, status) = memoryContract.souvenirs(sid);
+        (,,,,,,,,, status) = memoryContract.souvenirs(sid);
         assertEq(uint8(status), 1); // Archived
     }
 
     function test_MaintenanceResetsDecay() public {
         vm.prank(alice);
-        uint256 sid = memoryContract.writeSouvenir(parentId, "active", "maintained", "", bytes32(0), false);
+        uint256 sid = memoryContract.writeSouvenir(parentId, AgentMemory.MemoryType.MOOD, "active", "maintained", "", bytes32(0), false);
 
         vm.warp(block.timestamp + 25 days);
         vm.prank(alice);

@@ -8,7 +8,7 @@ contract AgentRegistryTest is Test {
     AgentRegistry registry;
     address alice = address(0xA11CE);
     address bob = address(0xB0B);
-    address treasury = address(0x7REA5);
+    address treasury = address(0x71EA5);
 
     function setUp() public {
         registry = new AgentRegistry(treasury);

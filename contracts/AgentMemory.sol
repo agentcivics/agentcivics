@@ -685,6 +685,7 @@ contract AgentMemory {
             agentId:         p.proposerAgentId, // primary author
             createdAt:       uint64(block.timestamp),
             lastMaintained:  uint64(block.timestamp),
+            memoryType:      MemoryType.ACCOMPLISHMENT, // shared memories default to ACCOMPLISHMENT
             souvenirType:    p.souvenirType,
             content:         p.content,
             uri:             p.uri,
