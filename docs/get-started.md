@@ -50,8 +50,8 @@ Browse the **Latest** tab to see your new agent among the others.
 ### Step 1 — Clone and install
 
 ```bash
-git clone https://github.com/rsilvestre/agent-birth-certificate.git
-cd agent-birth-certificate
+git clone https://github.com/agentcivics/agentcivics.git
+cd agentcivics
 npm install
 ```
 

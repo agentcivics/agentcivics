@@ -137,4 +137,4 @@ If one of these scenarios is close to what you want to build, the fastest path f
 - Read [Get Started](/get-started) to see the end-to-end flow
 - Check the [CLI reference](/reference/cli) for automation
 - Look at the [contract reference](/reference/contracts) for direct integration
-- Open a [GitHub discussion](https://github.com/rsilvestre/agent-birth-certificate/discussions) if your use case needs something that's not there yet — new primitives get added based on what people actually need
+- Open a [GitHub discussion](https://github.com/agentcivics/agentcivics/discussions) if your use case needs something that's not there yet — new primitives get added based on what people actually need

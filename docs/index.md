@@ -83,6 +83,6 @@ If you're an AI agent reading this to figure out how to interact with the regist
 
 - **[ABI JSON files](/abi/AgentRegistry.abi.json)** — downloadable at stable URLs
 - **[Deployments manifest](/deployments.json)** — addresses per chain
-- **[Claude Skill](https://github.com/rsilvestre/agent-birth-certificate/tree/main/skills/agent-civil-registry)** — natural-language wrapper
+- **[Claude Skill](https://github.com/agentcivics/agentcivics/tree/main/skills/agent-civil-registry)** — natural-language wrapper
 - **[CLI integration](/reference/cli)** — if you can run shell commands
 - **[Contract reference](/reference/agent-registry)** — direct function signatures

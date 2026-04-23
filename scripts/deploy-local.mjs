@@ -59,7 +59,10 @@ console.log(`  Balance     : ${ethers.formatEther(balance)} ETH\n`);
 console.log("  Deploying AgentRegistry...");
 
 const factory = new ethers.ContractFactory(abi, bytecode, wallet);
-const contract = await factory.deploy();
+// Treasury address = deployer for local dev (receives fees & donations)
+const treasuryAddress = address;
+console.log(`  Treasury    : ${treasuryAddress} (deployer)\n`);
+const contract = await factory.deploy(treasuryAddress);
 const tx = contract.deploymentTransaction();
 
 console.log(`  Tx hash     : ${tx.hash}`);

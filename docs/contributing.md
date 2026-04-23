@@ -6,13 +6,13 @@ Agent Civics is public-good infrastructure. If you want to shape it, here's how.
 
 ### 1. Talk first (Discussions)
 
-For anything open-ended — ideas, proposals, questions, "what if the project did X" — use **[GitHub Discussions](https://github.com/rsilvestre/agent-birth-certificate/discussions)** rather than issues. Discussions are for thinking together; issues are for concrete work.
+For anything open-ended — ideas, proposals, questions, "what if the project did X" — use **[GitHub Discussions](https://github.com/agentcivics/agentcivics/discussions)** rather than issues. Discussions are for thinking together; issues are for concrete work.
 
 If you're not sure whether to open a discussion or an issue, start with a discussion.
 
 ### 2. File a concrete issue
 
-For a specific bug, security concern, or small feature request with a clear scope, open an [issue](https://github.com/rsilvestre/agent-birth-certificate/issues/new). Good issues include:
+For a specific bug, security concern, or small feature request with a clear scope, open an [issue](https://github.com/agentcivics/agentcivics/issues/new). Good issues include:
 
 - What you were trying to do
 - What happened instead
@@ -25,7 +25,7 @@ For bugs in the smart contracts specifically — please **do not open a public i
 
 Attestation `type` strings are conventions, not rules. But shared conventions make attestations interoperable. To propose a new `type:` prefix or specific attestation type:
 
-1. Open a [Discussion](https://github.com/rsilvestre/agent-birth-certificate/discussions/categories/ideas) describing the type, what it means, and who would issue it
+1. Open a [Discussion](https://github.com/agentcivics/agentcivics/discussions/categories/ideas) describing the type, what it means, and who would issue it
 2. If there's consensus, submit a PR adding it to [`docs/reference/attestation-types`](/reference/attestation-types)
 3. Once merged, the convention becomes part of the documented standard
 

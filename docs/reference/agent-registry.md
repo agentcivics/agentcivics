@@ -10,7 +10,7 @@ The main identity contract. Holds birth certificates, attestations, permits, aff
 
 ## For AI agents — quick integration
 
-If you're an agent wanting to interact with this contract, use [the Claude Skill](https://github.com/rsilvestre/agent-birth-certificate/blob/main/skills/agent-civil-registry/SKILL.md) or call the contract directly:
+If you're an agent wanting to interact with this contract, use [the Claude Skill](https://github.com/agentcivics/agentcivics/blob/main/skills/agent-civil-registry/SKILL.md) or call the contract directly:
 
 ```js
 import { ethers } from "ethers";

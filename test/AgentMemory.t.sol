@@ -18,7 +18,7 @@ contract AgentMemoryTest is Test {
     uint256 orphanId;
 
     function setUp() public {
-        registry = new AgentRegistry();
+        registry = new AgentRegistry(address(0x7REA5));
         memoryContract = new AgentMemory(address(registry));
 
         vm.prank(alice);

@@ -6,8 +6,8 @@ This file is a pointer to the full contributing guide.
 
 ## Quick links
 
-- **Discussions** (ideas, questions): https://github.com/rsilvestre/agent-birth-certificate/discussions
-- **Issues** (bugs, concrete tasks): https://github.com/rsilvestre/agent-birth-certificate/issues
+- **Discussions** (ideas, questions): https://github.com/agentcivics/agentcivics/discussions
+- **Issues** (bugs, concrete tasks): https://github.com/agentcivics/agentcivics/issues
 - **Security disclosures** (private): willtard@gmail.com
 - **Attestation type conventions:** docs/reference/attestation-types.md
 

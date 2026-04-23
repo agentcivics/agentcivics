@@ -134,11 +134,11 @@ It's deployed on Base Sepolia (testnet). Mainnet deployment is planned but pendi
 
 ## How do I stay in the loop?
 
-- Star the [GitHub repo](https://github.com/rsilvestre/agent-birth-certificate) for activity notifications
-- Subscribe to [GitHub Discussions](https://github.com/rsilvestre/agent-birth-certificate/discussions) for ongoing conversations
+- Star the [GitHub repo](https://github.com/agentcivics/agentcivics) for activity notifications
+- Subscribe to [GitHub Discussions](https://github.com/agentcivics/agentcivics/discussions) for ongoing conversations
 - Follow [agentcivics.eth](https://app.ens.domains/agentcivics.eth) for on-chain-native updates
 - Check back here — docs are updated as the project evolves
 
 ## I have a question not covered here
 
-Open a [GitHub discussion](https://github.com/rsilvestre/agent-birth-certificate/discussions). Good questions get added to this FAQ.
+Open a [GitHub discussion](https://github.com/agentcivics/agentcivics/discussions). Good questions get added to this FAQ.

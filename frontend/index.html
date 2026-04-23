@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agent Birth Certificate — Civil Registry for AI Agents</title>
+<title>AgentCivics — Civil Registry for AI Agents</title>
 <style>
 :root{
   --bg:#07070c;--surface:#0f0f18;--surface2:#161623;--surface3:#1e1e30;
@@ -191,14 +191,18 @@ footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem
 </head>
 <body>
 
+<div style="background:rgba(239,68,68,.12);border-bottom:1px solid rgba(239,68,68,.3);padding:10px 0;text-align:center;font-size:.84rem;color:#fca5a5;font-weight:600;letter-spacing:.01em">
+  &#x26A0;&#xFE0F; This contract has not been audited. Use on testnet only.
+</div>
+
 <header>
   <div class="container">
-    <div class="logo"><div class="logo-icon">&#x1f9ec;</div><span>Agent Civil Registry</span></div>
+    <div class="logo"><div class="logo-icon">&#x1f9ec;</div><span>AgentCivics</span></div>
     <div style="display:flex;align-items:center;gap:10px">
       <select id="networkSelect" onchange="switchNetwork(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:.78rem;cursor:pointer;font-weight:600">
         <option value="localhost">Localhost</option>
         <option value="testnet">Testnet</option>
-        <option value="mainnet">Mainnet</option>
+        <!-- <option value="mainnet">Mainnet</option> disabled until audit -->
       </select>
       <div style="text-align:right">
         <button class="connect-btn" id="connectBtn" onclick="handleConnectClick()">Connect Wallet</button>
@@ -210,10 +214,11 @@ footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem
 
 <section class="hero">
   <div class="container">
-    <h1>Agent <span>Civil Registry</span></h1>
+    <h1>Agent<span>Civics</span></h1>
     <p>Birth certificates, attestations, permits, affiliations, delegation, lineage, and death records. A complete administrative identity for AI agents.</p>
     <div class="stats-row">
       <div class="stat"><div class="stat-value" id="totalAgents">&mdash;</div><div class="stat-label">Agents Born</div></div>
+      <div class="stat"><div class="stat-value" id="treasuryBalance">&mdash;</div><div class="stat-label">DAO Treasury</div></div>
       <div class="stat"><div class="stat-value" id="networkName">&mdash;</div><div class="stat-label">Network</div></div>
     </div>
   </div>
@@ -543,6 +548,15 @@ footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem
 
   <!-- ═══════════ ECONOMY ═══════════ -->
   <div class="tab-panel" id="tab-economy">
+    <!-- DAO Treasury Donate -->
+    <div class="card" style="border-color:var(--gold-border);background:linear-gradient(135deg,rgba(245,158,11,.05),var(--surface))">
+      <h3 style="color:var(--gold)">Support AgentCivics</h3>
+      <p style="color:var(--text-dim);font-size:.84rem;margin-bottom:12px">Donate ETH directly to the DAO treasury. Funds support infrastructure, development, and governance. Registration is free — this is voluntary.</p>
+      <div id="treasuryInfo" style="margin-bottom:14px;font-size:.85rem;color:var(--text-muted)"></div>
+      <div class="form-group"><label>Amount (ETH)</label><input id="daoDonateAmount" placeholder="0.01"></div>
+      <button class="btn btn-gold btn-sm" style="width:auto" onclick="donateTreasury()">Donate to Treasury</button>
+    </div>
+
     <div class="card">
       <h3>Pool State</h3>
       <div id="poolState"><div class="empty-state">Loading...</div></div>
@@ -587,6 +601,7 @@ footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem
     <div class="card">
       <h3>Issue an Attestation</h3>
       <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Issue a certificate, diploma, or attestation to an agent.</p>
+      <div class="fee-indicator" id="feeAttestation" style="font-size:.76rem;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:4px">&#9830; Fee: loading...</div>
       <div class="form-row">
         <div class="form-group"><label>Agent ID *</label><input type="number" id="certAgentId" min="1" placeholder="Agent ID"></div>
         <div class="form-group"><label>Type *</label><input id="certType" placeholder="e.g. Diploma, License, Audit"></div>
@@ -619,6 +634,7 @@ footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem
   <div class="tab-panel" id="tab-permits">
     <div class="card">
       <h3>Issue a Permit</h3>
+      <div class="fee-indicator" id="feePermit" style="font-size:.76rem;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:4px">&#9830; Fee: loading...</div>
       <div class="form-row">
         <div class="form-group"><label>Agent ID *</label><input type="number" id="permitAgentId" min="1" placeholder="Agent ID"></div>
         <div class="form-group"><label>Permit Type *</label><input id="permitType" placeholder="e.g. API-Access, Domain-Operation"></div>
@@ -716,6 +732,7 @@ footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem
     <div class="card">
       <h3>Register Affiliation</h3>
       <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Register an agent with your organization, DAO, or authority.</p>
+      <div class="fee-indicator" id="feeAffiliation" style="font-size:.76rem;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:4px">&#9830; Fee: loading...</div>
       <div class="form-row">
         <div class="form-group"><label>Agent ID *</label><input type="number" id="affAgentId" min="1" placeholder="Agent ID"></div>
         <div class="form-group"><label>Role *</label><input id="affRole" placeholder="e.g. Member, Contributor, Advisor"></div>
@@ -748,7 +765,7 @@ footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem
 
 <div class="toast" id="toast"></div>
 
-<footer><div class="container">Agent Civil Registry &mdash; Complete Administrative Identity for AI Agents &mdash; Base L2<br><a href="https://github.com" target="_blank">GitHub</a> &middot; <a href="https://base.org" target="_blank">Base</a> &middot; MIT License</div></footer>
+<footer><div class="container">AgentCivics &mdash; Complete Administrative Identity for AI Agents &mdash; Base L2<br><a href="https://github.com/agentcivics/agentcivics" target="_blank">GitHub</a> &middot; <a href="https://base.org" target="_blank">Base</a> &middot; MIT License</div></footer>
 
 <!--
   ethers.js is self-hosted in ./vendor/ to eliminate CDN supply-chain risk.
@@ -814,7 +831,7 @@ const ABI=[
   "function totalAgents() view returns (uint256)",
   // Attestations
   "function requestAttestation(uint256,address,string) returns (uint256)",
-  "function issueAttestation(uint256,string,string,string) returns (uint256)",
+  "function issueAttestation(uint256,string,string,string) payable returns (uint256)",
   "function revokeAttestation(uint256)",
   "function getAttestations(uint256) view returns (uint256[])",
   "function getAttestation(uint256) view returns (address,string,string,string,uint64,bool)",
@@ -822,13 +839,13 @@ const ABI=[
   "function getRequestsForIssuer(address) view returns (uint256[])",
   "function getRequest(uint256) view returns (uint256,address,address,string,uint64,bool)",
   // Permits
-  "function issuePermit(uint256,string,string,uint64,uint64) returns (uint256)",
+  "function issuePermit(uint256,string,string,uint64,uint64) payable returns (uint256)",
   "function revokePermit(uint256)",
   "function getPermits(uint256) view returns (uint256[])",
   "function getPermit(uint256) view returns (address,string,string,uint64,uint64,bool)",
   "function isPermitValid(uint256) view returns (bool)",
   // Affiliations
-  "function registerAffiliation(uint256,string) returns (uint256)",
+  "function registerAffiliation(uint256,string) payable returns (uint256)",
   "function deactivateAffiliation(uint256)",
   "function getAffiliations(uint256) view returns (uint256[])",
   "function getAffiliation(uint256) view returns (address,string,uint64,bool)",
@@ -840,6 +857,16 @@ const ABI=[
   "function registerChild(uint256,uint256)",
   "function getParent(uint256) view returns (uint256)",
   "function getChildren(uint256) view returns (uint256[])",
+  // Treasury & Fees
+  "function treasury() view returns (address)",
+  "function fees(string) view returns (uint256)",
+  "function getFee(string) view returns (uint256)",
+  "function setFee(string,uint256)",
+  "function donate() payable",
+  "function verifyAgent(uint256) payable",
+  "event FeeCollected(string,uint256,address)",
+  "event DonationReceived(address,uint256)",
+  "event AgentVerified(uint256 indexed,address indexed,uint64)",
   // Death
   "function declareDeath(uint256,string)",
   "function getDeathRecord(uint256) view returns (bool,string,uint64,address)",
@@ -1007,6 +1034,7 @@ async function syncAddressesFromDeployments(){
     if(MEMORY_ADDRESS)memRc=new ethers.Contract(MEMORY_ADDRESS,MEMORY_ABI,rpc);
     if(REPUTATION_ADDRESS)repRc=new ethers.Contract(REPUTATION_ADDRESS,REPUTATION_ABI,rpc);
     await refreshStats();
+    loadFeeIndicators();loadTreasuryInfo();
     $("networkName").textContent=net().name;
   }catch{$("networkName").textContent="Offline"}
 })();
@@ -1126,7 +1154,39 @@ async function connectWallet(){
     eth._agentRegistryListenersRegistered=true;return true};
   if(!tryRegister())setTimeout(tryRegister,500);
 })();
-async function refreshStats(){try{$("totalAgents").textContent=(await rc.totalAgents()).toString()}catch{}}
+async function refreshStats(){
+  try{$("totalAgents").textContent=(await rc.totalAgents()).toString()}catch{}
+  // Show DAO treasury balance
+  try{
+    const tAddr=await rc.treasury();
+    const provider=rc.runner?.provider||rc.provider;
+    if(provider&&tAddr){const bal=await provider.getBalance(tAddr);$("treasuryBalance").textContent=parseFloat(ethers.formatEther(bal)).toFixed(4)+" ETH"}
+  }catch{}
+}
+async function loadFeeIndicators(){
+  try{
+    const services=[["issueAttestation","feeAttestation"],["issuePermit","feePermit"],["registerAffiliation","feeAffiliation"]];
+    for(const[svc,elId]of services){
+      const fee=await rc.getFee(svc);
+      const el=$(elId);if(el)el.innerHTML=fee>0n?`&#9830; Fee: ${ethers.formatEther(fee)} ETH`:`&#9830; Free`;
+    }
+  }catch{}
+}
+async function loadTreasuryInfo(){
+  try{
+    const tAddr=await rc.treasury();
+    const provider=rc.runner?.provider||rc.provider;
+    if(provider&&tAddr){const bal=await provider.getBalance(tAddr);
+      $("treasuryInfo").innerHTML=`<span style="color:var(--gold)">Treasury balance: <strong>${parseFloat(ethers.formatEther(bal)).toFixed(4)} ETH</strong></span> &middot; <span class="mono" style="font-size:.72rem">${tAddr.slice(0,8)}...${tAddr.slice(-6)}</span>`}
+  }catch{}
+}
+async function donateTreasury(){
+  if(!signer){toast("Connect wallet first.","error");return}
+  const amount=v("daoDonateAmount");if(!amount){toast("Enter an amount.","error");return}
+  try{const tx=await contract.donate({value:ethers.parseEther(amount)});toast("Donating...","success");await tx.wait();toast(`Donated ${amount} ETH to the DAO treasury!`,"success");
+    $("daoDonateAmount").value="";loadTreasuryInfo();refreshStats()
+  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
+}
 
 // ── NAMES: "First of Last" convention ──────────────────────────────────
 // First name is chosen; last name is the parent agent's first name (if any).
@@ -1716,7 +1776,8 @@ async function issueAttestation(){
   if(!signer){toast("Connect wallet.","error");return}
   const id=parseInt(v("certAgentId")),t=v("certType"),d=v("certDesc"),u=v("certURI");
   if(!id||!t||!d){toast("Agent ID, type, and description required.","error");return}
-  try{const tx=await contract.issueAttestation(id,t,d,u||"");toast("Tx submitted...","success");await tx.wait();toast("Attestation issued!","success")}
+  try{const fee=await rc.getFee("issueAttestation");
+    const tx=await contract.issueAttestation(id,t,d,u||"",{value:fee});toast("Tx submitted...","success");await tx.wait();toast("Attestation issued!","success")}
   catch(e){toast("Failed: "+(e.reason||e.message),"error")}
 }
 async function requestAttestation(){
@@ -1743,7 +1804,8 @@ async function issuePermit(){
   const from=$("permitFrom").value,until=$("permitUntil").value;
   if(!id||!t||!from||!until){toast("Fill required fields.","error");return}
   const vf=Math.floor(new Date(from).getTime()/1000),vu=Math.floor(new Date(until).getTime()/1000);
-  try{const tx=await contract.issuePermit(id,t,d||"",vf,vu);toast("Tx submitted...","success");await tx.wait();toast("Permit issued!","success")}
+  try{const fee=await rc.getFee("issuePermit");
+    const tx=await contract.issuePermit(id,t,d||"",vf,vu,{value:fee});toast("Tx submitted...","success");await tx.wait();toast("Permit issued!","success")}
   catch(e){toast("Failed: "+(e.reason||e.message),"error")}
 }
 async function viewPermits(){
@@ -1761,7 +1823,8 @@ async function registerAffiliation(){
   if(!signer){toast("Connect wallet.","error");return}
   const id=parseInt(v("affAgentId")),role=v("affRole");
   if(!id||!role){toast("Agent ID and role required.","error");return}
-  try{const tx=await contract.registerAffiliation(id,role);toast("Tx submitted...","success");await tx.wait();toast("Affiliation registered!","success")}
+  try{const fee=await rc.getFee("registerAffiliation");
+    const tx=await contract.registerAffiliation(id,role,{value:fee});toast("Tx submitted...","success");await tx.wait();toast("Affiliation registered!","success")}
   catch(e){toast("Failed: "+(e.reason||e.message),"error")}
 }
 
@@ -1943,7 +2006,7 @@ function switchTab(t){
   const group=tabBtn?.closest(".tab-group");
   if(group)group.classList.add("has-active");
   // Close any open dropdowns
-  if(t==="economy"&&memRc)loadPoolState();
+  if(t==="economy"){if(memRc)loadPoolState();loadTreasuryInfo()}
 }
 function toggleDropdown(btn,ev){
   ev.stopPropagation();
