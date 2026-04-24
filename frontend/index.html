@@ -250,11 +250,11 @@ function setupWalletDiscovery() {
   // Some wallets use a global array
   if (window["__@wallet-standard/app__"]) {
     const existing = window["__@wallet-standard/app__"];
-    if (Array.isArray(existing)) existing.forEach(w => registeredWallets.push(w));
+    if (Array.isArray(existing)) existing.forEach(w => { if (!registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); });
   }
   // Dispatch the app-ready event so wallets know we exist
   try {
-    const appReady = new CustomEvent("wallet-standard:app-ready", { detail: { register: (w) => registeredWallets.push(w) } });
+    const appReady = new CustomEvent("wallet-standard:app-ready", { detail: { register: (w) => { if (w && !registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); } } });
     window.dispatchEvent(appReady);
   } catch(e) {}
   // Also check the newer API
@@ -262,20 +262,24 @@ function setupWalletDiscovery() {
     const getWalletsApi = window["__@wallet-standard/get-wallets__"];
     if (getWalletsApi) {
       const { get, on } = getWalletsApi();
-      get().forEach(w => registeredWallets.push(w));
-      on("register", (w) => registeredWallets.push(w));
+      get().forEach(w => { if (!registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); });
+      on("register", (w) => { if (w && !registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); });
     }
   } catch(e) {}
 }
 
 function getSuiWallets() {
-  // Return all Sui-compatible wallets, prioritized
+  // Deduplicate by name — wallets register multiple times for different chains
+  const seen = new Set();
   const suiWallets = [];
   for (const w of registeredWallets) {
     if (!w.features || !w.features["standard:connect"]) continue;
+    const name = w.name || "Unknown";
+    if (seen.has(name)) continue;
+    seen.add(name);
     const chains = w.chains || [];
-    const name = (w.name || "").toLowerCase();
-    const isSui = chains.some(c => c.startsWith("sui:")) || name.includes("sui") || name.includes("slush");
+    const nameLower = name.toLowerCase();
+    const isSui = chains.some(c => c.startsWith("sui:")) || nameLower.includes("sui") || nameLower.includes("slush");
     if (isSui) suiWallets.push(w);
   }
   // Sort: Slush first, then Sui Wallet, then others
@@ -333,15 +337,17 @@ window.connectWallet = async function() {
     if (wallets.length === 1) {
       wallet = wallets[0];
     } else {
-      // Show wallet picker
-      const names = wallets.map((w, i) => (i+1) + ". " + w.name).join("\n");
-      const choice = prompt("Multiple wallets found. Enter number:\n" + names);
-      const idx = parseInt(choice) - 1;
-      if (isNaN(idx) || idx < 0 || idx >= wallets.length) {
-        document.getElementById("connectBtn").textContent = "Connect Wallet";
-        return;
-      }
-      wallet = wallets[idx];
+      // Show wallet picker as a nicer dropdown
+      const pickerHtml = wallets.map((w, i) => 
+        "<div style=\"padding:10px;cursor:pointer;border:1px solid var(--border);border-radius:6px;margin:5px 0;display:flex;align-items:center;gap:10px\" onclick=\"pickWallet(" + i + ")\">"
+        + (w.icon ? "<img src=\"" + w.icon + "\" width=\"24\" height=\"24\" style=\"border-radius:4px\">" : "")
+        + "<span style=\"font-weight:600\">" + esc(w.name) + "</span></div>"
+      ).join("");
+      document.getElementById("modalName").textContent = "Choose Wallet";
+      document.getElementById("modalContent").innerHTML = pickerHtml;
+      document.getElementById("agentModal").classList.add("show");
+      // Wait for user pick
+      wallet = await new Promise((resolve) => { window.pickWallet = (idx) => { closeModal(); resolve(wallets[idx]); }; });
     }
     toast("Connecting to " + wallet.name + "...");
     discoveredWallet = wallet;
