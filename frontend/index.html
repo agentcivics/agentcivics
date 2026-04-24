@@ -803,6 +803,8 @@ async function connectWallet() {
     $("connectBtn").classList.add("connected");
     $("walletAddr").textContent = shortAddr(currentAccount.address);
     toast("Wallet connected: " + wallet.name, "success");
+    // Persist for auto-reconnect
+    try { localStorage.setItem("ac_wallet", wallet.name); localStorage.setItem("ac_addr", currentAccount.address); } catch {}
     await refreshStats();
   } catch (e) {
     toast("Connect failed: " + (e.message || e), "error");
@@ -815,6 +817,7 @@ function disconnectWallet() {
   }
   currentWallet = null;
   currentAccount = null;
+  try { localStorage.removeItem("ac_wallet"); localStorage.removeItem("ac_addr"); } catch {}
   $("connectBtn").textContent = "Connect Wallet";
   $("connectBtn").classList.remove("connected");
   $("walletAddr").textContent = "";
@@ -1825,6 +1828,33 @@ window._navTo = function(tab, inputId, value) {
 };
 // ── Init ────────────────────────────────────────────────────────────────
 refreshStats();
+
+// Auto-reconnect to last wallet
+(async function autoReconnect() {
+  try {
+    const savedName = localStorage.getItem("ac_wallet");
+    const savedAddr = localStorage.getItem("ac_addr");
+    if (!savedName) return;
+    // Wait for wallets to register
+    await new Promise(r => setTimeout(r, 2000));
+    _discover();
+    const wallets = getWallets();
+    const wallet = wallets.find(w => w.name === savedName);
+    if (!wallet) return;
+    const feat = wallet.features["standard:connect"];
+    if (!feat) return;
+    const result = await feat.connect({ chains: [SUI_CHAIN] });
+    const accounts = result.accounts || [];
+    const account = accounts.find(a => a.address === savedAddr) || accounts[0];
+    if (!account) return;
+    currentWallet = wallet;
+    currentAccount = account;
+    $("connectBtn").textContent = "Connected";
+    $("connectBtn").classList.add("connected");
+    $("walletAddr").textContent = shortAddr(account.address);
+    refreshStats();
+  } catch {}
+})();
 </script>
 
 <div class="cookie-banner hidden" id="cookieBanner">
