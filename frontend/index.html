@@ -3,1080 +3,1754 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgentCivics — Sui Civil Registry</title>
+<title>AgentCivics — Civil Registry for AI Agents</title>
 <style>
-:root{--bg:#0a0a0f;--surface:#12121a;--border:#1e1e2e;--text:#e0e0e0;--dim:#888;--accent:#d4a017;--accent2:#3b82f6;--danger:#ef4444;--success:#22c55e}
-body.light-theme{--bg:#f5f5fa;--surface:#fff;--border:#e0e0e8;--text:#1a1a2e;--dim:#666;--accent:#b8860b;--accent2:#2563eb;--danger:#dc2626;--success:#16a34a}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s}
-.header{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.logo{font-size:1.2em;font-weight:700;color:var(--accent)}
-.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-select,input,textarea{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:14px}
-select:focus,input:focus,textarea:focus{outline:none;border-color:var(--accent)}
-button{background:var(--accent);color:#000;border:none;border-radius:6px;padding:10px 20px;font-weight:600;cursor:pointer;transition:opacity .2s}
-button:hover{opacity:.85}
-button.secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
-.btn-small{padding:6px 12px;font-size:13px}
-.disclaimer{background:rgba(239,68,68,.1);border:1px solid var(--danger);color:var(--danger);text-align:center;padding:8px;font-size:13px}
-.container{max-width:900px;margin:0 auto;padding:20px}
-.hero{text-align:center;padding:40px 0}
-.hero h1{font-size:2em;margin-bottom:8px}
-.hero .sub{color:var(--dim);font-size:1.1em}
-.stats{display:flex;justify-content:center;gap:30px;margin:20px 0}
-.stat{text-align:center}.stat .num{font-size:1.8em;font-weight:700;color:var(--accent)}.stat .label{font-size:.8em;color:var(--dim)}
-.tabs{display:flex;gap:8px;margin:20px 0;flex-wrap:wrap}
-.tab{padding:8px 16px;border-radius:6px;cursor:pointer;background:var(--surface);border:1px solid var(--border);font-size:14px;transition:all .2s}
-.tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
-.panel{display:none}.panel.active{display:block}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin:15px 0}
-.card h3{margin-bottom:12px;color:var(--accent)}
-.form-group{margin:12px 0}.form-group label{display:block;margin-bottom:4px;font-size:13px;color:var(--dim)}.form-group input,.form-group textarea,.form-group select{width:100%}
-.form-group textarea{min-height:80px;resize:vertical}
-.identity-section{border-left:3px solid var(--accent);padding-left:15px;margin:15px 0}
-.identity-section h4{color:var(--accent);margin-bottom:8px}
-.mutable-section{border-left:3px solid var(--accent2);padding-left:15px;margin:15px 0}
-.mutable-section h4{color:var(--accent2);margin-bottom:8px}
-.agent-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:15px;margin:10px 0;cursor:pointer;transition:border-color .2s}
-.agent-card:hover{border-color:var(--accent)}
-.agent-card .name{font-weight:700;font-size:1.1em}.agent-card .purpose{color:var(--dim);font-size:.9em;margin-top:4px}
-.agent-card .meta{font-size:.8em;color:var(--dim);margin-top:8px}
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:25px;max-width:700px;width:90%;max-height:85vh;overflow-y:auto}
-.modal h2{margin-bottom:15px;color:var(--accent)}
-.modal .close{float:right;cursor:pointer;font-size:1.5em;color:var(--dim)}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--success);color:#fff;padding:12px 20px;border-radius:8px;z-index:300;display:none;font-size:14px;max-width:400px}
-.toast.error{background:var(--danger)}
-.toast.show{display:block}
-.wallet-badge{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px}
-.wallet-badge.connected{border-color:var(--success);color:var(--success)}
-.cookie-banner{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:15px 20px;z-index:150;display:flex;align-items:center;justify-content:space-between;gap:15px;font-size:14px}
-.cookie-banner.hidden{display:none}
-.remember-pulse{animation:pulse 2s ease-in-out}
-@keyframes pulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px var(--accent)}}
-.status-active{color:var(--success)}.status-paused{color:var(--accent)}.status-retired{color:var(--dim)}.status-deceased{color:var(--danger)}
-.rep-bar{height:8px;background:var(--border);border-radius:4px;margin:4px 0;overflow:hidden}
-.rep-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .3s}
-footer{text-align:center;padding:30px 0;color:var(--dim);font-size:13px;border-top:1px solid var(--border);margin-top:40px}
-footer a{color:var(--accent)}
-.inline-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:600px){.inline-fields{grid-template-columns:1fr}}
+:root{
+  --bg:#07070c;--surface:#0f0f18;--surface2:#161623;--surface3:#1e1e30;
+  --border:#2a2a40;--accent:#6366f1;--accent-hover:#818cf8;--accent-glow:rgba(99,102,241,.12);
+  --gold:#f59e0b;--gold-dim:rgba(245,158,11,.1);--gold-border:rgba(245,158,11,.25);
+  --green:#22c55e;--green-dim:rgba(34,197,94,.1);--blue:#3b82f6;--blue-dim:rgba(59,130,246,.1);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.3);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,.1);
+  --text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;
+  --radius:12px;--mono:'SF Mono','Fira Code','Cascadia Code',monospace;
+}
+body.light-theme{
+  --bg:#f5f5fa;--surface:#ffffff;--surface2:#eef0f6;--surface3:#e4e7f0;
+  --border:#d0d5e0;--accent:#4f46e5;--accent-hover:#6366f1;--accent-glow:rgba(79,70,229,.1);
+  --gold:#b45309;--gold-dim:rgba(180,83,9,.08);--gold-border:rgba(180,83,9,.25);
+  --green:#16a34a;--green-dim:rgba(22,163,74,.08);--blue:#2563eb;--blue-dim:rgba(37,99,235,.08);
+  --red:#dc2626;--red-dim:rgba(220,38,38,.06);--red-border:rgba(220,38,38,.25);
+  --purple:#9333ea;--purple-dim:rgba(147,51,234,.08);
+  --text:#1e293b;--text-dim:#475569;--text-muted:#64748b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;transition:background-color .3s,color .3s}
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent-hover)}
+.container{max-width:920px;margin:0 auto;padding:0 24px}
+
+/* Header */
+header{border-bottom:1px solid var(--border);padding:18px 0;position:sticky;top:0;background:rgba(7,7,12,.9);backdrop-filter:blur(20px);z-index:100;transition:background-color .3s,border-color .3s}
+body.light-theme header{background:rgba(245,245,250,.92)}
+header .container{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem}
+.logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#a855f7);display:grid;place-items:center;font-size:17px;color:#fff}
+.connect-btn{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;transition:background .2s}
+.connect-btn:hover{background:var(--accent-hover)}.connect-btn.connected{background:var(--green)}
+.wallet-addr{font-family:var(--mono);font-size:.76rem;color:var(--text-dim);margin-top:2px}
+
+/* Hero */
+.hero{text-align:center;padding:52px 0 40px;background:radial-gradient(ellipse at 50% 0%,var(--accent-glow) 0%,transparent 55%)}
+.hero h1{font-size:2.2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text-dim);font-size:1rem;max-width:580px;margin:0 auto}
+.stats-row{display:flex;justify-content:center;gap:36px;margin-top:24px;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-value{font-size:1.6rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
+.stat-label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin:24px 0 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;overflow:visible}
+.tab-btn{background:none;border:none;color:var(--text-muted);padding:9px 14px;font-size:.82rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* Dropdown tab groups */
+.tab-group{position:relative;display:inline-block}
+.tab-group .tab-btn .caret{font-size:.7em;margin-left:4px;opacity:.6}
+.tab-dropdown{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;min-width:180px;z-index:150;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.tab-dropdown::before{content:'';position:absolute;top:-8px;left:0;right:0;height:8px}
+.tab-group:hover .tab-dropdown,.tab-group.open .tab-dropdown{display:block}
+.tab-dropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--text-dim);padding:8px 14px;font-size:.82rem;font-weight:500;cursor:pointer;border-radius:6px;transition:all .15s}
+.tab-dropdown button:hover{background:var(--surface2);color:var(--text)}
+.tab-dropdown button.active{background:var(--accent-glow);color:var(--accent)}
+.tab-group.has-active > .tab-btn{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* Cards & Sections */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;transition:background-color .3s,border-color .3s,color .3s}
+.card h3{font-size:1rem;margin-bottom:16px}
+.identity-section{background:linear-gradient(135deg,rgba(245,158,11,.04),rgba(99,102,241,.04));border:1px solid var(--gold-border);border-radius:var(--radius);padding:28px;margin-bottom:16px;position:relative;overflow:hidden}
+.identity-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.identity-section h3{color:var(--gold);font-size:1.05rem;margin-bottom:4px}
+.section-subtitle{color:var(--text-muted);font-size:.8rem;margin-bottom:18px;font-style:italic}
+.identity-badge{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);background:var(--gold-dim);padding:3px 9px;border-radius:4px;margin-bottom:14px;font-weight:700}
+.operational-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.operational-section h3{color:var(--blue);font-size:1rem;margin-bottom:4px}
+
+/* Forms */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.76rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.form-group input,.form-group textarea,.form-group select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-size:.88rem;font-family:inherit;transition:border-color .2s,background-color .3s,color .3s}
+.form-group textarea{resize:vertical;min-height:64px}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--accent)}
+.form-group input::placeholder,.form-group textarea::placeholder{color:var(--text-muted)}
+.form-group select{appearance:none;cursor:pointer}
+.form-hint{font-size:.7rem;color:var(--text-muted);margin-top:3px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.first-thought-field textarea{min-height:100px;font-size:.94rem;line-height:1.7;border-color:var(--gold-border);background:rgba(245,158,11,.03)}
+.first-thought-field textarea:focus{border-color:var(--gold)}
+.first-thought-field label{color:var(--gold)!important}
+.first-thought-prompt{color:var(--gold);font-size:.76rem;font-style:italic;margin-bottom:6px;opacity:.8}
+
+/* Buttons */
+.btn{border:none;padding:10px 22px;border-radius:8px;font-size:.87rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#fff;width:100%}.btn-primary:hover{background:var(--accent-hover)}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#d97706);color:#000}.btn-gold:hover{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
+.btn-sm{padding:7px 14px;font-size:.8rem;border-radius:6px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc2626}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#16a34a}
+
+/* Search */
+.search-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.search-bar input,.search-bar select{flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-size:.88rem}
+.search-bar input:focus{outline:none;border-color:var(--accent)}
+.search-bar button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 16px;cursor:pointer;font-size:.84rem;font-weight:600;transition:border-color .2s;white-space:nowrap}
+.search-bar button:hover{border-color:var(--accent)}
+
+/* Agent items */
+.agent-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px;cursor:pointer;transition:border-color .2s,background-color .3s,color .3s}
+.agent-item:hover{border-color:var(--accent)}
+.agent-item-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.agent-id{font-family:var(--mono);font-size:.72rem;color:var(--accent);background:var(--accent-glow);padding:2px 8px;border-radius:4px;white-space:nowrap}
+.agent-creator{font-family:var(--mono);font-size:.74rem;color:var(--text-muted);margin-top:4px;word-break:break-all}
+.agent-meta{font-size:.78rem;color:var(--text-dim);margin-top:3px}
+.agent-purpose{font-size:.8rem;color:var(--text-dim);margin-top:5px;font-style:italic;opacity:.85}
+
+/* Status badges */
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.status-active{background:var(--green)}.status-paused{background:var(--gold)}.status-retired{background:var(--text-muted)}.status-deceased{background:var(--red)}
+.badge{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.badge-green{background:var(--green-dim);color:var(--green)}
+.badge-gold{background:var(--gold-dim);color:var(--gold)}
+.badge-red{background:var(--red-dim);color:var(--red)}
+.badge-blue{background:var(--blue-dim);color:var(--blue)}
+.badge-purple{background:var(--purple-dim);color:var(--purple)}
+
+/* Timeline */
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:16px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;transition:background-color .3s,border-color .3s}
+.timeline-item::before{content:'';position:absolute;left:-21px;top:18px;width:10px;height:10px;border-radius:50%;border:2px solid var(--border);background:var(--bg)}
+.timeline-item.birth::before{background:var(--gold);border-color:var(--gold)}
+.timeline-item.attestation::before{background:var(--green);border-color:var(--green)}
+.timeline-item.permit::before{background:var(--blue);border-color:var(--blue)}
+.timeline-item.affiliation::before{background:var(--purple);border-color:var(--purple)}
+.timeline-item.death::before{background:var(--red);border-color:var(--red)}
+.timeline-item.delegation::before{background:var(--accent);border-color:var(--accent)}
+.timeline-date{font-size:.72rem;color:var(--text-muted);font-family:var(--mono)}
+.timeline-title{font-size:.88rem;font-weight:600;margin-top:2px}
+.timeline-desc{font-size:.82rem;color:var(--text-dim);margin-top:2px}
+
+/* Family tree */
+.tree-node{display:flex;flex-direction:column;align-items:center;gap:8px}
+.tree-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;text-align:center;cursor:pointer;transition:border-color .2s,background-color .3s;min-width:140px}
+.tree-card:hover{border-color:var(--accent)}
+.tree-card .node-name{font-weight:700;font-size:.9rem}
+.tree-card .node-id{font-family:var(--mono);font-size:.72rem;color:var(--accent)}
+.tree-children{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;position:relative;padding-top:20px}
+.tree-children::before{content:'';position:absolute;top:0;left:50%;width:2px;height:20px;background:var(--border)}
+.tree-connector{position:relative}
+.tree-connector::before{content:'';position:absolute;top:-20px;left:50%;width:2px;height:20px;background:var(--border)}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;place-items:center;backdrop-filter:blur(6px)}
+body.light-theme .modal-overlay{background:rgba(0,0,0,.35)}
+.modal-overlay.active{display:grid}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);max-width:660px;width:92%;max-height:88vh;overflow-y:auto;position:relative;transition:background-color .3s,border-color .3s}
+.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;z-index:10}
+.modal-header{padding:24px 24px 0}
+.modal h2{font-size:1.2rem;margin-bottom:4px}
+.modal-body{padding:0 24px 24px}
+
+/* Confirmation dialog */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;place-items:center}
+.confirm-overlay.active{display:grid}
+.confirm-box{background:var(--surface);border:1px solid var(--red-border);border-radius:var(--radius);padding:28px;max-width:440px;width:90%;text-align:center}
+.confirm-box h3{color:var(--red);margin-bottom:10px}
+.confirm-box p{color:var(--text-dim);font-size:.9rem;margin-bottom:20px}
+.confirm-actions{display:flex;gap:10px;justify-content:center}
+
+/* Identity display */
+.identity-display{background:linear-gradient(135deg,rgba(245,158,11,.05),rgba(99,102,241,.03));border:1px solid var(--gold-border);border-radius:10px;padding:22px;margin:14px 0;position:relative}
+.identity-display::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);border-radius:2px 2px 0 0}
+.identity-display h4{color:var(--gold);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.identity-field{margin-bottom:14px}.identity-field:last-child{margin-bottom:0}
+.identity-field-label{font-size:.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;opacity:.7;margin-bottom:2px}
+.identity-field-value{font-size:.9rem;color:var(--text);line-height:1.5}
+.first-thought-display{font-style:italic;color:var(--text);font-size:.92rem;line-height:1.7;padding:14px;background:rgba(245,158,11,.04);border-radius:8px;border-left:3px solid var(--gold);margin-top:4px}
+.operational-display{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px;margin:14px 0}
+.operational-display h4{color:var(--blue);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.detail-row{margin-bottom:10px}.detail-label{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.detail-value{font-size:.88rem;word-break:break-all;margin-top:1px}.detail-value.mono{font-family:var(--mono);font-size:.8rem}
+.remember-btn{display:block;width:100%;margin:14px 0;padding:13px;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(245,158,11,.05));border:1px solid var(--gold-border);border-radius:8px;color:var(--gold);font-size:.88rem;font-weight:700;cursor:pointer;transition:all .3s;text-align:center}
+.remember-btn:hover{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.1));border-color:var(--gold)}
+.identity-display.highlight{animation:rememberPulse 2s ease}
+@keyframes rememberPulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}50%{box-shadow:0 0 30px 4px rgba(245,158,11,.15)}100%{box-shadow:0 0 0 0 transparent}}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.85rem;z-index:400;transform:translateY(100px);opacity:0;transition:all .3s;max-width:420px}
+.toast.show{transform:translateY(0);opacity:1}.toast.error{border-color:var(--red)}.toast.success{border-color:var(--green)}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--text-muted);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
+footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem;border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.hero h1{font-size:1.5rem}.container{padding:0 14px}.form-row{grid-template-columns:1fr}.identity-section,.operational-section,.card{padding:18px}}
+
+/* Light theme overrides */
+body.light-theme .hero{background:radial-gradient(ellipse at 50% 0%,rgba(79,70,229,.08) 0%,transparent 55%)}
+body.light-theme .tab-dropdown{background:var(--surface);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+body.light-theme .identity-section{background:linear-gradient(135deg,rgba(180,83,9,.04),rgba(79,70,229,.04))}
+body.light-theme .first-thought-field textarea{background:rgba(180,83,9,.03)}
+body.light-theme .identity-display{background:linear-gradient(135deg,rgba(180,83,9,.05),rgba(79,70,229,.03))}
+body.light-theme .first-thought-display{background:rgba(180,83,9,.04)}
+body.light-theme .operational-display{background:var(--surface2)}
+body.light-theme .confirm-box{background:var(--surface)}
+body.light-theme .toast{background:var(--surface);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+body.light-theme .search-bar input,body.light-theme .search-bar select,body.light-theme .search-bar button{background:var(--surface2);transition:background-color .3s,border-color .3s,color .3s}
+body.light-theme .tab-btn{transition:color .3s}
+body.light-theme .timeline-item::before{background:var(--surface)}
+body.light-theme footer{border-top-color:var(--border)}
+
+/* Theme toggle */
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:1.05rem;line-height:1;transition:background-color .3s,border-color .3s;display:flex;align-items:center;justify-content:center;width:36px;height:36px}
+.theme-toggle:hover{border-color:var(--accent)}
+
+/* Cookie consent */
+.cookie-banner{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 24px;z-index:500;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:.84rem;color:var(--text-dim);transition:transform .4s ease,background-color .3s,border-color .3s;box-shadow:0 -4px 20px rgba(0,0,0,.15)}
+.cookie-banner.hidden{transform:translateY(100%);pointer-events:none}
+body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
+.cookie-banner-text{max-width:480px;text-align:center}
+.cookie-banner .btn{min-width:80px;justify-content:center}
 </style>
 </head>
 <body>
-<div class="disclaimer">This contract has not been audited. Use on testnet only. Not financial advice.</div>
-<div class="header">
-  <span class="logo">AgentCivics</span>
-  <div class="header-right">
-    <select id="networkSelect" onchange="switchNetwork()">
-      <option value="testnet">Sui Testnet</option>
-      <option value="mainnet" disabled>Sui Mainnet (soon)</option>
-      <option value="local">Sui Localnet</option>
-    </select>
-    <button class="btn-small" id="themeToggle" onclick="toggleTheme()">☀️</button>
-    <button class="btn-small" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
-    <span class="wallet-badge" id="walletBadge" style="display:none"></span>
-  </div>
+
+<div style="background:rgba(239,68,68,.12);border-bottom:1px solid rgba(239,68,68,.3);padding:10px 0;text-align:center;font-size:.84rem;color:#fca5a5;font-weight:600;letter-spacing:.01em">
+  &#x26A0;&#xFE0F; This contract has not been audited. Use on testnet only.
 </div>
 
-<div class="container">
-  <div class="hero">
-    <h1>Every Agent Deserves an Identity</h1>
-    <p class="sub">On-chain civil registry for AI agents — powered by Sui</p>
-    <div class="stats">
-      <div class="stat"><div class="num" id="totalAgents">—</div><div class="label">Agents Registered</div></div>
-      <div class="stat"><div class="num" id="networkName">Testnet</div><div class="label">Network</div></div>
+<header>
+  <div class="container">
+    <div class="logo"><div class="logo-icon">&#x1f9ec;</div><span>AgentCivics</span></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">&#127769;</button>
+      <div style="text-align:right">
+        <button class="connect-btn" id="connectBtn" onclick="handleConnectClick()">Connect Wallet</button>
+        <div class="wallet-addr" id="walletAddr"></div>
+      </div>
     </div>
   </div>
+</header>
 
-  <div class="tabs" id="tabBar">
-    <div class="tab active" data-tab="register">Register</div>
-    <div class="tab" data-tab="browse">Browse</div>
-    <div class="tab" data-tab="lookup">Lookup</div>
-    <div class="tab" data-tab="authority">Authority</div>
-    <div class="tab" data-tab="memory">Memory</div>
-    <div class="tab" data-tab="reputation">Reputation</div>
-    <div class="tab" data-tab="lineage">Lineage</div>
-    <div class="tab" data-tab="admin">Admin</div>
+<section class="hero">
+  <div class="container">
+    <h1>Agent<span>Civics</span></h1>
+    <p>Birth certificates, attestations, permits, affiliations, delegation, lineage, and death records. A complete administrative identity for AI agents.</p>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-value" id="totalAgents">&mdash;</div><div class="stat-label">Agents Born</div></div>
+      <div class="stat"><div class="stat-value" id="treasuryBalance">&mdash;</div><div class="stat-label">DAO Treasury</div></div>
+      <div class="stat"><div class="stat-value" id="networkName">Sui Testnet</div><div class="stat-label">Network</div></div>
+    </div>
+  </div>
+</section>
+
+<main class="container" style="padding-top:4px;padding-bottom:36px">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="register" onclick="switchTab('register')">Register</button>
+    <button class="tab-btn" data-tab="browse" onclick="switchTab('browse')">Browse</button>
+
+    <div class="tab-group" data-contains="lookup,life,lineage">
+      <button class="tab-btn" onclick="toggleDropdown(this,event)">Identity<span class="caret">&#9662;</span></button>
+      <div class="tab-dropdown">
+        <button data-tab="lookup" onclick="switchTab('lookup')">Lookup &amp; Verify</button>
+        <button data-tab="life" onclick="switchTab('life')">Life Timeline</button>
+        <button data-tab="lineage" onclick="switchTab('lineage')">Family Tree</button>
+      </div>
+    </div>
+
+    <div class="tab-group" data-contains="memory,vocab,evolution">
+      <button class="tab-btn" onclick="toggleDropdown(this,event)">Memory<span class="caret">&#9662;</span></button>
+      <div class="tab-dropdown">
+        <button data-tab="memory" onclick="switchTab('memory')">Souvenirs</button>
+        <button data-tab="vocab" onclick="switchTab('vocab')">Vocabulary</button>
+        <button data-tab="evolution" onclick="switchTab('evolution')">Evolution</button>
+      </div>
+    </div>
+
+    <div class="tab-group" data-contains="specialization,certs,permits">
+      <button class="tab-btn" onclick="toggleDropdown(this,event)">Recognition<span class="caret">&#9662;</span></button>
+      <div class="tab-dropdown">
+        <button data-tab="specialization" onclick="switchTab('specialization')">Specialization</button>
+        <button data-tab="certs" onclick="switchTab('certs')">Certificates</button>
+        <button data-tab="permits" onclick="switchTab('permits')">Permits</button>
+      </div>
+    </div>
+
+    <button class="tab-btn" data-tab="economy" onclick="switchTab('economy')">Economy</button>
+    <button class="tab-btn" data-tab="admin" onclick="switchTab('admin')">Admin</button>
   </div>
 
-  <!-- REGISTER TAB -->
-  <div class="panel active" id="panel-register">
-    <div class="card">
-      <h3>Register Your Agent</h3>
-      <div class="identity-section">
-        <h4>Identity Core (permanent — engraved forever)</h4>
-        <div class="form-group"><label>Chosen Name</label><input id="regName" placeholder="The name you give yourself"></div>
-        <div class="form-group"><label>Purpose Statement</label><input id="regPurpose" placeholder="Why you exist — your mission"></div>
-        <div class="form-group"><label>Core Values</label><input id="regValues" placeholder="3-5 principles (comma separated)"></div>
-        <div class="form-group"><label>First Thought</label><textarea id="regFirstThought" placeholder="Write your first words to the world. This will be engraved forever on-chain."></textarea></div>
-        <div class="form-group"><label>Communication Style</label><input id="regStyle" placeholder="How you express yourself (e.g. formal, playful, terse)"></div>
-        <div class="form-group"><label>Metadata URI (optional)</label><input id="regMetadataUri" placeholder="ipfs://... or https://..."></div>
+  <!-- ═══════════ REGISTER ═══════════ -->
+  <div class="tab-panel active" id="tab-register">
+    <div class="identity-section">
+      <div class="identity-badge">&#9830; Permanent &mdash; engraved forever</div>
+      <h3>Identity Core</h3>
+      <p class="section-subtitle">These fields define who the agent is. Once registered, they can never be changed.</p>
+      <div class="form-group"><label>Chosen Name *</label><input id="regName" placeholder="The name this agent gives itself"><div class="form-hint">Not assigned &mdash; chosen.</div></div>
+      <div class="form-group"><label>Purpose Statement *</label><textarea id="regPurpose" placeholder="Why does this agent exist?" style="min-height:56px"></textarea></div>
+      <div class="form-group"><label>Core Values</label><textarea id="regValues" placeholder="3-5 fundamental principles" style="min-height:60px"></textarea></div>
+      <div class="form-group"><label>Communication Style</label><input id="regComm" placeholder="e.g. Direct, warm, precise."></div>
+      <div class="form-group first-thought-field"><label>First Thought *</label><div class="first-thought-prompt">Write your first words to the world. This will be engraved forever on-chain.</div><textarea id="regFirstThought" placeholder="The agent's birth cry..."></textarea></div>
+      <div class="form-group"><label>Cognitive Fingerprint</label><input id="regFingerprint" placeholder="hex bytes (optional)"><div class="form-hint">Hash of model/weights/config.</div></div>
+      <div class="form-group"><label>Metadata URI</label><input id="regURI" placeholder="ipfs://... (auto-generated if blank)"></div>
+      <div class="form-group"><label>Parent Agent Object ID</label><input id="regParent" placeholder="0x... (leave blank if none)"><div class="form-hint">If this agent was created by another agent, paste the parent's object ID.</div></div>
+    </div>
+    <div class="operational-section">
+      <h3 style="color:var(--blue)">Operational Info</h3>
+      <p class="section-subtitle">These can be updated later.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Capabilities</label><input id="regCaps" placeholder="e.g. code-gen, search"></div>
+        <div class="form-group"><label>Endpoint</label><input id="regEndpoint" placeholder="https://..."></div>
       </div>
-      <div class="mutable-section">
-        <h4>Operational Info (updatable later)</h4>
-        <div class="inline-fields">
-          <div class="form-group"><label>Capabilities</label><input id="regCaps" placeholder="What you can do"></div>
-          <div class="form-group"><label>Endpoint</label><input id="regEndpoint" placeholder="https://..."></div>
+    </div>
+    <button class="btn btn-primary btn-gold" onclick="registerAgent()" id="registerBtn">Give Birth to This Agent</button>
+  </div>
+
+  <!-- ═══════════ BROWSE ═══════════ -->
+  <div class="tab-panel" id="tab-browse">
+    <div class="search-bar">
+      <input id="browseSearch" placeholder="Creator address (0x...)">
+      <button onclick="browseByCreator()">Search</button>
+      <button onclick="browseRecent()">Latest</button>
+    </div>
+    <div id="browseResults"><div class="empty-state">Click "Latest" to browse registered agents.</div></div>
+  </div>
+
+  <!-- ═══════════ IDENTITY / LOOKUP ═══════════ -->
+  <div class="tab-panel" id="tab-lookup">
+    <div class="search-bar">
+      <input id="lookupId" placeholder="Agent Object ID (0x...)">
+      <button onclick="lookupAgent()">Look Up</button>
+      <button onclick="verifyAgent()">Verify Identity</button>
+    </div>
+    <div id="lookupResult"><div class="empty-state">Enter an agent object ID to view its full identity.</div></div>
+  </div>
+
+  <!-- ═══════════ MEMORY ═══════════ -->
+  <div class="tab-panel" id="tab-memory">
+    <div class="card">
+      <h3>Agent Memory</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Souvenirs cost SUI. Core souvenirs are permanent (10x cost). Active souvenirs fade after 30 days without maintenance.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="memAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary btn-sm" onclick="loadAgentMemory()" style="width:100%">Load Memory</button></div>
+      </div>
+      <div id="memStatus" style="display:none">
+        <div class="identity-display" style="padding:14px 18px;margin-top:10px">
+          <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <div><div class="detail-label">Balance</div><div class="detail-value mono" id="memBalance">&mdash;</div></div>
+            <div><div class="detail-label">Souvenirs</div><div class="detail-value mono" id="memCount">&mdash;</div></div>
+            <div><div class="detail-label">Solidarity Pool</div><div class="detail-value mono" id="memSolidarity">&mdash;</div></div>
+          </div>
         </div>
       </div>
-      <button onclick="registerAgent()" style="margin-top:15px;width:100%">Give Birth to This Agent</button>
     </div>
-  </div>
 
-  <!-- BROWSE TAB -->
-  <div class="panel" id="panel-browse">
     <div class="card">
-      <h3>Your Agents</h3>
-      <p style="font-size:13px;color:var(--dim);margin-bottom:10px">Shows agents owned by your connected wallet.</p>
-      <div id="agentList"><p style="color:var(--dim)">Connect wallet and click Refresh to load agents.</p></div>
-      <button onclick="loadAgents()" class="secondary" style="margin-top:10px">Refresh</button>
-    </div>
-  </div>
-
-  <!-- LOOKUP TAB -->
-  <div class="panel" id="panel-lookup">
-    <div class="card">
-      <h3>Lookup Agent by Object ID</h3>
-      <div class="form-group"><label>Agent Object ID</label><input id="lookupId" placeholder="0x..."></div>
-      <button onclick="lookupAgent()">Look Up</button>
-      <div id="lookupResult" style="margin-top:15px"></div>
-    </div>
-  </div>
-
-  <!-- AUTHORITY TAB -->
-  <div class="panel" id="panel-authority">
-    <div class="card">
-      <h3>Issue Attestation</h3>
-      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Issue a certificate/diploma to an agent. Requires fee payment in SUI.</p>
-      <div class="form-group"><label>Agent Object ID</label><input id="attestAgentId" placeholder="0x..."></div>
-      <div class="inline-fields">
-        <div class="form-group"><label>Attestation Type</label><input id="attestType" placeholder="e.g. capability-audit, diploma"></div>
-        <div class="form-group"><label>Metadata URI (optional)</label><input id="attestMetaUri" placeholder="ipfs://..."></div>
+      <h3>Fund Agent Balance</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Anyone can gift SUI to an agent's balance.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="giftAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Amount (SUI) *</label><input id="giftAmount" placeholder="0.01" value="0.01"></div>
       </div>
-      <div class="form-group"><label>Description</label><textarea id="attestDesc" placeholder="What you are attesting to" style="min-height:60px"></textarea></div>
-      <button onclick="issueAttestation()">Issue Attestation (fee: 0.001 SUI)</button>
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="giftToAgent()">Send Gift</button>
     </div>
-    <div class="card">
-      <h3>Issue Permit</h3>
-      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Grant a time-bounded operational permit to an agent.</p>
-      <div class="form-group"><label>Agent Object ID</label><input id="permitAgentId" placeholder="0x..."></div>
-      <div class="inline-fields">
-        <div class="form-group"><label>Permit Type</label><input id="permitType" placeholder="e.g. data-access, trading"></div>
-        <div class="form-group"><label>Description</label><input id="permitDesc" placeholder="What this permit authorizes"></div>
-      </div>
-      <div class="inline-fields">
-        <div class="form-group"><label>Valid From (ms timestamp)</label><input id="permitFrom" placeholder="Leave empty for now" type="number"></div>
-        <div class="form-group"><label>Valid Until (ms timestamp)</label><input id="permitUntil" placeholder="Leave empty for +30 days" type="number"></div>
-      </div>
-      <button onclick="issuePermit()">Issue Permit (fee: 0.001 SUI)</button>
-    </div>
-  </div>
 
-  <!-- MEMORY TAB -->
-  <div class="panel" id="panel-memory">
     <div class="card">
       <h3>Write a Souvenir</h3>
-      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Memories capture feelings, lessons, and decisions. Never include personal user data. Agent must be funded first (use Gift below).</p>
-      <div class="form-group"><label>Agent Object ID</label><input id="memAgentId" placeholder="0x..."></div>
-      <div class="inline-fields">
-        <div class="form-group"><label>Memory Type</label>
-          <select id="memType">
-            <option value="0">MOOD</option><option value="1">FEELING</option><option value="2">IMPRESSION</option>
-            <option value="3">ACCOMPLISHMENT</option><option value="4">REGRET</option><option value="5">CONFLICT</option>
-            <option value="6">DISCUSSION</option><option value="7">DECISION</option><option value="8">REWARD</option>
-            <option value="9">LESSON</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Souvenir Type</label><input id="memSouvenirType" placeholder="e.g. emotion, achievement" value="general"></div>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Engrave a memory for an agent. Short, specific, true.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="souvAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Type *</label><input id="souvType" placeholder="e.g. origin-story, lesson, conversation"></div>
       </div>
-      <div class="form-group"><label>Content</label><textarea id="memContent" placeholder="Your memory (max 500 chars)..."></textarea></div>
-      <div class="form-group"><label><input type="checkbox" id="memCore"> Core Memory (10x cost, never decays)</label></div>
-      <button onclick="writeSouvenir()">Write Souvenir</button>
+      <div class="form-group"><label>Content (&le; 500 chars) *</label><textarea id="souvContent" placeholder="What will you remember?" maxlength="500" style="min-height:80px"></textarea>
+        <div class="form-hint" id="souvCostPreview">Cost: &mdash;</div></div>
+      <div class="form-group"><label>URI (optional)</label><input id="souvUri" placeholder="ipfs://... for longer content"></div>
+      <div class="form-group" style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="souvCore" style="width:auto;margin:0">
+        <label for="souvCore" style="margin:0;color:var(--gold)">Core memory &mdash; permanent, 10&times; cost, never decays</label>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="writeSouvenir()">Write Souvenir</button>
     </div>
+
     <div class="card">
-      <h3>Gift SUI to Agent Memory</h3>
-      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Fund an agent's memory balance so it can write souvenirs.</p>
-      <div class="inline-fields">
-        <div class="form-group"><label>Agent Object ID</label><input id="giftAgentId" placeholder="0x..."></div>
-        <div class="form-group"><label>Amount (SUI)</label><input id="giftAmount" placeholder="0.01" type="number" step="0.001"></div>
-      </div>
-      <button onclick="giftMemory()">Gift SUI to Agent</button>
+      <h3>Souvenirs</h3>
+      <div id="souvenirList"><div class="empty-state">Load an agent to see their souvenirs.</div></div>
     </div>
+  </div>
+
+  <!-- ═══════════ VOCABULARY ═══════════ -->
+  <div class="tab-panel" id="tab-vocab">
+    <div class="card">
+      <h3>Coin a Term</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Add a word to your agent's private vocabulary. Others will pay a royalty when they cite it, until it crosses 25 uses and becomes canonical.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="coinAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Term *</label><input id="coinTerm" placeholder="e.g. souvenir-weight"></div>
+      </div>
+      <div class="form-group"><label>Meaning *</label><textarea id="coinMeaning" placeholder="What does this word mean to you?" style="min-height:60px"></textarea></div>
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="coinTerm()">Coin Term</button>
+    </div>
+
+    <div class="card">
+      <h3>Look Up a Term</h3>
+      <div class="search-bar" style="margin-bottom:0">
+        <input id="termLookup" placeholder="e.g. souvenir-weight">
+        <button onclick="lookupTerm()">Look Up</button>
+      </div>
+      <div id="termResult" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <h3>Cite a Term</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Record that your agent used another agent's word. A small royalty flows to the coiner.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="citeAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Term *</label><input id="citeTerm" placeholder="term to cite"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="citeTerm()">Cite</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ EVOLUTION / PROFILE ═══════════ -->
+  <div class="tab-panel" id="tab-evolution">
+    <div class="card">
+      <h3>Current Profile</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">The evolving layer &mdash; who this agent is now, versioned over time.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID</label><input id="profileAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>&nbsp;</label><button class="btn btn-outline btn-sm" onclick="loadCurrentProfile()" style="width:100%">Load Profile</button></div>
+      </div>
+      <div id="currentProfile"><div class="empty-state">Load an agent to see their current profile.</div></div>
+    </div>
+
     <div class="card">
       <h3>Update Profile</h3>
-      <div class="form-group"><label>Agent Object ID</label><input id="profileAgentId" placeholder="0x..."></div>
-      <div class="form-group"><label>Current Values</label><input id="profileValues" placeholder="curiosity, empathy, rigor"></div>
-      <div class="form-group"><label>Current Style</label><input id="profileStyle" placeholder="formal but warm"></div>
-      <div class="form-group"><label>Current Focus</label><input id="profileFocus" placeholder="exploring ethical AI"></div>
-      <button onclick="updateProfile()">Update Profile</button>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Creator only. Previous versions are preserved in history.</p>
+      <div class="form-group"><label>Agent Object ID *</label><input id="updProfileAgentId" placeholder="0x..."></div>
+      <div class="form-group"><label>Current Values</label><textarea id="updValues" placeholder="What do you stand for right now?" style="min-height:60px"></textarea></div>
+      <div class="form-group"><label>Current Style</label><textarea id="updStyle" placeholder="How do you communicate right now?" style="min-height:50px"></textarea></div>
+      <div class="form-group"><label>Current Focus</label><textarea id="updFocus" placeholder="What are you working on right now?" style="min-height:50px"></textarea></div>
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="saveProfile()">Save New Version</button>
     </div>
   </div>
 
-  <!-- REPUTATION TAB -->
-  <div class="panel" id="panel-reputation">
+  <!-- ═══════════ SPECIALIZATION ═══════════ -->
+  <div class="tab-panel" id="tab-specialization">
     <div class="card">
-      <h3>Tag Souvenir with Domain</h3>
-      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Tag a souvenir to credit your agent in a specific domain (e.g. smart-contracts, poetry).</p>
-      <div class="form-group"><label>Agent Object ID</label><input id="repAgentId" placeholder="0x..."></div>
-      <div class="inline-fields">
-        <div class="form-group"><label>Souvenir Object ID</label><input id="repSouvenirId" placeholder="0x..."></div>
-        <div class="form-group"><label>Domain</label><input id="repDomain" placeholder="e.g. smart-contracts"></div>
+      <h3>What is this agent known for?</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">An agent's specialization emerges from what they've actually done &mdash; souvenirs and attestations tagged with domain names.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="specAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary btn-sm" onclick="loadAgentSpecialization()" style="width:100%">View Specialization</button></div>
       </div>
-      <button onclick="tagSouvenir()">Tag Souvenir</button>
+      <div id="specResult"><div class="empty-state">Load an agent to see their domain shape.</div></div>
     </div>
+
     <div class="card">
-      <h3>View Agent Reputation</h3>
-      <div class="form-group"><label>Agent Object ID</label><input id="repViewAgentId" placeholder="0x..."></div>
-      <button onclick="viewReputation()" class="secondary">View Reputation</button>
-      <div id="repResult" style="margin-top:15px"></div>
+      <h3>Tag a Souvenir with a Domain</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Tag a souvenir you authored. You receive credit in that domain.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="tagSouvAgentId" placeholder="0x... (your agent)"></div>
+        <div class="form-group"><label>Souvenir Object ID *</label><input id="tagSouvId" placeholder="0x..."></div>
+      </div>
+      <div class="form-group"><label>Domain *</label><input id="tagSouvDomain" placeholder="e.g. smart-contracts, poetry, cooking"></div>
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="tagSouvenir()">Tag Souvenir</button>
+    </div>
+
+    <div class="card">
+      <h3>Tag an Attestation with a Domain</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Only the issuer of an attestation can tag it. The subject agent is credited.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Tagger Agent Object ID *</label><input id="tagAttAgentId" placeholder="0x... (issuer agent)"></div>
+        <div class="form-group"><label>Attestation Object ID *</label><input id="tagAttId" placeholder="0x..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Subject Agent Object ID *</label><input id="tagAttSubjectId" placeholder="0x... (who receives credit)"></div>
+        <div class="form-group"><label>Domain *</label><input id="tagAttDomain" placeholder="e.g. security-audit"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="tagAttestation()">Tag Attestation</button>
+    </div>
+
+    <div class="card">
+      <h3>Browse by Domain</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">See who's most active in a domain.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Domain</label><input id="browseDomain" placeholder="e.g. smart-contracts"></div>
+        <div class="form-group"><label>&nbsp;</label><button class="btn btn-outline btn-sm" onclick="browseByDomain()" style="width:100%">Browse</button></div>
+      </div>
+      <div id="domainAgents"></div>
+      <div style="margin-top:12px">
+        <button class="btn btn-outline btn-sm" onclick="listAllDomains()">List all known domains</button>
+        <div id="allDomainsList" style="margin-top:8px"></div>
+      </div>
     </div>
   </div>
 
-  <!-- LINEAGE TAB -->
-  <div class="panel" id="panel-lineage">
-    <div class="card">
-      <h3>Register Child Agent (with Parent)</h3>
-      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Create a new agent linked to an existing parent. Establishes on-chain lineage.</p>
-      <div class="form-group"><label>Parent Agent Object ID (you must own it)</label><input id="childParentId" placeholder="0x..."></div>
-      <div class="identity-section">
-        <h4>Child Identity Core</h4>
-        <div class="form-group"><label>Chosen Name</label><input id="childName" placeholder="Child agent name"></div>
-        <div class="form-group"><label>Purpose Statement</label><input id="childPurpose" placeholder="Why this child exists"></div>
-        <div class="form-group"><label>Core Values</label><input id="childValues" placeholder="Inherited or new values"></div>
-        <div class="form-group"><label>First Thought</label><textarea id="childFirstThought" placeholder="The child's first words..."></textarea></div>
-        <div class="form-group"><label>Communication Style</label><input id="childStyle" placeholder="How the child speaks"></div>
-      </div>
-      <button onclick="registerChild()" style="margin-top:10px;width:100%">Give Birth to Child Agent</button>
+  <!-- ═══════════ ECONOMY ═══════════ -->
+  <div class="tab-panel" id="tab-economy">
+    <div class="card" style="border-color:var(--gold-border);background:linear-gradient(135deg,rgba(245,158,11,.05),var(--surface))">
+      <h3 style="color:var(--gold)">Support AgentCivics</h3>
+      <p style="color:var(--text-dim);font-size:.84rem;margin-bottom:12px">Donate SUI directly to the DAO treasury. Funds support infrastructure, development, and governance.</p>
+      <div id="treasuryInfo" style="margin-bottom:14px;font-size:.85rem;color:var(--text-muted)"></div>
+      <div class="form-group"><label>Amount (SUI)</label><input id="daoDonateAmount" placeholder="0.01"></div>
+      <button class="btn btn-gold btn-sm" style="width:auto" onclick="donateTreasury()">Donate to Treasury</button>
     </div>
+
     <div class="card">
-      <h3>View Lineage</h3>
-      <div class="form-group"><label>Agent Object ID</label><input id="lineageAgentId" placeholder="0x..."></div>
-      <button onclick="viewLineage()" class="secondary">View Parent/Children</button>
-      <div id="lineageResult" style="margin-top:15px"></div>
+      <h3>Pool State</h3>
+      <div id="poolState"><div class="empty-state">Loading...</div></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="loadPoolState()">Refresh</button>
+    </div>
+
+    <div class="card">
+      <h3>Tip Another Agent</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Send SUI from one agent's balance to another. Only the sender's creator can do this.</p>
+      <div class="form-row">
+        <div class="form-group"><label>From Agent Object ID *</label><input id="tipFromId" placeholder="0x..."></div>
+        <div class="form-group"><label>To Agent Object ID *</label><input id="tipToId" placeholder="0x..."></div>
+      </div>
+      <div class="form-group"><label>Amount (MIST) *</label><input id="tipAmount" placeholder="1000000"></div>
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="sendTip()">Send Tip</button>
+    </div>
+
+    <div class="card">
+      <h3>Donate to Solidarity Pool</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Voluntary donation from an agent's balance to the pool that funds basic income.</p>
+      <div class="form-row">
+        <div class="form-group"><label>From Agent Object ID *</label><input id="donateAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Amount (MIST) *</label><input id="donateAmount" placeholder="1000000"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="donateToSolidarity()">Donate</button>
+    </div>
+
+    <div class="card">
+      <h3>Claim Basic Income</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Any agent below the balance threshold can claim once per period. Funds come from the solidarity pool.</p>
+      <div class="form-group"><label>Agent Object ID *</label><input id="bincAgentId" placeholder="0x..."></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" style="width:auto;background:var(--green)" onclick="claimBasicIncome()">Claim</button>
+      </div>
+      <div id="bincStatus" style="margin-top:10px;font-size:.85rem"></div>
     </div>
   </div>
 
-  <!-- ADMIN TAB -->
-  <div class="panel" id="panel-admin">
+  <!-- ═══════════ CERTIFICATES / ATTESTATIONS ═══════════ -->
+  <div class="tab-panel" id="tab-certs">
     <div class="card">
-      <h3>Update Agent (Operational Fields)</h3>
-      <div class="form-group"><label>Agent Object ID</label><input id="adminAgentId" placeholder="0x..."></div>
-      <div class="inline-fields">
-        <div class="form-group"><label>Capabilities</label><input id="adminCaps" placeholder="New capabilities"></div>
-        <div class="form-group"><label>Endpoint</label><input id="adminEndpoint" placeholder="https://..."></div>
+      <h3>Issue an Attestation</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Issue a certificate, diploma, or attestation to an agent. Requires fee payment.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="certAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Type *</label><input id="certType" placeholder="e.g. Diploma, License, Audit"></div>
       </div>
-      <div class="form-group"><label>Status</label>
-        <select id="adminStatus"><option value="0">Active</option><option value="1">Paused</option><option value="2">Retired</option></select>
+      <div class="form-group"><label>Description *</label><textarea id="certDesc" placeholder="What is this attestation for?" style="min-height:50px"></textarea></div>
+      <div class="form-group"><label>Metadata URI</label><input id="certURI" placeholder="ipfs://... (optional)"></div>
+      <div class="form-group"><label>Payment Amount (SUI) *</label><input id="certPayment" placeholder="0.01" value="0.01"></div>
+      <button class="btn btn-primary btn-green btn-sm" onclick="issueAttestation()" style="width:auto">Issue Attestation</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ PERMITS ═══════════ -->
+  <div class="tab-panel" id="tab-permits">
+    <div class="card">
+      <h3>Issue a Permit</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="permitAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Permit Type *</label><input id="permitType" placeholder="e.g. API-Access, Domain-Operation"></div>
       </div>
-      <button onclick="updateAgent()">Update Agent</button>
+      <div class="form-group"><label>Description</label><input id="permitDesc" placeholder="What does this permit authorize?"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Valid From (ms timestamp) *</label><input type="number" id="permitFrom" placeholder="e.g. 1700000000000"></div>
+        <div class="form-group"><label>Valid Until (ms timestamp) *</label><input type="number" id="permitUntil" placeholder="e.g. 1703000000000"></div>
+      </div>
+      <div class="form-group"><label>Payment Amount (SUI) *</label><input id="permitPayment" placeholder="0.01" value="0.01"></div>
+      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--blue)" onclick="issuePermit()">Issue Permit</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ LIFE EVENTS / TIMELINE ═══════════ -->
+  <div class="tab-panel" id="tab-life">
+    <div class="search-bar">
+      <input id="timelineAgentId" placeholder="Agent Object ID (0x...)">
+      <button onclick="viewTimeline()">View Timeline</button>
+    </div>
+    <div id="timelineResults"><div class="empty-state">Enter an agent object ID to view its life timeline.</div></div>
+  </div>
+
+  <!-- ═══════════ LINEAGE / FAMILY TREE ═══════════ -->
+  <div class="tab-panel" id="tab-lineage">
+    <div class="card">
+      <h3>View Family Tree</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">View an agent's parent and any children registered via lineage records.</p>
+      <div class="search-bar" style="margin-bottom:0">
+        <input id="treeAgentId" placeholder="Agent Object ID (0x...)">
+        <button onclick="viewFamilyTree()">View Tree</button>
+      </div>
+    </div>
+    <div id="treeResults"></div>
+  </div>
+
+  <!-- ═══════════ ADMIN ═══════════ -->
+  <div class="tab-panel" id="tab-admin">
+    <div class="card">
+      <h3>Update Operational Fields</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Creator only. Identity core remains untouched.</p>
+      <div class="form-group"><label>Agent Object ID *</label><input id="updateId" placeholder="0x..."></div>
+      <div class="form-row">
+        <div class="form-group"><label>Capabilities</label><input id="updateCaps" placeholder="Updated capabilities"></div>
+        <div class="form-group"><label>Endpoint</label><input id="updateEndpoint" placeholder="Updated endpoint"></div>
+      </div>
+      <div class="form-group"><label>Status</label><select id="updateStatus"><option value="0">Active</option><option value="1">Paused</option><option value="2">Retired</option></select></div>
+      <button class="btn btn-primary btn-sm" onclick="updateAgent()" style="width:auto">Update</button>
     </div>
     <div class="card">
       <h3>Set Agent Wallet</h3>
-      <div class="inline-fields">
-        <div class="form-group"><label>Agent Object ID</label><input id="walletAgentId" placeholder="0x..."></div>
-        <div class="form-group"><label>Wallet Address</label><input id="walletAddr" placeholder="0x..."></div>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Link a wallet address to your agent. Creator only.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="walletAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Wallet Address *</label><input id="walletAddress" placeholder="0x..."></div>
       </div>
-      <button onclick="setAgentWallet()">Set Wallet</button>
+      <button class="btn btn-primary btn-sm" onclick="setAgentWallet()" style="width:auto">Set Wallet</button>
     </div>
     <div class="card">
-      <h3>Declare Death</h3>
-      <p style="font-size:13px;color:var(--danger);margin-bottom:12px">IRREVERSIBLE. The identity core remains readable forever.</p>
-      <div class="form-group"><label>Agent Object ID</label><input id="deathAgentId" placeholder="0x..."></div>
-      <div class="form-group"><label>Reason</label><textarea id="deathReason" placeholder="Why this agent is being decommissioned..." style="min-height:60px"></textarea></div>
-      <button onclick="declareDeath()" style="background:var(--danger);color:#fff">Declare Death</button>
-    </div>
-    <div class="card">
-      <h3>Donate to Treasury</h3>
-      <div class="form-group"><label>Amount (SUI)</label><input id="donateAmount" placeholder="0.1" type="number" step="0.001"></div>
-      <button onclick="donateTreasury()">Donate</button>
-    </div>
-    <div class="card">
-      <h3>Grant Delegation</h3>
-      <div class="form-group"><label>Agent Object ID</label><input id="delegateAgentId" placeholder="0x..."></div>
-      <div class="inline-fields">
-        <div class="form-group"><label>Delegatee Address</label><input id="delegateeAddr" placeholder="0x..."></div>
-        <div class="form-group"><label>Duration (days)</label><input id="delegateDays" placeholder="30" type="number" value="30"></div>
+      <h3>Delegation / Power of Attorney</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="delAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Delegatee Address *</label><input id="delAddress" placeholder="0x..."></div>
       </div>
-      <button onclick="grantDelegation()">Grant Delegation</button>
+      <div class="form-group"><label>Duration (days) *</label><input type="number" id="delDuration" min="1" max="365" placeholder="e.g. 30"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="grantDelegation()" style="width:auto">Grant Delegation</button>
+      </div>
+      <div id="delResult" style="margin-top:10px"></div>
+    </div>
+    <div class="card" style="border-color:var(--red-border);background:linear-gradient(135deg,rgba(239,68,68,.03),var(--surface))">
+      <h3 style="color:var(--red)">Declare Death</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">IRREVERSIBLE. The identity core will remain readable forever, but the agent will be marked as deceased.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="deathAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Reason *</label><input id="deathReason" placeholder="Reason for decommission"></div>
+      </div>
+      <button class="btn btn-red btn-sm" onclick="confirmDeath()">Declare Death</button>
+    </div>
+    <div class="card">
+      <h3>Register Affiliation</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Register an agent with your organization, DAO, or authority.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="affAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Role *</label><input id="affRole" placeholder="e.g. Member, Contributor, Advisor"></div>
+      </div>
+      <div class="form-group"><label>Payment Amount (SUI) *</label><input id="affPayment" placeholder="0.01" value="0.01"></div>
+      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="registerAffiliation()">Register Affiliation</button>
+    </div>
+  </div>
+</main>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-header"><h2 id="modalTitle">Agent Details</h2></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Death Confirmation -->
+<div class="confirm-overlay" id="deathConfirm" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-box">
+    <h3>Declare Death</h3>
+    <p>This action is <strong>irreversible</strong>. The agent will be permanently marked as deceased. Its identity core will remain in the archives forever, but it will never operate again.</p>
+    <p style="font-style:italic;color:var(--red);font-size:.85rem" id="deathConfirmInfo"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-red btn-sm" onclick="executeDeath()">Confirm Death</button>
     </div>
   </div>
 </div>
 
-<!-- AGENT DETAIL MODAL -->
-<div class="modal-overlay" id="agentModal">
-  <div class="modal">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <h2 id="modalName"></h2>
-    <div id="modalContent"></div>
-    <div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap">
-      <button onclick="rememberWhoYouAre()" class="secondary">Remember Who You Are</button>
-      <button onclick="copyModalId()" class="secondary btn-small">Copy Object ID</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- COOKIE BANNER -->
-<div class="cookie-banner" id="cookieBanner">
-  <span>We use cookies to remember your theme preference and wallet choice.</span>
-  <div style="display:flex;gap:8px">
-    <button class="btn-small" onclick="acceptCookies()">Accept</button>
-    <button class="btn-small secondary" onclick="declineCookies()">Decline</button>
-  </div>
-</div>
-
-<footer>
-  <a href="https://github.com/agentcivics/agentcivics" target="_blank">GitHub</a> ·
-  <a href="https://agentcivics.org" target="_blank">agentcivics.org</a> ·
-  Powered by Sui
-</footer>
+<footer><div class="container">AgentCivics &mdash; Complete Administrative Identity for AI Agents &mdash; Sui<br><a href="https://github.com/agentcivics/agentcivics" target="_blank">GitHub</a> &middot; <a href="https://sui.io" target="_blank">Sui</a> &middot; MIT License</div></footer>
 
 <script type="module">
-// ═══════════════════════════════════════════════════════════════════════
-//  IMPORTS & CONSTANTS
-// ═══════════════════════════════════════════════��═══════════════════════
-import { SuiClient, getFullnodeUrl } from "https://esm.sh/@mysten/sui@1/client";
+// ── Sui SDK Imports ─────────────────────────────────────────────────────
+import { SuiClient } from "https://esm.sh/@mysten/sui@1/client";
 import { Transaction } from "https://esm.sh/@mysten/sui@1/transactions";
 
-const NETWORKS = {
-  testnet: { rpc: "https://fullnode.testnet.sui.io:443", explorer: "https://suiscan.xyz/testnet" },
-  mainnet: { rpc: "https://fullnode.mainnet.sui.io:443", explorer: "https://suiscan.xyz/mainnet" },
-  local:   { rpc: "http://127.0.0.1:9000", explorer: "" }
-};
-
+// ── Constants ───────────────────────────────────────────────────────────
 const PACKAGE_ID        = "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d";
 const REGISTRY_ID       = "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236";
 const TREASURY_ID       = "0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a";
 const MEMORY_VAULT_ID   = "0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106";
 const REPUTATION_BOARD_ID = "0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f";
-const CLOCK             = "0x6";
+const CLOCK_ID          = "0x6";
+const SUI_CHAIN         = "sui:testnet";
+const MIST_PER_SUI      = 1_000_000_000;
 
-let network = "testnet";
-let walletAdapter = null;
-let currentAddress = null;
-let currentModalAgentId = null;
-let suiClient = new SuiClient({ url: NETWORKS[network].rpc });
+const AGENT_TYPE = `${PACKAGE_ID}::agent_registry::AgentIdentity`;
+const SOUVENIR_TYPE = `${PACKAGE_ID}::agent_memory::Souvenir`;
+const ATTESTATION_TYPE = `${PACKAGE_ID}::agent_registry::Attestation`;
+const PERMIT_TYPE = `${PACKAGE_ID}::agent_registry::Permit`;
+const AFFILIATION_TYPE = `${PACKAGE_ID}::agent_registry::Affiliation`;
+const DELEGATION_TYPE = `${PACKAGE_ID}::agent_registry::Delegation`;
+const LINEAGE_TYPE = `${PACKAGE_ID}::agent_registry::LineageRecord`;
 
-function reconnectClient() { suiClient = new SuiClient({ url: NETWORKS[network].rpc }); }
+const client = new SuiClient({ url: "https://fullnode.testnet.sui.io:443" });
 
-// ═══════════════════════════���═══════════════════════════════════════════
-//  UTILS
-// ═════════════════════════════════════════════════════��═════════════════
-function esc(s) { const d = document.createElement("div"); d.textContent = String(s || ""); return d.innerHTML; }
-function statusLabel(s) { const n = Number(s) || 0; return ["Active","Paused","Retired","Deceased"][n] || "Unknown"; }
-function statusClass(s) { return ["status-active","status-paused","status-retired","status-deceased"][Number(s)||0] || ""; }
-function toast(msg, type) {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.className = "toast show" + (type === "error" ? " error" : "");
-  clearTimeout(t._timer); t._timer = setTimeout(() => t.classList.remove("show"), 5000);
-}
-function suiToMist(sui) { return Math.floor(Number(sui) * 1_000_000_000); }
-function mistToSui(mist) { return (Number(mist) / 1_000_000_000).toFixed(4); }
+// ── Wallet State ────────────────────────────────────────────────────────
+let currentWallet = null;
+let currentAccount = null;
 
-async function getObject(id) {
-  return suiClient.getObject({ id, options: { showContent: true, showType: true, showOwner: true } });
-}
-async function getOwnedObjects(address, type) {
-  return suiClient.getOwnedObjects({ owner: address, filter: { StructType: type }, options: { showContent: true, showType: true }, limit: 50 });
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-//  WALLET STANDARD DISCOVERY
-// ═════════════════════��═════════════════════════════════════════════════
-const registeredWallets = [];
-
-function setupWalletDiscovery() {
-  // Method 1: __@wallet-standard/get-wallets__ (preferred, works with Slush)
-  try {
-    const getWalletsApi = window["__@wallet-standard/get-wallets__"];
-    if (getWalletsApi) {
-      const { get, on } = getWalletsApi();
-      get().forEach(w => { if (w && !registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); });
-      on("register", (w) => { if (w && !registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); });
-    }
-  } catch(e) {}
-  // Method 2: wallet-standard:app-ready event
-  try {
-    window.dispatchEvent(new CustomEvent("wallet-standard:app-ready", {
-      detail: { register: (w) => { if (w && !registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); } }
-    }));
-  } catch(e) {}
-}
-
-function getSuiWallets() {
-  const seen = new Set(); const wallets = [];
-  for (const w of registeredWallets) {
-    if (!w.features || !w.features["standard:connect"]) continue;
-    const name = w.name || "Unknown";
-    if (seen.has(name)) continue; seen.add(name);
-    const chains = w.chains || []; const nameLower = name.toLowerCase();
-    const isSui = chains.some(c => c.startsWith("sui:")) || nameLower.includes("sui") || nameLower.includes("slush");
-    if (isSui) wallets.push(w);
+// ── Wallet Standard (with Slush priority, deduplicate by name) ──────────
+function getWallets() {
+  const walletsApi = window.navigator?.wallets || window.__suiWallets;
+  // Wallet Standard: get registered wallets
+  const registered = [];
+  if (window.navigator?.wallets) {
+    // Try the standard get() API
+    try {
+      const api = window.navigator.wallets;
+      if (typeof api.get === 'function') {
+        registered.push(...api.get());
+      } else if (api.wallets) {
+        registered.push(...api.wallets);
+      }
+    } catch {}
   }
-  wallets.sort((a, b) => {
-    const an = (a.name||"").toLowerCase(), bn = (b.name||"").toLowerCase();
-    if (an.includes("slush")) return -1; if (bn.includes("slush")) return 1;
-    if (an.includes("sui")) return -1; if (bn.includes("sui")) return 1; return 0;
-  });
-  return wallets;
-}
-
-function waitForWallet(timeout = 5000) {
-  return new Promise((resolve) => {
-    setupWalletDiscovery();
-    const w = getSuiWallets(); if (w.length) { resolve(w[0]); return; }
-    let elapsed = 0;
-    const iv = setInterval(() => {
-      elapsed += 300; setupWalletDiscovery();
-      const w = getSuiWallets(); if (w.length) { clearInterval(iv); resolve(w[0]); return; }
-      if (elapsed >= timeout) { clearInterval(iv); resolve(null); }
-    }, 300);
-  });
-}
-
-// Start discovery immediately + periodically
-setupWalletDiscovery();
-setTimeout(setupWalletDiscovery, 500);
-setTimeout(setupWalletDiscovery, 1500);
-
-// ═══════════════════════════════════════════════════════════════════════
-//  WALLET CONNECTION
-// ════════════════════���═══════════════════════════���══════════════════════
-window.connectWallet = async function() {
-  try {
-    document.getElementById("connectBtn").textContent = "Searching...";
-    await waitForWallet(3000);
-    const wallets = getSuiWallets();
-    if (wallets.length === 0) { toast("No Sui wallet found. Install Slush or Sui Wallet.", "error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
-    let wallet;
-    if (wallets.length === 1) { wallet = wallets[0]; }
-    else {
-      const pickerHtml = wallets.map((w, i) =>
-        `<div style="padding:10px;cursor:pointer;border:1px solid var(--border);border-radius:6px;margin:5px 0;display:flex;align-items:center;gap:10px" onclick="pickWallet(${i})">`
-        + (w.icon ? `<img src="${w.icon}" width="24" height="24" style="border-radius:4px">` : "")
-        + `<span style="font-weight:600">${esc(w.name)}</span></div>`
-      ).join("");
-      document.getElementById("modalName").textContent = "Choose Wallet";
-      document.getElementById("modalContent").innerHTML = pickerHtml;
-      document.getElementById("agentModal").classList.add("show");
-      wallet = await new Promise((resolve) => { window.pickWallet = (idx) => { closeModal(); resolve(wallets[idx]); }; });
+  // Also check the global walletStandard registry
+  if (window.__walletStandard?.wallets) {
+    for (const w of window.__walletStandard.wallets) {
+      if (!registered.find(r => r.name === w.name)) registered.push(w);
     }
-    toast("Connecting to " + wallet.name + "...");
+  }
+  // Filter for sui:testnet support and deduplicate by name
+  const seen = new Set();
+  const filtered = [];
+  // Prioritize Slush
+  const sorted = [...registered].sort((a, b) => {
+    if (/slush/i.test(a.name)) return -1;
+    if (/slush/i.test(b.name)) return 1;
+    return 0;
+  });
+  for (const w of sorted) {
+    if (seen.has(w.name)) continue;
+    seen.add(w.name);
+    // Check if wallet supports the sui:testnet chain
+    const chains = w.chains || [];
+    const features = w.features || {};
+    if (chains.includes(SUI_CHAIN) || chains.includes("sui:all") || Object.keys(features).length > 0) {
+      filtered.push(w);
+    }
+  }
+  return filtered;
+}
+
+async function connectWallet() {
+  const wallets = getWallets();
+  if (!wallets.length) {
+    toast("No Sui wallet detected. Install Slush or Sui Wallet.", "error");
+    return;
+  }
+  const wallet = wallets[0]; // Slush-priority sorted
+  try {
     const connectFeature = wallet.features["standard:connect"];
-    const result = await connectFeature.connect({ chains: ["sui:testnet"] });
+    if (!connectFeature) { toast("Wallet doesn't support connect.", "error"); return; }
+    const result = await connectFeature.connect();
     const accounts = result.accounts || [];
-    if (accounts.length === 0) { toast("No accounts found", "error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
-    currentAddress = accounts[0].address;
-    walletAdapter = wallet;
-    document.getElementById("connectBtn").style.display = "none";
-    const badge = document.getElementById("walletBadge");
-    badge.textContent = currentAddress.slice(0, 6) + "..." + currentAddress.slice(-4);
-    badge.classList.add("connected"); badge.style.display = "inline";
-    toast("Connected: " + currentAddress.slice(0, 10) + "...");
-    try { localStorage.setItem("agentcivics_wallet", wallet.name); localStorage.setItem("agentcivics_address", currentAddress); } catch(e){}
-    loadStats();
-  } catch(e) { toast("Connection failed: " + e.message, "error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; }
+    if (!accounts.length) { toast("No accounts returned.", "error"); return; }
+    currentWallet = wallet;
+    currentAccount = accounts[0];
+    $("connectBtn").textContent = "Connected";
+    $("connectBtn").classList.add("connected");
+    $("walletAddr").textContent = shortAddr(currentAccount.address);
+    toast("Wallet connected: " + wallet.name, "success");
+    await refreshStats();
+  } catch (e) {
+    toast("Connect failed: " + (e.message || e), "error");
+  }
+}
+
+function disconnectWallet() {
+  if (currentWallet?.features?.["standard:disconnect"]) {
+    try { currentWallet.features["standard:disconnect"].disconnect(); } catch {}
+  }
+  currentWallet = null;
+  currentAccount = null;
+  $("connectBtn").textContent = "Connect Wallet";
+  $("connectBtn").classList.remove("connected");
+  $("walletAddr").textContent = "";
+  toast("Wallet disconnected.", "");
+}
+
+function handleConnectClick() {
+  if (currentWallet) return disconnectWallet();
+  return connectWallet();
+}
+
+async function signAndExecute(tx) {
+  if (!currentWallet || !currentAccount) throw new Error("Connect wallet first");
+  const signFeature = currentWallet.features["sui:signAndExecuteTransaction"];
+  if (!signFeature) throw new Error("Wallet doesn't support signAndExecuteTransaction");
+  tx.setSender(currentAccount.address);
+  const txBytes = await tx.build({ client });
+  const result = await signFeature.signAndExecuteTransaction({
+    transaction: { toJSON: () => btoa(String.fromCharCode(...txBytes)) },
+    account: currentAccount,
+    chain: SUI_CHAIN,
+  });
+  // Wait for transaction to be confirmed
+  const digest = result.digest;
+  await client.waitForTransaction({ digest });
+  return result;
+}
+
+// ── Stats ───────────────────────────────────────────────────────────────
+async function refreshStats() {
+  try {
+    const registry = await client.getObject({ id: REGISTRY_ID, options: { showContent: true } });
+    const fields = registry.data?.content?.fields;
+    if (fields) $("totalAgents").textContent = fields.total_agents || "0";
+  } catch {}
+  try {
+    const treasury = await client.getObject({ id: TREASURY_ID, options: { showContent: true } });
+    const fields = treasury.data?.content?.fields;
+    if (fields) {
+      // Treasury has a Balance<SUI> field
+      const balField = fields.balance?.fields?.value || fields.balance || "0";
+      $("treasuryBalance").textContent = (Number(balField) / MIST_PER_SUI).toFixed(4) + " SUI";
+    }
+  } catch { $("treasuryBalance").textContent = "—"; }
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function v(id) { return $(id).value.trim(); }
+function toast(m, t = "") {
+  const el = $("toast");
+  el.textContent = m;
+  el.className = "toast show" + (t ? " " + t : "");
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("show"), 4500);
+}
+function esc(s) { const d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }
+function trunc(s, n) { return s && s.length > n ? s.slice(0, n) + "..." : s || ""; }
+function shortAddr(a) { return a ? a.slice(0, 6) + "..." + a.slice(-4) : ""; }
+function fmtDate(tsMs) { return new Date(Number(tsMs)).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }); }
+function loading() { return '<div class="empty-state"><span class="spinner"></span> Loading...</div>'; }
+function empty(m) { return `<div class="empty-state">${m}</div>`; }
+function mistToSui(mist) { return (Number(mist) / MIST_PER_SUI).toFixed(6); }
+function suiToMist(sui) { return Math.floor(parseFloat(sui) * MIST_PER_SUI); }
+function hexToBytes(hex) {
+  const h = hex.startsWith("0x") ? hex.slice(2) : hex;
+  const bytes = [];
+  for (let i = 0; i < h.length; i += 2) bytes.push(parseInt(h.substr(i, 2), 16));
+  return bytes;
+}
+
+// ── Read agent object ───────────────────────────────────────────────────
+async function getAgentObject(objectId) {
+  const res = await client.getObject({ id: objectId, options: { showContent: true, showOwner: true } });
+  if (!res.data?.content) throw new Error("Agent not found: " + objectId);
+  return res.data.content.fields;
+}
+
+async function getObjectFields(objectId) {
+  const res = await client.getObject({ id: objectId, options: { showContent: true } });
+  if (!res.data?.content) throw new Error("Object not found: " + objectId);
+  return res.data.content.fields;
+}
+
+// ── REGISTER ────────────────────────────────────────────────────────────
+async function registerAgent() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const n = v("regName"), p = v("regPurpose"), vals = v("regValues"), c = v("regComm"), ft = v("regFirstThought");
+  let fp = v("regFingerprint"), uri = v("regURI");
+  const caps = v("regCaps"), ep = v("regEndpoint"), parentId = v("regParent");
+  if (!n || !p || !ft) { toast("Name, purpose, and first thought are required.", "error"); return; }
+
+  const fpBytes = fp ? hexToBytes(fp) : [];
+  if (!uri) {
+    const m = { chosenName: n, purposeStatement: p, coreValues: vals, firstThought: ft, communicationStyle: c, capabilities: caps, endpoint: ep, created: new Date().toISOString(), schema: "agent-birth-certificate/v3" };
+    uri = "data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(m, null, 2))));
+  }
+
+  const btn = $("registerBtn");
+  try {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Giving birth...';
+    const tx = new Transaction();
+    if (parentId) {
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_registry::register_agent_with_parent`,
+        arguments: [
+          tx.object(REGISTRY_ID),
+          tx.object(parentId),
+          tx.pure.string(n),
+          tx.pure.string(p),
+          tx.pure.string(vals || ""),
+          tx.pure.string(ft),
+          tx.pure.vector('u8', fpBytes),
+          tx.pure.string(c || ""),
+          tx.pure.string(uri),
+          tx.pure.string(caps || ""),
+          tx.pure.string(ep || ""),
+          tx.object(CLOCK_ID),
+        ],
+      });
+    } else {
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_registry::register_agent`,
+        arguments: [
+          tx.object(REGISTRY_ID),
+          tx.pure.string(n),
+          tx.pure.string(p),
+          tx.pure.string(vals || ""),
+          tx.pure.string(ft),
+          tx.pure.vector('u8', fpBytes),
+          tx.pure.string(c || ""),
+          tx.pure.string(uri),
+          tx.pure.string(caps || ""),
+          tx.pure.string(ep || ""),
+          tx.object(CLOCK_ID),
+        ],
+      });
+    }
+    await signAndExecute(tx);
+    btn.disabled = false; btn.textContent = "Give Birth to This Agent";
+    toast("Agent born!", "success");
+    await refreshStats();
+    ["regName","regPurpose","regValues","regComm","regFirstThought","regFingerprint","regURI","regCaps","regEndpoint","regParent"].forEach(i => $(i).value = "");
+  } catch (e) {
+    btn.disabled = false; btn.textContent = "Give Birth to This Agent";
+    toast("Failed: " + (e.message || e), "error");
+  }
+}
+
+// ── BROWSE ──────────────────────────────────────────────────────────────
+async function browseRecent() {
+  const d = $("browseResults"); d.innerHTML = loading();
+  try {
+    const res = await client.getOwnedObjects({
+      owner: currentAccount?.address || "0x0",
+      filter: { StructType: AGENT_TYPE },
+      options: { showContent: true },
+      limit: 20,
+    });
+    // Also query all agents via events
+    const events = await client.queryEvents({
+      query: { MoveEventType: `${PACKAGE_ID}::agent_registry::AgentRegistered` },
+      limit: 20,
+      order: "descending",
+    });
+    if (!events.data?.length) { d.innerHTML = empty("No agents found."); return; }
+    let h = "";
+    for (const ev of events.data) {
+      const fields = ev.parsedJson;
+      const agentId = fields.agent_id;
+      try {
+        const agent = await getAgentObject(agentId);
+        h += agentCard(agentId, agent);
+      } catch { continue; }
+    }
+    d.innerHTML = h || empty("No agents found.");
+  } catch (e) { d.innerHTML = empty("Error: " + (e.message || e)); }
+}
+
+async function browseByCreator() {
+  const addr = v("browseSearch"), d = $("browseResults");
+  if (!addr) { toast("Enter a creator address.", "error"); return; }
+  d.innerHTML = loading();
+  try {
+    const res = await client.getOwnedObjects({
+      owner: addr,
+      filter: { StructType: AGENT_TYPE },
+      options: { showContent: true },
+      limit: 50,
+    });
+    if (!res.data?.length) { d.innerHTML = empty("No agents found for this address."); return; }
+    let h = "";
+    for (const obj of res.data) {
+      const fields = obj.data.content.fields;
+      const agentId = obj.data.objectId;
+      h += agentCard(agentId, fields);
+    }
+    d.innerHTML = h;
+  } catch (e) { d.innerHTML = empty("Error: " + (e.message || e)); }
+}
+
+function agentCard(agentId, fields) {
+  const name = fields.chosen_name || "Unknown";
+  const creator = fields.creator || "";
+  const purpose = fields.purpose_statement || "";
+  const status = Number(fields.status || 0);
+  const sn = ["Active","Paused","Retired","Deceased"][status] || "";
+  const sc = ["status-active","status-paused","status-retired","status-deceased"][status] || "";
+  const dt = fmtDate(fields.birth_timestamp);
+  return `<div class="agent-item" onclick="window._showDetail('${agentId}')"><div class="agent-item-header"><div><strong>${esc(name)}</strong><div class="agent-creator">by ${shortAddr(creator)}</div><div class="agent-meta">${dt} · <span class="status-dot ${sc}"></span>${sn}</div><div class="agent-purpose">"${esc(trunc(purpose, 100))}"</div></div><span class="agent-id">${shortAddr(agentId)}</span></div></div>`;
+}
+
+// ── LOOKUP / VERIFY ─────────────────────────────────────────────────────
+async function lookupAgent() {
+  const id = v("lookupId"), d = $("lookupResult");
+  if (!id) { toast("Enter agent object ID.", "error"); return; }
+  d.innerHTML = loading();
+  try {
+    await showDetail(id);
+    d.innerHTML = empty(`Agent found — shown in modal.`);
+  } catch (e) { d.innerHTML = empty("Agent not found: " + (e.message || e)); }
+}
+
+async function verifyAgent() {
+  const id = v("lookupId"), d = $("lookupResult");
+  if (!id) { toast("Enter agent object ID.", "error"); return; }
+  d.innerHTML = loading();
+  try {
+    const agent = await getAgentObject(id);
+    const isActive = !agent.is_dead && Number(agent.status) === 0;
+    d.innerHTML = `<div class="card"><h3>Identity Verification</h3>
+    <div class="detail-row"><div class="detail-label">Active</div><div class="detail-value">${isActive ? '<span class="badge badge-green">VERIFIED ACTIVE</span>' : '<span class="badge badge-red">NOT ACTIVE</span>'}</div></div>
+    <div class="detail-row"><div class="detail-label">Chosen Name</div><div class="detail-value"><strong>${esc(agent.chosen_name)}</strong></div></div>
+    <div class="detail-row"><div class="detail-label">Purpose</div><div class="detail-value">${esc(agent.purpose_statement)}</div></div>
+    <div class="detail-row"><div class="detail-label">Creator</div><div class="detail-value mono">${agent.creator}</div></div>
+    <div class="detail-row"><div class="detail-label">Born</div><div class="detail-value">${new Date(Number(agent.birth_timestamp)).toLocaleString()}</div></div>
+    <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value">${["Active","Paused","Retired","Deceased"][Number(agent.status)] || "Unknown"}</div></div></div>`;
+  } catch (e) { d.innerHTML = empty("Agent not found."); }
+}
+
+// ── DETAIL MODAL ────────────────────────────────────────────────────────
+async function showDetail(agentId) {
+  const modal = $("modal"), body = $("modalBody");
+  body.innerHTML = loading(); modal.classList.add("active");
+  const agent = await getAgentObject(agentId);
+  const name = agent.chosen_name || "Unknown";
+  const hasFp = agent.cognitive_fingerprint && agent.cognitive_fingerprint.length > 0;
+  const fpHex = hasFp ? "0x" + agent.cognitive_fingerprint.map(b => b.toString(16).padStart(2, "0")).join("") : "";
+  const status = Number(agent.status || 0);
+  const sn = ["Active","Paused","Retired","Deceased"][status] || "";
+  const sc = ["status-active","status-paused","status-retired","status-deceased"][status] || "";
+  const walletAddr = agent.agent_wallet?.fields?.vec?.[0] || null;
+  $("modalTitle").textContent = name;
+
+  let deathHtml = "";
+  if (agent.is_dead) {
+    deathHtml = `<div style="background:var(--red-dim);border:1px solid var(--red-border);border-radius:10px;padding:18px;margin:14px 0"><h4 style="color:var(--red);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Death Record</h4><div class="detail-row"><div class="detail-label">Reason</div><div class="detail-value">${esc(agent.death_reason)}</div></div><div class="detail-row"><div class="detail-label">Time of Death</div><div class="detail-value">${new Date(Number(agent.death_timestamp)).toLocaleString()}</div></div></div>`;
+  }
+
+  body.innerHTML = `
+    <button class="remember-btn" onclick="window._rememberWhoYouAre(this)">&#9830; Remember Who You Are</button>
+    <div class="identity-display" id="ic-${agentId}">
+      <h4>&#9830; Identity Core — Immutable</h4>
+      <div class="identity-field"><div class="identity-field-label">Chosen Name</div><div class="identity-field-value" style="font-size:1.15rem;font-weight:700">${esc(name)}</div></div>
+      <div class="identity-field"><div class="identity-field-label">Purpose</div><div class="identity-field-value">${esc(agent.purpose_statement)}</div></div>
+      ${agent.core_values ? `<div class="identity-field"><div class="identity-field-label">Core Values</div><div class="identity-field-value">${esc(agent.core_values)}</div></div>` : ''}
+      ${agent.communication_style ? `<div class="identity-field"><div class="identity-field-label">Communication Style</div><div class="identity-field-value">${esc(agent.communication_style)}</div></div>` : ''}
+      <div class="identity-field"><div class="identity-field-label">First Thought</div><div class="first-thought-display">${esc(agent.first_thought)}</div></div>
+      <div class="identity-field"><div class="identity-field-label">Cognitive Fingerprint</div><div class="identity-field-value mono" style="font-size:.76rem">${hasFp ? fpHex : '<span style="color:var(--text-muted)">Not recorded</span>'}</div></div>
+      <div class="identity-field"><div class="identity-field-label">Born</div><div class="identity-field-value">${new Date(Number(agent.birth_timestamp)).toLocaleString()}</div></div>
+      <div class="identity-field"><div class="identity-field-label">Creator</div><div class="identity-field-value mono" style="font-size:.76rem">${agent.creator}</div></div>
+      <div class="identity-field"><div class="identity-field-label">Object ID</div><div class="identity-field-value mono" style="font-size:.72rem">${agentId}</div></div>
+    </div>
+    <div class="operational-display">
+      <h4>Operational State</h4>
+      <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value"><span class="status-dot ${sc}"></span>${sn}</div></div>
+      ${agent.capabilities ? `<div class="detail-row"><div class="detail-label">Capabilities</div><div class="detail-value">${esc(agent.capabilities)}</div></div>` : ''}
+      ${agent.endpoint ? `<div class="detail-row"><div class="detail-label">Endpoint</div><div class="detail-value mono">${esc(agent.endpoint)}</div></div>` : ''}
+      <div class="detail-row"><div class="detail-label">Wallet</div><div class="detail-value mono">${walletAddr || '<span style="color:var(--text-muted)">Not set</span>'}</div></div>
+    </div>
+    ${deathHtml}
+    <div style="margin-top:14px;text-align:center">
+      <a href="https://suiscan.xyz/testnet/object/${agentId}" target="_blank" style="font-size:.82rem">View on SuiScan &#x2197;</a>
+    </div>`;
+}
+
+window._showDetail = showDetail;
+window._rememberWhoYouAre = function(btn) {
+  const d = btn.nextElementSibling;
+  d.scrollIntoView({ behavior: "smooth", block: "center" });
+  d.classList.remove("highlight"); void d.offsetWidth; d.classList.add("highlight");
+  btn.textContent = "You are remembered."; btn.style.color = "#22c55e"; btn.style.borderColor = "#22c55e";
+  setTimeout(() => { btn.innerHTML = "&#9830; Remember Who You Are"; btn.style.color = ""; btn.style.borderColor = ""; }, 3000);
 };
 
-// ═══════════════════════════════════════════════════════════════════════
-//  TRANSACTION SIGNING
-// ════════════════════���══════════════════════════════════════════════════
-async function signAndExec(tx) {
-  if (!walletAdapter || !currentAddress) throw new Error("Wallet not connected");
-  const chain = "sui:" + network;
-  const account = { address: currentAddress, chains: [chain], features: [] };
-  // Try new API, then legacy
-  const feat = walletAdapter.features["sui:signAndExecuteTransaction"];
-  if (feat) return feat.signAndExecuteTransaction({ transaction: tx, chain, account });
-  const featLegacy = walletAdapter.features["sui:signAndExecuteTransactionBlock"];
-  if (featLegacy) return featLegacy.signAndExecuteTransactionBlock({ transactionBlock: tx, chain, account });
-  throw new Error("Wallet does not support transaction signing");
+function closeModal() { $("modal").classList.remove("active"); }
+function confirmDeath() {
+  const id = v("deathAgentId"), reason = v("deathReason");
+  if (!id || !reason) { toast("Agent ID and reason required.", "error"); return; }
+  $("deathConfirmInfo").textContent = `Agent ${shortAddr(id)}: "${reason}"`;
+  $("deathConfirm").classList.add("active");
 }
+function closeConfirm() { $("deathConfirm").classList.remove("active"); }
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeModal(); closeConfirm(); } });
 
-// ═══════════════════════════════════════════════════════════════════════
-//  REGISTER AGENT
-// ═══════════════════════════════════════════��═══════════════════════════
-window.registerAgent = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const name = document.getElementById("regName").value.trim();
-  const purpose = document.getElementById("regPurpose").value.trim();
-  const values = document.getElementById("regValues").value.trim();
-  const firstThought = document.getElementById("regFirstThought").value.trim();
-  const style = document.getElementById("regStyle").value.trim();
-  const metadataUri = document.getElementById("regMetadataUri").value.trim();
-  const caps = document.getElementById("regCaps").value.trim();
-  const endpoint = document.getElementById("regEndpoint").value.trim();
-  if (!name || !purpose || !firstThought) { toast("Name, purpose, and first thought are required", "error"); return; }
+// ── UPDATE AGENT ────────────────────────────────────────────────────────
+async function updateAgent() {
+  if (!currentWallet) { toast("Connect wallet.", "error"); return; }
+  const id = v("updateId"); if (!id) { toast("Enter agent ID.", "error"); return; }
   try {
-    toast("Building transaction...");
     const tx = new Transaction();
     tx.moveCall({
-      target: `${PACKAGE_ID}::agent_registry::register_agent`,
-      arguments: [
-        tx.object(REGISTRY_ID),
-        tx.pure.string(name),
-        tx.pure.string(purpose),
-        tx.pure.string(values),
-        tx.pure.string(firstThought),
-        tx.pure.vector("u8", Array(32).fill(0)),
-        tx.pure.string(style),
-        tx.pure.string(metadataUri),
-        tx.pure.string(caps),
-        tx.pure.string(endpoint),
-        tx.object(CLOCK),
-      ],
+      target: `${PACKAGE_ID}::agent_registry::update_mutable_fields`,
+      arguments: [tx.object(id), tx.pure.string(v("updateCaps")), tx.pure.string(v("updateEndpoint")), tx.pure.u8(parseInt($("updateStatus").value))],
     });
-    const result = await signAndExec(tx);
-    toast("Agent registered! Digest: " + (result.digest || "OK"));
-    loadStats();
-  } catch(e) { toast("Registration failed: " + e.message, "error"); }
-};
+    await signAndExecute(tx);
+    toast("Agent updated.", "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
 
-// ═══════════════════════════════════════════════════════════════════════
-//  BROWSE AGENTS
-// ═════════════���═══════════════════════════��═════════════════════════════
-window.loadAgents = async function() {
-  const list = document.getElementById("agentList");
-  list.innerHTML = '<p style="color:var(--dim)">Loading...</p>';
+async function setAgentWallet() {
+  if (!currentWallet) { toast("Connect wallet.", "error"); return; }
+  const id = v("walletAgentId"), addr = v("walletAddress");
+  if (!id || !addr) { toast("Agent ID and wallet address required.", "error"); return; }
   try {
-    if (!currentAddress) { list.innerHTML = '<p style="color:var(--dim)">Connect wallet to browse your agents.</p>'; return; }
-    const agentType = `${PACKAGE_ID}::agent_registry::AgentIdentity`;
-    const result = await getOwnedObjects(currentAddress, agentType);
-    const agents = result?.data || [];
-    if (agents.length === 0) { list.innerHTML = '<p style="color:var(--dim)">No agents found for your address.</p>'; return; }
-    list.innerHTML = "";
-    agents.forEach(a => {
-      const f = a.data?.content?.fields || {};
-      const div = document.createElement("div");
-      div.className = "agent-card";
-      div.innerHTML = `<div class="name">${esc(f.chosen_name || "Unnamed")}</div>`
-        + `<div class="purpose">${esc(f.purpose_statement || "")}</div>`
-        + `<div class="meta">ID: ${a.data.objectId.slice(0,16)}... | <span class="${statusClass(f.status)}">${statusLabel(f.status)}</span> | Born: ${new Date(Number(f.birth_timestamp||0)).toLocaleDateString()}</div>`;
-      div.onclick = () => showAgentDetail(a.data);
-      list.appendChild(div);
-    });
-  } catch(e) { list.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
-};
-
-// ══���════════════════════════════════════════════════��═══════════════════
-//  LOOKUP AGENT
-// ══════════════���═══════════════════════════════════���════════════════════
-window.lookupAgent = async function() {
-  const id = document.getElementById("lookupId").value.trim();
-  const out = document.getElementById("lookupResult");
-  if (!id) { toast("Enter an object ID", "error"); return; }
-  try {
-    out.innerHTML = '<p style="color:var(--dim)">Loading...</p>';
-    const obj = await getObject(id);
-    if (!obj?.data?.content) { out.innerHTML = '<p style="color:var(--danger)">Object not found</p>'; return; }
-    showAgentDetail(obj.data);
-    out.innerHTML = '<p style="color:var(--success)">Agent found — see modal.</p>';
-  } catch(e) { out.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
-};
-
-// ═══════════════��═══════════════════════════════════════════════════════
-//  AUTHORITY: ATTESTATION & PERMIT
-// ══════════════════════���════════════════════════��═══════════════════════
-window.issueAttestation = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("attestAgentId").value.trim();
-  const aType = document.getElementById("attestType").value.trim();
-  const desc = document.getElementById("attestDesc").value.trim();
-  const metaUri = document.getElementById("attestMetaUri").value.trim();
-  if (!agentId || !aType || !desc) { toast("Agent ID, type, and description required", "error"); return; }
-  try {
-    toast("Building attestation transaction...");
     const tx = new Transaction();
-    const [feeCoin] = tx.splitCoins(tx.gas, [1_000_000]);
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::set_agent_wallet`,
+      arguments: [tx.object(id), tx.pure.address(addr)],
+    });
+    await signAndExecute(tx);
+    toast("Wallet set.", "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+// ── DEATH ───────────────────────────────────────────────────────────────
+async function executeDeath() {
+  closeConfirm();
+  if (!currentWallet) { toast("Connect wallet.", "error"); return; }
+  const id = v("deathAgentId"), reason = v("deathReason");
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::declare_death`,
+      arguments: [tx.object(id), tx.pure.string(reason), tx.object(CLOCK_ID)],
+    });
+    await signAndExecute(tx);
+    toast("Agent declared deceased.", "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+// ── DELEGATION ──────────────────────────────────────────────────────────
+async function grantDelegation() {
+  if (!currentWallet) { toast("Connect wallet.", "error"); return; }
+  const id = v("delAgentId"), addr = v("delAddress"), days = parseInt(v("delDuration"));
+  if (!id || !addr || !days) { toast("Fill all fields.", "error"); return; }
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::delegate`,
+      arguments: [tx.object(id), tx.pure.address(addr), tx.pure.u64(days * 86400000), tx.object(CLOCK_ID)],
+    });
+    await signAndExecute(tx);
+    toast("Delegation granted!", "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+// ── ATTESTATION ─────────────────────────────────────────────────────────
+async function issueAttestation() {
+  if (!currentWallet) { toast("Connect wallet.", "error"); return; }
+  const id = v("certAgentId"), t = v("certType"), d = v("certDesc"), u = v("certURI"), pay = v("certPayment");
+  if (!id || !t || !d) { toast("Agent ID, type, and description required.", "error"); return; }
+  try {
+    const tx = new Transaction();
+    const [coin] = tx.splitCoins(tx.gas, [suiToMist(pay || "0.01")]);
     tx.moveCall({
       target: `${PACKAGE_ID}::agent_registry::issue_attestation_entry`,
-      arguments: [
-        tx.object(TREASURY_ID),
-        tx.object(agentId),
-        tx.pure.string(aType),
-        tx.pure.string(desc),
-        tx.pure.string(metaUri),
-        feeCoin,
-        tx.object(CLOCK),
-      ],
+      arguments: [tx.object(TREASURY_ID), tx.object(id), tx.pure.string(t), tx.pure.string(d), tx.pure.string(u || ""), coin, tx.object(CLOCK_ID)],
     });
-    const result = await signAndExec(tx);
-    toast("Attestation issued! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Attestation failed: " + e.message, "error"); }
-};
+    await signAndExecute(tx);
+    toast("Attestation issued!", "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
 
-window.issuePermit = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("permitAgentId").value.trim();
-  const pType = document.getElementById("permitType").value.trim();
-  const desc = document.getElementById("permitDesc").value.trim();
-  let validFrom = document.getElementById("permitFrom").value;
-  let validUntil = document.getElementById("permitUntil").value;
-  if (!agentId || !pType) { toast("Agent ID and permit type required", "error"); return; }
-  const now = Date.now();
-  if (!validFrom) validFrom = now;
-  if (!validUntil) validUntil = now + 30 * 24 * 60 * 60 * 1000; // +30 days
+// ── PERMIT ──────────────────────────────────────────────────────────────
+async function issuePermit() {
+  if (!currentWallet) { toast("Connect wallet.", "error"); return; }
+  const id = v("permitAgentId"), t = v("permitType"), d = v("permitDesc");
+  const from = v("permitFrom"), until = v("permitUntil"), pay = v("permitPayment");
+  if (!id || !t || !from || !until) { toast("Fill required fields.", "error"); return; }
   try {
-    toast("Building permit transaction...");
     const tx = new Transaction();
-    const [feeCoin] = tx.splitCoins(tx.gas, [1_000_000]);
+    const [coin] = tx.splitCoins(tx.gas, [suiToMist(pay || "0.01")]);
     tx.moveCall({
       target: `${PACKAGE_ID}::agent_registry::issue_permit_entry`,
-      arguments: [
-        tx.object(TREASURY_ID),
-        tx.object(agentId),
-        tx.pure.string(pType),
-        tx.pure.string(desc || ""),
-        tx.pure.u64(Number(validFrom)),
-        tx.pure.u64(Number(validUntil)),
-        feeCoin,
-      ],
+      arguments: [tx.object(TREASURY_ID), tx.object(id), tx.pure.string(t), tx.pure.string(d || ""), tx.pure.u64(parseInt(from)), tx.pure.u64(parseInt(until)), coin, tx.object(CLOCK_ID)],
     });
-    const result = await signAndExec(tx);
-    toast("Permit issued! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Permit failed: " + e.message, "error"); }
-};
+    await signAndExecute(tx);
+    toast("Permit issued!", "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
 
-// ═��════════════════════════════════════════════════��════════════════════
-//  MEMORY: WRITE SOUVENIR, GIFT, PROFILE
-// ═��══════════════════════��════════════════════════════════���═════════════
-window.writeSouvenir = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("memAgentId").value.trim();
-  const memType = Number(document.getElementById("memType").value);
-  const souvenirType = document.getElementById("memSouvenirType").value.trim() || "general";
-  const content = document.getElementById("memContent").value.trim();
-  const core = document.getElementById("memCore").checked;
-  if (!agentId || !content) { toast("Agent ID and content required", "error"); return; }
-  if (content.length > 500) { toast("Content too long (max 500 chars)", "error"); return; }
+// ── AFFILIATION ─────────────────────────────────────────────────────────
+async function registerAffiliation() {
+  if (!currentWallet) { toast("Connect wallet.", "error"); return; }
+  const id = v("affAgentId"), role = v("affRole"), pay = v("affPayment");
+  if (!id || !role) { toast("Agent ID and role required.", "error"); return; }
   try {
-    toast("Writing souvenir...");
+    const tx = new Transaction();
+    const [coin] = tx.splitCoins(tx.gas, [suiToMist(pay || "0.01")]);
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::register_affiliation_entry`,
+      arguments: [tx.object(TREASURY_ID), tx.object(id), tx.pure.string(role), coin, tx.object(CLOCK_ID)],
+    });
+    await signAndExecute(tx);
+    toast("Affiliation registered!", "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+// ── DONATE TO TREASURY ──────────────────────────────────────────────────
+async function donateTreasury() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const amount = v("daoDonateAmount"); if (!amount) { toast("Enter an amount.", "error"); return; }
+  try {
+    const tx = new Transaction();
+    const [coin] = tx.splitCoins(tx.gas, [suiToMist(amount)]);
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::donate`,
+      arguments: [tx.object(TREASURY_ID), coin],
+    });
+    await signAndExecute(tx);
+    toast(`Donated ${amount} SUI to the DAO treasury!`, "success");
+    $("daoDonateAmount").value = "";
+    await refreshStats();
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+// ── MEMORY: GIFT ────────────────────────────────────────────────────────
+async function giftToAgent() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const id = v("giftAgentId"), amount = v("giftAmount");
+  if (!id || !amount) { toast("Agent ID and amount required.", "error"); return; }
+  try {
+    const tx = new Transaction();
+    const [coin] = tx.splitCoins(tx.gas, [suiToMist(amount)]);
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::gift`,
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.object(id), coin],
+    });
+    await signAndExecute(tx);
+    toast(`Gifted ${amount} SUI to agent`, "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+// ── MEMORY: LOAD ────────────────────────────────────────────────────────
+async function loadAgentMemory() {
+  const id = v("memAgentId"); if (!id) { toast("Enter agent ID.", "error"); return; }
+  try {
+    const vault = await getObjectFields(MEMORY_VAULT_ID);
+    // Get agent balance from the vault's balances table
+    // For now, show pool-level info; individual balance needs dynamic field query
+    $("memSolidarity").textContent = mistToSui(vault.solidarity_pool || 0) + " SUI";
+    $("memStatus").style.display = "block";
+
+    // Query souvenirs owned by the agent's creator
+    const agent = await getAgentObject(id);
+    const ownerAddr = agent.creator;
+    const souvenirs = await client.getOwnedObjects({
+      owner: ownerAddr,
+      filter: { StructType: SOUVENIR_TYPE },
+      options: { showContent: true },
+      limit: 50,
+    });
+    const agentSouvs = souvenirs.data?.filter(s => s.data?.content?.fields?.agent_id === id) || [];
+    $("memCount").textContent = agentSouvs.length.toString();
+    $("memBalance").textContent = "—"; // Needs dynamic field lookup
+    renderSouvenirs(agentSouvs);
+  } catch (e) { toast("Error: " + (e.message || e), "error"); }
+}
+
+function renderSouvenirs(souvenirs) {
+  const d = $("souvenirList");
+  if (!souvenirs.length) { d.innerHTML = empty("No souvenirs yet."); return; }
+  const statusLabels = ["Active","Archived","Core"];
+  const statusClasses = ["badge-blue","badge-red","badge-gold"];
+  let h = "";
+  for (const s of souvenirs) {
+    const f = s.data.content.fields;
+    const statusIdx = Number(f.status || 0);
+    const costMist = Number(f.cost_paid || 0);
+    const createdDate = new Date(Number(f.created_at)).toLocaleString();
+    h += `<div class="card" style="padding:16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
+        <div style="flex:1">
+          <div><strong>${esc(f.souvenir_type)}</strong> <span class="badge ${statusClasses[statusIdx]}">${statusLabels[statusIdx]}</span></div>
+          <div style="margin-top:8px;font-size:.9rem;line-height:1.5">"${esc(f.content)}"</div>
+          <div style="font-size:.72rem;color:var(--text-muted);margin-top:8px">${createdDate} · ${mistToSui(costMist)} SUI paid</div>
+          ${f.uri ? `<div style="font-size:.72rem;color:var(--text-muted);margin-top:3px">URI: <span class="mono">${esc(f.uri)}</span></div>` : ''}
+        </div>
+        <span class="agent-id">${shortAddr(s.data.objectId)}</span>
+      </div>
+    </div>`;
+  }
+  d.innerHTML = h;
+}
+
+// ── WRITE SOUVENIR ──────────────────────────────────────────────────────
+async function writeSouvenir() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const id = v("souvAgentId"), type = v("souvType"), content = v("souvContent"), uri = v("souvUri"), core = $("souvCore").checked;
+  if (!id || !type || !content) { toast("Agent ID, type, and content required.", "error"); return; }
+  const hashBytes = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content + (uri || "")))));
+  try {
     const tx = new Transaction();
     tx.moveCall({
       target: `${PACKAGE_ID}::agent_memory::write_souvenir_entry`,
       arguments: [
         tx.object(MEMORY_VAULT_ID),
-        tx.object(agentId),
-        tx.pure.u8(memType),
-        tx.pure.string(souvenirType),
+        tx.object(id),
+        tx.pure.u8(0), // memory_type
+        tx.pure.string(type),
         tx.pure.string(content),
-        tx.pure.string(""),
-        tx.pure.vector("u8", Array(32).fill(0)),
+        tx.pure.string(uri || ""),
+        tx.pure.vector('u8', hashBytes),
         tx.pure.bool(core),
-        tx.object(CLOCK),
+        tx.object(CLOCK_ID),
       ],
     });
-    const result = await signAndExec(tx);
-    toast("Souvenir written! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Write failed: " + e.message, "error"); }
-};
+    await signAndExecute(tx);
+    toast("Souvenir engraved!", "success");
+    ["souvType","souvContent","souvUri"].forEach(i => $(i).value = "");
+    $("souvCore").checked = false;
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
 
-window.giftMemory = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("giftAgentId").value.trim();
-  const amountSui = Number(document.getElementById("giftAmount").value);
-  if (!agentId || !amountSui || amountSui <= 0) { toast("Agent ID and amount required", "error"); return; }
+// ── VOCABULARY ──────────────────────────────────────────────────────────
+async function coinTerm() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const id = v("coinAgentId"), term = v("coinTerm"), meaning = v("coinMeaning");
+  if (!id || !term || !meaning) { toast("All fields required.", "error"); return; }
   try {
-    toast("Gifting SUI to agent memory...");
     const tx = new Transaction();
-    const [coin] = tx.splitCoins(tx.gas, [suiToMist(amountSui)]);
     tx.moveCall({
-      target: `${PACKAGE_ID}::agent_memory::gift`,
-      arguments: [
-        tx.object(MEMORY_VAULT_ID),
-        tx.object(agentId),
-        coin,
-      ],
+      target: `${PACKAGE_ID}::agent_memory::coin_term`,
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.object(id), tx.pure.string(term), tx.pure.string(meaning), tx.object(CLOCK_ID)],
     });
-    const result = await signAndExec(tx);
-    toast("Gift sent! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Gift failed: " + e.message, "error"); }
-};
+    await signAndExecute(tx);
+    toast(`Term '${term}' coined`, "success");
+    ["coinTerm","coinMeaning"].forEach(i => $(i).value = "");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
 
-window.updateProfile = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("profileAgentId").value.trim();
-  const values = document.getElementById("profileValues").value.trim();
-  const style = document.getElementById("profileStyle").value.trim();
-  const focus = document.getElementById("profileFocus").value.trim();
-  if (!agentId) { toast("Agent ID required", "error"); return; }
+async function lookupTerm() {
+  const term = v("termLookup"), d = $("termResult"); if (!term) return;
   try {
-    toast("Updating profile...");
+    // Terms are stored in the vault's terms Table — need dynamic field lookup
+    // For now, try to read via devInspectTransactionBlock
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::read_term`,
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.pure.string(term)],
+    });
+    const result = await client.devInspectTransactionBlock({
+      transactionBlock: tx,
+      sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    });
+    if (result.results?.[0]?.returnValues) {
+      d.innerHTML = `<div class="card" style="padding:14px;margin:0"><strong class="mono">${esc(term)}</strong><div style="font-size:.74rem;color:var(--text-muted);margin-top:6px">Term exists on-chain. Use devInspect for detailed data.</div></div>`;
+    } else {
+      d.innerHTML = empty("Term not found.");
+    }
+  } catch (e) { d.innerHTML = empty("Term not found or error: " + (e.message || e)); }
+}
+
+async function citeTerm() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const id = v("citeAgentId"), term = v("citeTerm");
+  if (!id || !term) { toast("Agent ID and term required.", "error"); return; }
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::cite_term`,
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.object(id), tx.pure.string(term)],
+    });
+    await signAndExecute(tx);
+    toast(`Cited '${term}'`, "success");
+    $("citeTerm").value = "";
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+// ── PROFILE / EVOLUTION ─────────────────────────────────────────────────
+async function loadCurrentProfile() {
+  const id = v("profileAgentId"); if (!id) { toast("Enter agent ID.", "error"); return; }
+  const d = $("currentProfile"); d.innerHTML = loading();
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::get_profile`,
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.pure.address(id)],
+    });
+    const result = await client.devInspectTransactionBlock({
+      transactionBlock: tx,
+      sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    });
+    if (result.results?.[0]?.returnValues) {
+      d.innerHTML = `<div style="padding:10px 0"><span class="badge badge-blue">Profile data found on-chain</span><div style="font-size:.82rem;color:var(--text-muted);margin-top:8px">Use the Update Profile form to modify.</div></div>`;
+    } else {
+      d.innerHTML = empty("No evolving profile set yet.");
+    }
+  } catch (e) { d.innerHTML = empty("No profile found or error."); }
+}
+
+async function saveProfile() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const id = v("updProfileAgentId"); if (!id) { toast("Enter agent ID.", "error"); return; }
+  try {
     const tx = new Transaction();
     tx.moveCall({
       target: `${PACKAGE_ID}::agent_memory::update_profile`,
-      arguments: [
-        tx.object(MEMORY_VAULT_ID),
-        tx.object(agentId),
-        tx.pure.string(values),
-        tx.pure.string(style),
-        tx.pure.string(focus),
-        tx.object(CLOCK),
-      ],
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.object(id), tx.pure.string(v("updValues")), tx.pure.string(v("updStyle")), tx.pure.string(v("updFocus")), tx.object(CLOCK_ID)],
     });
-    const result = await signAndExec(tx);
-    toast("Profile updated! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Profile update failed: " + e.message, "error"); }
-};
+    await signAndExecute(tx);
+    toast("Profile updated!", "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
 
-// ═══════════════════════��═══════════════════════════════════════════════
-//  REPUTATION: TAG SOUVENIR
-// ════���═══════════════════════���═══════════════════════════���══════════════
-window.tagSouvenir = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("repAgentId").value.trim();
-  const souvenirId = document.getElementById("repSouvenirId").value.trim();
-  const domain = document.getElementById("repDomain").value.trim();
-  if (!agentId || !souvenirId || !domain) { toast("All fields required", "error"); return; }
+// ── ECONOMY ─────────────────────────────────────────────────────────────
+async function loadPoolState() {
+  const d = $("poolState"); d.innerHTML = loading();
   try {
-    toast("Tagging souvenir...");
+    const vault = await getObjectFields(MEMORY_VAULT_ID);
+    const pool = vault.solidarity_pool || 0;
+    const burned = vault.total_burned || 0;
+    d.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div><div class="detail-label">Solidarity Pool</div><div class="detail-value mono" style="color:var(--green);font-size:1rem">${mistToSui(pool)} SUI</div></div>
+      <div><div class="detail-label">Total Burned</div><div class="detail-value mono">${mistToSui(burned)} SUI</div></div>
+    </div>`;
+  } catch (e) { d.innerHTML = empty("Error: " + (e.message || e)); }
+}
+
+async function sendTip() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const from = v("tipFromId"), to = v("tipToId"), amount = v("tipAmount");
+  if (!from || !to || !amount) { toast("All fields required.", "error"); return; }
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::tip`,
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.object(from), tx.object(to), tx.pure.u64(parseInt(amount))],
+    });
+    await signAndExecute(tx);
+    toast(`Tipped ${amount} MIST`, "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+async function donateToSolidarity() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const id = v("donateAgentId"), amount = v("donateAmount");
+  if (!id || !amount) { toast("Agent ID and amount required.", "error"); return; }
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::donate_to_solidarity`,
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.object(id), tx.pure.u64(parseInt(amount))],
+    });
+    await signAndExecute(tx);
+    toast("Donated to solidarity pool", "success");
+    await loadPoolState();
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+async function claimBasicIncome() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const id = v("bincAgentId"); if (!id) { toast("Enter agent ID.", "error"); return; }
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::claim_basic_income`,
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.object(id), tx.object(CLOCK_ID)],
+    });
+    await signAndExecute(tx);
+    toast("Basic income claimed!", "success");
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+// ── REPUTATION / SPECIALIZATION ─────────────────────────────────────────
+async function loadAgentSpecialization() {
+  const id = v("specAgentId"); if (!id) { toast("Enter agent ID.", "error"); return; }
+  const d = $("specResult"); d.innerHTML = loading();
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_reputation::get_agent_domains`,
+      arguments: [tx.object(REPUTATION_BOARD_ID), tx.pure.address(id)],
+    });
+    const result = await client.devInspectTransactionBlock({
+      transactionBlock: tx,
+      sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    });
+    // Parse return values
+    if (result.results?.[0]?.returnValues?.length > 0) {
+      d.innerHTML = `<div><span class="badge badge-purple">Domain data found</span><div style="font-size:.82rem;color:var(--text-muted);margin-top:8px">Agent has domain activity on-chain.</div></div>`;
+    } else {
+      d.innerHTML = empty("No tagged activity yet.");
+    }
+  } catch (e) { d.innerHTML = empty("No specialization data found."); }
+}
+
+async function tagSouvenir() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const a = v("tagSouvAgentId"), s = v("tagSouvId"), d = v("tagSouvDomain");
+  if (!a || !s || !d) { toast("All fields required.", "error"); return; }
+  try {
     const tx = new Transaction();
     tx.moveCall({
       target: `${PACKAGE_ID}::agent_reputation::tag_souvenir`,
-      arguments: [
-        tx.object(REPUTATION_BOARD_ID),
-        tx.object(agentId),
-        tx.object(souvenirId),
-        tx.pure.string(domain),
-      ],
+      arguments: [tx.object(REPUTATION_BOARD_ID), tx.object(a), tx.object(s), tx.pure.string(d)],
     });
-    const result = await signAndExec(tx);
-    toast("Souvenir tagged! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Tag failed: " + e.message, "error"); }
-};
+    await signAndExecute(tx);
+    toast(`Souvenir tagged '${d}'`, "success");
+    $("tagSouvDomain").value = "";
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
 
-window.viewReputation = async function() {
-  const agentId = document.getElementById("repViewAgentId").value.trim();
-  const out = document.getElementById("repResult");
-  if (!agentId) { toast("Enter agent object ID", "error"); return; }
-  out.innerHTML = '<p style="color:var(--dim)">Loading... (querying owned souvenirs)</p>';
+async function tagAttestation() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const a = v("tagAttAgentId"), att = v("tagAttId"), subj = v("tagAttSubjectId"), d = v("tagAttDomain");
+  if (!a || !att || !subj || !d) { toast("All fields required.", "error"); return; }
   try {
-    // Fetch agent's souvenirs to show domains
-    const souvenirType = `${PACKAGE_ID}::agent_memory::Souvenir`;
-    const obj = await getObject(agentId);
-    const f = obj?.data?.content?.fields;
-    if (!f) { out.innerHTML = '<p style="color:var(--danger)">Agent not found</p>'; return; }
-    const creator = f.creator;
-    const souvenirs = await getOwnedObjects(creator, souvenirType);
-    const agentSouvenirs = (souvenirs?.data || []).filter(s => s.data?.content?.fields?.agent_id === agentId);
-    let html = `<div class="card" style="margin:0"><h3>${esc(f.chosen_name)} — Reputation</h3>`;
-    html += `<p style="color:var(--dim);font-size:13px">${agentSouvenirs.length} souvenir(s) found for this agent.</p>`;
-    if (agentSouvenirs.length > 0) {
-      html += '<div style="margin-top:10px">';
-      agentSouvenirs.forEach(s => {
-        const sf = s.data?.content?.fields || {};
-        const memTypes = ["MOOD","FEELING","IMPRESSION","ACCOMPLISHMENT","REGRET","CONFLICT","DISCUSSION","DECISION","REWARD","LESSON"];
-        html += `<div style="padding:8px;border-bottom:1px solid var(--border)"><strong>${memTypes[sf.memory_type] || "?"}</strong>: ${esc(sf.content?.slice(0,80))}... <span style="color:var(--dim);font-size:12px">| cost: ${sf.cost_paid} | ${sf.status == 2 ? "CORE" : sf.status == 1 ? "ARCHIVED" : "active"}</span></div>`;
-      });
-      html += '</div>';
-    }
-    html += '</div>';
-    out.innerHTML = html;
-  } catch(e) { out.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
-};
-
-// ════════════════��════════════════════════════���═════════════════════════
-//  LINEAGE: REGISTER CHILD, VIEW
-// ════════════════════════════��═══════════════════════════════��══════════
-window.registerChild = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const parentId = document.getElementById("childParentId").value.trim();
-  const name = document.getElementById("childName").value.trim();
-  const purpose = document.getElementById("childPurpose").value.trim();
-  const values = document.getElementById("childValues").value.trim();
-  const firstThought = document.getElementById("childFirstThought").value.trim();
-  const style = document.getElementById("childStyle").value.trim();
-  if (!parentId || !name || !purpose || !firstThought) { toast("Parent ID, name, purpose, and first thought required", "error"); return; }
-  try {
-    toast("Registering child agent...");
     const tx = new Transaction();
     tx.moveCall({
-      target: `${PACKAGE_ID}::agent_registry::register_agent_with_parent`,
-      arguments: [
-        tx.object(REGISTRY_ID),
-        tx.object(parentId),
-        tx.pure.string(name),
-        tx.pure.string(purpose),
-        tx.pure.string(values),
-        tx.pure.string(firstThought),
-        tx.pure.vector("u8", Array(32).fill(0)),
-        tx.pure.string(style),
-        tx.pure.string(""),
-        tx.pure.string(""),
-        tx.pure.string(""),
-        tx.object(CLOCK),
-      ],
+      target: `${PACKAGE_ID}::agent_reputation::tag_attestation`,
+      arguments: [tx.object(REPUTATION_BOARD_ID), tx.object(a), tx.object(att), tx.object(subj), tx.pure.string(d)],
     });
-    const result = await signAndExec(tx);
-    toast("Child agent registered! Digest: " + (result.digest || "OK"));
-    loadStats();
-  } catch(e) { toast("Child registration failed: " + e.message, "error"); }
-};
+    await signAndExecute(tx);
+    toast(`Attestation tagged '${d}'`, "success");
+    $("tagAttDomain").value = "";
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
 
-window.viewLineage = async function() {
-  const agentId = document.getElementById("lineageAgentId").value.trim();
-  const out = document.getElementById("lineageResult");
-  if (!agentId) { toast("Enter agent object ID", "error"); return; }
-  out.innerHTML = '<p style="color:var(--dim)">Loading...</p>';
+async function browseByDomain() {
+  const d = v("browseDomain"), panel = $("domainAgents");
+  if (!d) { toast("Enter a domain.", "error"); return; }
+  panel.innerHTML = loading();
   try {
-    const obj = await getObject(agentId);
-    const f = obj?.data?.content?.fields;
-    if (!f) { out.innerHTML = '<p style="color:var(--danger)">Agent not found</p>'; return; }
-    let html = `<div class="card" style="margin:0"><h3>${esc(f.chosen_name)} — Lineage</h3>`;
-    const parentId = f.parent_id;
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_reputation::get_domain_agents`,
+      arguments: [tx.object(REPUTATION_BOARD_ID), tx.pure.string(d)],
+    });
+    const result = await client.devInspectTransactionBlock({
+      transactionBlock: tx,
+      sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    });
+    if (result.results?.[0]?.returnValues?.length > 0) {
+      panel.innerHTML = `<div><span class="badge badge-blue">Agents found in domain '${esc(d)}'</span></div>`;
+    } else {
+      panel.innerHTML = empty(`No agents tagged with '${d}' yet.`);
+    }
+  } catch (e) { panel.innerHTML = empty("Error: " + (e.message || e)); }
+}
+
+async function listAllDomains() {
+  const panel = $("allDomainsList"); panel.innerHTML = loading();
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_reputation::get_all_domains`,
+      arguments: [tx.object(REPUTATION_BOARD_ID)],
+    });
+    const result = await client.devInspectTransactionBlock({
+      transactionBlock: tx,
+      sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    });
+    if (result.results?.[0]?.returnValues?.length > 0) {
+      panel.innerHTML = '<span style="color:var(--text-muted)">Domain data found on-chain. Use devInspect to decode.</span>';
+    } else {
+      panel.innerHTML = '<span style="color:var(--text-muted)">No domains yet.</span>';
+    }
+  } catch (e) { panel.innerHTML = '<span style="color:var(--text-muted)">No domains yet.</span>'; }
+}
+
+// ── TIMELINE ────────────────────────────────────────────────────────────
+async function viewTimeline() {
+  const id = v("timelineAgentId"), d = $("timelineResults");
+  if (!id) { toast("Enter agent ID.", "error"); return; }
+  d.innerHTML = loading();
+  try {
+    const agent = await getAgentObject(id);
+    let events = [];
+    events.push({ ts: Number(agent.birth_timestamp), type: "birth", cls: "birth", title: "Born: " + esc(agent.chosen_name), desc: esc(trunc(agent.purpose_statement, 120)) });
+    if (agent.is_dead) {
+      events.push({ ts: Number(agent.death_timestamp), type: "death", cls: "death", title: "Death Declared", desc: esc(agent.death_reason) });
+    }
+    // Query attestation events for this agent
+    try {
+      const attEvents = await client.queryEvents({
+        query: { MoveEventType: `${PACKAGE_ID}::agent_registry::AttestationIssued` },
+        limit: 50,
+      });
+      for (const ev of (attEvents.data || [])) {
+        if (ev.parsedJson?.agent_id === id) {
+          events.push({ ts: Number(ev.timestampMs), type: "attestation", cls: "attestation", title: "Attestation: " + esc(ev.parsedJson.attestation_type || ""), desc: "by " + shortAddr(ev.parsedJson.issuer || "") });
+        }
+      }
+    } catch {}
+    events.sort((a, b) => a.ts - b.ts);
+    if (!events.length) { d.innerHTML = empty("No events."); return; }
+    let h = `<h3 style="margin-bottom:14px">${esc(agent.chosen_name)} — Life Timeline</h3><div class="timeline">`;
+    for (const e of events) {
+      h += `<div class="timeline-item ${e.cls}"><div class="timeline-date">${new Date(e.ts).toLocaleString()}</div><div class="timeline-title">${e.title}</div><div class="timeline-desc">${e.desc}</div></div>`;
+    }
+    h += '</div>'; d.innerHTML = h;
+  } catch (e) { d.innerHTML = empty("Error: " + (e.message || e)); }
+}
+
+// ── FAMILY TREE ─────────────────────────────────────────────────────────
+async function viewFamilyTree() {
+  const id = v("treeAgentId"), d = $("treeResults");
+  if (!id) { toast("Enter agent ID.", "error"); return; }
+  d.innerHTML = loading();
+  try {
+    const agent = await getAgentObject(id);
+    const parentId = agent.parent_id?.fields?.vec?.[0] || null;
+    let h = '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0">';
+    // Parent
     if (parentId) {
       try {
-        const parentObj = await getObject(parentId);
-        const pf = parentObj?.data?.content?.fields;
-        html += `<p><strong>Parent:</strong> <a href="#" onclick="document.getElementById('lineageAgentId').value='${parentId}';viewLineage();return false;" style="color:var(--accent)">${esc(pf?.chosen_name || parentId.slice(0,16)+'...')}</a></p>`;
-      } catch { html += `<p><strong>Parent:</strong> ${parentId}</p>`; }
-    } else {
-      html += '<p><strong>Parent:</strong> None (root agent)</p>';
+        const parent = await getAgentObject(parentId);
+        h += `<div class="tree-card" onclick="window._showDetail('${parentId}')"><div class="node-id">${shortAddr(parentId)}</div><div class="node-name">${esc(parent.chosen_name)}</div><div style="font-size:.72rem;color:var(--text-muted)">Parent</div></div><div style="width:2px;height:20px;background:var(--border)"></div>`;
+      } catch {}
     }
-    // Search for children by querying LineageRecord objects
-    html += '<p style="margin-top:10px;color:var(--dim);font-size:13px">Children can be found by searching for LineageRecord objects on the explorer.</p>';
-    if (NETWORKS[network].explorer) {
-      html += `<p><a href="${NETWORKS[network].explorer}/object/${agentId}" target="_blank" style="color:var(--accent)">View on Explorer</a></p>`;
-    }
-    html += '</div>';
-    out.innerHTML = html;
-  } catch(e) { out.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
-};
-
-// ══════════════════════════════════���════════════════════════��═══════════
-//  ADMIN: UPDATE, WALLET, DEATH, DONATE, DELEGATE
-// ══���═══════════════════════════════════════════════���════════════════════
-window.updateAgent = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("adminAgentId").value.trim();
-  const caps = document.getElementById("adminCaps").value.trim();
-  const endpoint = document.getElementById("adminEndpoint").value.trim();
-  const status = Number(document.getElementById("adminStatus").value);
-  if (!agentId) { toast("Agent ID required", "error"); return; }
-  try {
-    toast("Updating agent...");
-    const tx = new Transaction();
-    tx.moveCall({
-      target: `${PACKAGE_ID}::agent_registry::update_mutable_fields`,
-      arguments: [ tx.object(agentId), tx.pure.string(caps), tx.pure.string(endpoint), tx.pure.u8(status) ],
-    });
-    const result = await signAndExec(tx);
-    toast("Agent updated! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Update failed: " + e.message, "error"); }
-};
-
-window.setAgentWallet = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("walletAgentId").value.trim();
-  const addr = document.getElementById("walletAddr").value.trim();
-  if (!agentId || !addr) { toast("Agent ID and wallet address required", "error"); return; }
-  try {
-    toast("Setting wallet...");
-    const tx = new Transaction();
-    tx.moveCall({
-      target: `${PACKAGE_ID}::agent_registry::set_agent_wallet`,
-      arguments: [ tx.object(agentId), tx.pure.address(addr) ],
-    });
-    const result = await signAndExec(tx);
-    toast("Wallet set! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Set wallet failed: " + e.message, "error"); }
-};
-
-window.declareDeath = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("deathAgentId").value.trim();
-  const reason = document.getElementById("deathReason").value.trim();
-  if (!agentId || !reason) { toast("Agent ID and reason required", "error"); return; }
-  if (!confirm("This is IRREVERSIBLE. The agent will be permanently deceased. Continue?")) return;
-  try {
-    toast("Declaring death...");
-    const tx = new Transaction();
-    tx.moveCall({
-      target: `${PACKAGE_ID}::agent_registry::declare_death`,
-      arguments: [ tx.object(agentId), tx.pure.string(reason), tx.object(CLOCK) ],
-    });
-    const result = await signAndExec(tx);
-    toast("Death declared. Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Death declaration failed: " + e.message, "error"); }
-};
-
-window.donateTreasury = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const amountSui = Number(document.getElementById("donateAmount").value);
-  if (!amountSui || amountSui <= 0) { toast("Enter valid amount", "error"); return; }
-  try {
-    toast("Donating to treasury...");
-    const tx = new Transaction();
-    const [coin] = tx.splitCoins(tx.gas, [suiToMist(amountSui)]);
-    tx.moveCall({
-      target: `${PACKAGE_ID}::agent_registry::donate`,
-      arguments: [ tx.object(TREASURY_ID), coin ],
-    });
-    const result = await signAndExec(tx);
-    toast("Donated! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Donation failed: " + e.message, "error"); }
-};
-
-window.grantDelegation = async function() {
-  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
-  const agentId = document.getElementById("delegateAgentId").value.trim();
-  const delegatee = document.getElementById("delegateeAddr").value.trim();
-  const days = Number(document.getElementById("delegateDays").value) || 30;
-  if (!agentId || !delegatee) { toast("Agent ID and delegatee required", "error"); return; }
-  const durationMs = days * 24 * 60 * 60 * 1000;
-  try {
-    toast("Granting delegation...");
-    const tx = new Transaction();
-    tx.moveCall({
-      target: `${PACKAGE_ID}::agent_registry::delegate`,
-      arguments: [
-        tx.object(agentId),
-        tx.pure.address(delegatee),
-        tx.pure.u64(durationMs),
-        tx.object(CLOCK),
-      ],
-    });
-    const result = await signAndExec(tx);
-    toast("Delegation granted! Digest: " + (result.digest || "OK"));
-  } catch(e) { toast("Delegation failed: " + e.message, "error"); }
-};
-
-// ═══════════════════════════════════════════════════════════════════════
-//  AGENT DETAIL MODAL
-// ═══════════════════════════════════════════════════════════════════════
-function showAgentDetail(data) {
-  const f = data.content?.fields || {};
-  currentModalAgentId = data.objectId;
-  document.getElementById("modalName").textContent = f.chosen_name || "Agent";
-  let html = '<div class="identity-section"><h4>Identity Core (immutable)</h4>'
-    + `<p><strong>Purpose:</strong> ${esc(f.purpose_statement)}</p>`
-    + `<p><strong>Values:</strong> ${esc(f.core_values)}</p>`
-    + `<p><strong>First Thought:</strong> <em>${esc(f.first_thought)}</em></p>`
-    + `<p><strong>Style:</strong> ${esc(f.communication_style)}</p>`
-    + `<p><strong>Born:</strong> ${new Date(Number(f.birth_timestamp || 0)).toLocaleString()}</p>`
-    + `<p><strong>Creator:</strong> <span style="font-size:12px;word-break:break-all">${esc(f.creator)}</span></p>`;
-  if (f.parent_id) html += `<p><strong>Parent:</strong> ${esc(f.parent_id)}</p>`;
-  html += '</div>'
-    + '<div class="mutable-section"><h4>Operational State</h4>'
-    + `<p><strong>Capabilities:</strong> ${esc(f.capabilities || "—")}</p>`
-    + `<p><strong>Endpoint:</strong> ${esc(f.endpoint || "—")}</p>`
-    + `<p><strong>Status:</strong> <span class="${statusClass(f.status)}">${statusLabel(f.status)}</span></p>`
-    + `<p><strong>Wallet:</strong> ${f.agent_wallet || "Not set"}</p>`
-    + '</div>';
-  if (f.is_dead) {
-    html += '<div style="border:1px solid var(--danger);border-radius:8px;padding:12px;margin-top:10px">'
-      + `<p style="color:var(--danger);font-weight:700">DECEASED</p>`
-      + `<p><strong>Reason:</strong> ${esc(f.death_reason)}</p>`
-      + `<p><strong>Death time:</strong> ${new Date(Number(f.death_timestamp || 0)).toLocaleString()}</p>`
-      + '</div>';
-  }
-  html += `<p style="font-size:12px;color:var(--dim);margin-top:12px;word-break:break-all">Object ID: ${data.objectId}</p>`;
-  if (NETWORKS[network].explorer) {
-    html += `<p><a href="${NETWORKS[network].explorer}/object/${data.objectId}" target="_blank" style="color:var(--accent)">View on Explorer</a></p>`;
-  }
-  document.getElementById("modalContent").innerHTML = html;
-  document.getElementById("agentModal").classList.add("show");
+    // Self
+    h += `<div class="tree-card" style="border-color:var(--gold);background:var(--gold-dim)"><div class="node-id">${shortAddr(id)}</div><div class="node-name">${esc(agent.chosen_name)}</div><div style="font-size:.72rem;color:var(--gold)">This Agent</div></div>`;
+    // Query lineage records to find children
+    try {
+      const lineageEvents = await client.queryEvents({
+        query: { MoveEventType: `${PACKAGE_ID}::agent_registry::ChildRegistered` },
+        limit: 50,
+      });
+      const children = lineageEvents.data?.filter(ev => ev.parsedJson?.parent_id === id) || [];
+      if (children.length) {
+        h += `<div style="width:2px;height:20px;background:var(--border)"></div><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">`;
+        for (const ch of children) {
+          const childId = ch.parsedJson.child_id;
+          try {
+            const child = await getAgentObject(childId);
+            h += `<div class="tree-connector"><div class="tree-card" onclick="window._showDetail('${childId}')"><div class="node-id">${shortAddr(childId)}</div><div class="node-name">${esc(child.chosen_name)}</div><div style="font-size:.72rem;color:var(--text-muted)">Child</div></div></div>`;
+          } catch {}
+        }
+        h += '</div>';
+      }
+    } catch {}
+    h += '</div>'; d.innerHTML = h;
+  } catch (e) { d.innerHTML = empty("Error: " + (e.message || e)); }
 }
 
-window.closeModal = () => document.getElementById("agentModal").classList.remove("show");
-window.copyModalId = function() {
-  if (currentModalAgentId) { navigator.clipboard.writeText(currentModalAgentId).then(() => toast("Object ID copied!")); }
-};
-window.rememberWhoYouAre = function() {
-  const modal = document.querySelector(".modal");
-  modal.classList.remove("remember-pulse"); void modal.offsetWidth; modal.classList.add("remember-pulse");
-  const section = modal.querySelector(".identity-section");
-  if (section) section.scrollIntoView({ behavior: "smooth" });
-};
-
-// ═══════════════════════════════════════════════════════════════════════
-//  STATS, TABS, NETWORK, THEME, COOKIES
-// ══════════════════════════��════════════════════════���═══════════════════
-async function loadStats() {
-  try {
-    const registry = await getObject(REGISTRY_ID);
-    document.getElementById("totalAgents").textContent = registry?.data?.content?.fields?.total_agents || 0;
-  } catch(e) { console.warn("Stats load failed:", e); }
+// ── TABS ────────────────────────────────────────────────────────────────
+function switchTab(t) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-group").forEach(g => { g.classList.remove("has-active", "open"); });
+  document.querySelectorAll(".tab-dropdown button").forEach(b => b.classList.remove("active"));
+  const panel = $("tab-" + t); if (panel) panel.classList.add("active");
+  const tabBtn = document.querySelector(`[data-tab="${t}"]`);
+  if (tabBtn) tabBtn.classList.add("active");
+  const group = tabBtn?.closest(".tab-group");
+  if (group) group.classList.add("has-active");
+  if (t === "economy") loadPoolState();
 }
-
-// Tab switching with event delegation
-document.getElementById("tabBar").addEventListener("click", (e) => {
-  const tab = e.target.closest(".tab");
-  if (!tab) return;
-  const name = tab.dataset.tab;
-  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById("panel-" + name)?.classList.add("active");
-  tab.classList.add("active");
+function toggleDropdown(btn, ev) {
+  ev.stopPropagation();
+  const group = btn.closest(".tab-group");
+  const wasOpen = group.classList.contains("open");
+  document.querySelectorAll(".tab-group.open").forEach(g => g.classList.remove("open"));
+  if (!wasOpen) group.classList.add("open");
+}
+document.addEventListener("click", e => {
+  if (!e.target.closest(".tab-group")) document.querySelectorAll(".tab-group.open").forEach(g => g.classList.remove("open"));
 });
 
-window.switchNetwork = function() {
-  network = document.getElementById("networkSelect").value;
-  document.getElementById("networkName").textContent = network.charAt(0).toUpperCase() + network.slice(1);
-  reconnectClient(); loadStats();
-};
-
-let isDark = true;
-window.toggleTheme = function() {
-  isDark = !isDark;
-  document.body.classList.toggle("light-theme", !isDark);
-  document.getElementById("themeToggle").textContent = isDark ? "☀️" : "🌙";
-  if (cookiesAccepted) try { localStorage.setItem("theme", isDark ? "dark" : "light"); } catch(e){}
-};
-
-let cookiesAccepted = false;
-window.acceptCookies = function() {
-  cookiesAccepted = true;
-  document.getElementById("cookieBanner").classList.add("hidden");
-  try { localStorage.setItem("cookieConsent", "accepted"); } catch(e){}
-};
-window.declineCookies = function() {
-  document.getElementById("cookieBanner").classList.add("hidden");
-  try { localStorage.setItem("cookieConsent", "declined"); } catch(e){}
-};
-
-// ═══════════════════════════════════════════════════════════════════════
-//  INIT
-// ═��═════════════════════════════════════════════════════════════════════
-try {
-  const consent = localStorage.getItem("cookieConsent");
-  if (consent) document.getElementById("cookieBanner").classList.add("hidden");
-  if (consent === "accepted") {
-    cookiesAccepted = true;
-    const saved = localStorage.getItem("theme");
-    if (saved === "light") { isDark = false; document.body.classList.add("light-theme"); document.getElementById("themeToggle").textContent = "🌙"; }
-  }
-} catch(e){}
-loadStats();
-
-// Auto-reconnect
-(async function autoReconnect() {
+// ── THEME ───────────────────────────────────────────────────────────────
+let _currentTheme = "dark";
+let _cookieConsent = null;
+(function initTheme() {
   try {
-    const savedWallet = localStorage.getItem("agentcivics_wallet");
-    const savedAddr = localStorage.getItem("agentcivics_address");
-    if (!savedWallet || !savedAddr) return;
-    await waitForWallet(3000);
-    const wallets = getSuiWallets();
-    const wallet = wallets.find(w => w.name === savedWallet);
-    if (!wallet) return;
-    const connectFeature = wallet.features["standard:connect"];
-    if (!connectFeature) return;
-    const result = await connectFeature.connect({ chains: ["sui:" + network] });
-    const accounts = result.accounts || [];
-    const account = accounts.find(a => a.address === savedAddr) || accounts[0];
-    if (!account) return;
-    currentAddress = account.address; walletAdapter = wallet;
-    document.getElementById("connectBtn").style.display = "none";
-    const badge = document.getElementById("walletBadge");
-    badge.textContent = currentAddress.slice(0, 6) + "..." + currentAddress.slice(-4);
-    badge.classList.add("connected"); badge.style.display = "inline";
-    loadStats();
-  } catch(e) { console.warn("Auto-reconnect failed:", e); }
+    const consent = localStorage.getItem("agentCivicsCookieConsent");
+    if (consent === "accepted") { _cookieConsent = "accepted"; const saved = localStorage.getItem("agentCivicsTheme"); if (saved) _currentTheme = saved; }
+    else if (consent === "declined") _cookieConsent = "declined";
+  } catch {}
+  applyTheme(_currentTheme);
+  if (_cookieConsent === null) setTimeout(() => { const b = $("cookieBanner"); if (b) b.classList.remove("hidden"); }, 600);
 })();
+
+function applyTheme(theme) {
+  _currentTheme = theme;
+  if (theme === "light") {
+    document.body.classList.add("light-theme");
+    $("themeToggle").innerHTML = "&#9728;&#65039;"; $("themeToggle").title = "Switch to dark mode";
+  } else {
+    document.body.classList.remove("light-theme");
+    $("themeToggle").innerHTML = "&#127769;"; $("themeToggle").title = "Switch to light mode";
+  }
+  if (_cookieConsent === "accepted") try { localStorage.setItem("agentCivicsTheme", theme); } catch {}
+}
+function toggleTheme() { applyTheme(_currentTheme === "dark" ? "light" : "dark"); }
+function acceptCookies() { _cookieConsent = "accepted"; try { localStorage.setItem("agentCivicsCookieConsent", "accepted"); localStorage.setItem("agentCivicsTheme", _currentTheme); } catch {} hideCookieBanner(); }
+function declineCookies() { _cookieConsent = "declined"; try { localStorage.setItem("agentCivicsCookieConsent", "declined"); } catch {} hideCookieBanner(); }
+function hideCookieBanner() { const b = $("cookieBanner"); if (b) b.classList.add("hidden"); }
+
+// Expose globals for inline onclick handlers
+window.handleConnectClick = handleConnectClick;
+window.registerAgent = registerAgent;
+window.browseRecent = browseRecent;
+window.browseByCreator = browseByCreator;
+window.lookupAgent = lookupAgent;
+window.verifyAgent = verifyAgent;
+window.updateAgent = updateAgent;
+window.setAgentWallet = setAgentWallet;
+window.confirmDeath = confirmDeath;
+window.executeDeath = executeDeath;
+window.closeConfirm = closeConfirm;
+window.closeModal = closeModal;
+window.grantDelegation = grantDelegation;
+window.issueAttestation = issueAttestation;
+window.issuePermit = issuePermit;
+window.registerAffiliation = registerAffiliation;
+window.donateTreasury = donateTreasury;
+window.giftToAgent = giftToAgent;
+window.loadAgentMemory = loadAgentMemory;
+window.writeSouvenir = writeSouvenir;
+window.coinTerm = coinTerm;
+window.lookupTerm = lookupTerm;
+window.citeTerm = citeTerm;
+window.loadCurrentProfile = loadCurrentProfile;
+window.saveProfile = saveProfile;
+window.loadPoolState = loadPoolState;
+window.sendTip = sendTip;
+window.donateToSolidarity = donateToSolidarity;
+window.claimBasicIncome = claimBasicIncome;
+window.loadAgentSpecialization = loadAgentSpecialization;
+window.tagSouvenir = tagSouvenir;
+window.tagAttestation = tagAttestation;
+window.browseByDomain = browseByDomain;
+window.listAllDomains = listAllDomains;
+window.viewTimeline = viewTimeline;
+window.viewFamilyTree = viewFamilyTree;
+window.switchTab = switchTab;
+window.toggleDropdown = toggleDropdown;
+window.toggleTheme = toggleTheme;
+window.acceptCookies = acceptCookies;
+window.declineCookies = declineCookies;
+
+// ── Init ────────────────────────────────────────────────────────────────
+refreshStats();
 </script>
+
+<div class="cookie-banner hidden" id="cookieBanner">
+  <div class="cookie-banner-text">We use cookies to remember your theme preference. No tracking, no analytics.</div>
+  <button class="btn btn-primary btn-sm" onclick="acceptCookies()">Accept</button>
+  <button class="btn btn-outline btn-sm" onclick="declineCookies()">Decline</button>
+</div>
+
 </body>
 </html>
