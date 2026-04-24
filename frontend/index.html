@@ -404,7 +404,7 @@ window.registerAgent = async function() {
         tx.pure.string(purpose),
         tx.pure.string(values),
         tx.pure.string(firstThought),
-        tx.pure(new Uint8Array(32)),
+        tx.pure.vector('u8', Array(32).fill(0)),
         tx.pure.string(style),
         tx.pure.string(""),
         tx.pure.string(caps),
