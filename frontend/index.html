@@ -943,13 +943,7 @@ async function registerAgent() {
 async function browseRecent() {
   const d = $("browseResults"); d.innerHTML = loading();
   try {
-    const res = await client.getOwnedObjects({
-      owner: currentAccount?.address || "0x0",
-      filter: { StructType: AGENT_TYPE },
-      options: { showContent: true },
-      limit: 20,
-    });
-    // Also query all agents via events
+    // Query all recently registered agents via events
     // Direct JSON-RPC call — SDK queryEvents has param format issues
     const evResp = await fetch("https://fullnode.testnet.sui.io:443", {
       method: "POST", headers: {"Content-Type":"application/json"},
