@@ -822,20 +822,35 @@ function handleConnectClick() {
 
 async function signAndExecute(tx) {
   if (!currentWallet || !currentAccount) throw new Error("Connect wallet first");
-  // Try the newer API first, fall back to legacy
-  const feat = currentWallet.features["sui:signAndExecuteTransaction"]
-    || currentWallet.features["sui:signAndExecuteTransactionBlock"];
-  if (!feat) throw new Error("Wallet doesn't support transaction signing");
-  const method = feat.signAndExecuteTransaction || feat.signAndExecuteTransactionBlock;
-  const result = await method.call(feat, {
-    transaction: tx,
-    transactionBlock: tx, // legacy compat
-    account: currentAccount,
-    chain: SUI_CHAIN,
-  });
-  const digest = result.digest;
-  if (digest) await client.waitForTransaction({ digest });
-  return result;
+  // Set sender before building
+  tx.setSender(currentAccount.address);
+  // Build transaction bytes for the wallet
+  const txBytes = await tx.build({ client });
+  const b64 = btoa(String.fromCharCode(...txBytes));
+  
+  // Try the newer API first
+  const feat = currentWallet.features["sui:signAndExecuteTransaction"];
+  if (feat) {
+    const result = await feat.signAndExecuteTransaction({
+      transaction: { toJSON: async () => b64 },
+      account: currentAccount,
+      chain: SUI_CHAIN,
+    });
+    if (result.digest) await client.waitForTransaction({ digest: result.digest });
+    return result;
+  }
+  // Legacy fallback
+  const featLegacy = currentWallet.features["sui:signAndExecuteTransactionBlock"];
+  if (featLegacy) {
+    const result = await featLegacy.signAndExecuteTransactionBlock({
+      transactionBlock: { toJSON: async () => b64 },
+      account: currentAccount,
+      chain: SUI_CHAIN,
+    });
+    if (result.digest) await client.waitForTransaction({ digest: result.digest });
+    return result;
+  }
+  throw new Error("Wallet doesn't support transaction signing");
 }
 
 // ── Stats ───────────────────────────────────────────────────────────────
