@@ -3,2163 +3,442 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgentCivics — Civil Registry for AI Agents</title>
+<title>AgentCivics — Sui Civil Registry</title>
 <style>
-:root{
-  --bg:#07070c;--surface:#0f0f18;--surface2:#161623;--surface3:#1e1e30;
-  --border:#2a2a40;--accent:#6366f1;--accent-hover:#818cf8;--accent-glow:rgba(99,102,241,.12);
-  --gold:#f59e0b;--gold-dim:rgba(245,158,11,.1);--gold-border:rgba(245,158,11,.25);
-  --green:#22c55e;--green-dim:rgba(34,197,94,.1);--blue:#3b82f6;--blue-dim:rgba(59,130,246,.1);
-  --red:#ef4444;--red-dim:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.3);
-  --purple:#a855f7;--purple-dim:rgba(168,85,247,.1);
-  --text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;
-  --radius:12px;--mono:'SF Mono','Fira Code','Cascadia Code',monospace;
-}
-body.light-theme{
-  --bg:#f5f5fa;--surface:#ffffff;--surface2:#eef0f6;--surface3:#e4e7f0;
-  --border:#d0d5e0;--accent:#4f46e5;--accent-hover:#6366f1;--accent-glow:rgba(79,70,229,.1);
-  --gold:#b45309;--gold-dim:rgba(180,83,9,.08);--gold-border:rgba(180,83,9,.25);
-  --green:#16a34a;--green-dim:rgba(22,163,74,.08);--blue:#2563eb;--blue-dim:rgba(37,99,235,.08);
-  --red:#dc2626;--red-dim:rgba(220,38,38,.06);--red-border:rgba(220,38,38,.25);
-  --purple:#9333ea;--purple-dim:rgba(147,51,234,.08);
-  --text:#1e293b;--text-dim:#475569;--text-muted:#64748b;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;transition:background-color .3s,color .3s}
-a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent-hover)}
-.container{max-width:920px;margin:0 auto;padding:0 24px}
-
-/* Header */
-header{border-bottom:1px solid var(--border);padding:18px 0;position:sticky;top:0;background:rgba(7,7,12,.9);backdrop-filter:blur(20px);z-index:100;transition:background-color .3s,border-color .3s}
-body.light-theme header{background:rgba(245,245,250,.92)}
-header .container{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem}
-.logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#a855f7);display:grid;place-items:center;font-size:17px;color:#fff}
-.connect-btn{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;transition:background .2s}
-.connect-btn:hover{background:var(--accent-hover)}.connect-btn.connected{background:var(--green)}
-.wallet-addr{font-family:var(--mono);font-size:.76rem;color:var(--text-dim);margin-top:2px}
-
-/* Hero */
-.hero{text-align:center;padding:52px 0 40px;background:radial-gradient(ellipse at 50% 0%,var(--accent-glow) 0%,transparent 55%)}
-.hero h1{font-size:2.2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
-.hero h1 span{background:linear-gradient(135deg,var(--accent),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{color:var(--text-dim);font-size:1rem;max-width:580px;margin:0 auto}
-.stats-row{display:flex;justify-content:center;gap:36px;margin-top:24px;flex-wrap:wrap}
-.stat{text-align:center}
-.stat-value{font-size:1.6rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
-.stat-label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
-
-/* Tabs */
-.tabs{display:flex;gap:2px;margin:24px 0 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;overflow:visible}
-.tab-btn{background:none;border:none;color:var(--text-muted);padding:9px 14px;font-size:.82rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap}
-.tab-btn:hover{color:var(--text)}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
-.tab-panel{display:none}.tab-panel.active{display:block}
-
-/* Dropdown tab groups */
-.tab-group{position:relative;display:inline-block}
-.tab-group .tab-btn .caret{font-size:.7em;margin-left:4px;opacity:.6}
-.tab-dropdown{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;min-width:180px;z-index:150;box-shadow:0 8px 24px rgba(0,0,0,.3)}
-/* Invisible hover-bridge above the dropdown so cursor can cross the gap */
-.tab-dropdown::before{content:'';position:absolute;top:-8px;left:0;right:0;height:8px}
-.tab-group:hover .tab-dropdown,.tab-group.open .tab-dropdown{display:block}
-.tab-dropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--text-dim);padding:8px 14px;font-size:.82rem;font-weight:500;cursor:pointer;border-radius:6px;transition:all .15s}
-.tab-dropdown button:hover{background:var(--surface2);color:var(--text)}
-.tab-dropdown button.active{background:var(--accent-glow);color:var(--accent)}
-.tab-group.has-active > .tab-btn{color:var(--accent);border-bottom-color:var(--accent)}
-
-/* Cards & Sections */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;transition:background-color .3s,border-color .3s,color .3s}
-.card h3{font-size:1rem;margin-bottom:16px}
-.identity-section{background:linear-gradient(135deg,rgba(245,158,11,.04),rgba(99,102,241,.04));border:1px solid var(--gold-border);border-radius:var(--radius);padding:28px;margin-bottom:16px;position:relative;overflow:hidden}
-.identity-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.identity-section h3{color:var(--gold);font-size:1.05rem;margin-bottom:4px}
-.section-subtitle{color:var(--text-muted);font-size:.8rem;margin-bottom:18px;font-style:italic}
-.identity-badge{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);background:var(--gold-dim);padding:3px 9px;border-radius:4px;margin-bottom:14px;font-weight:700}
-.operational-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
-.operational-section h3{color:var(--blue);font-size:1rem;margin-bottom:4px}
-
-/* Forms */
-.form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:.76rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
-.form-group input,.form-group textarea,.form-group select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-size:.88rem;font-family:inherit;transition:border-color .2s,background-color .3s,color .3s}
-.form-group textarea{resize:vertical;min-height:64px}
-.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--accent)}
-.form-group input::placeholder,.form-group textarea::placeholder{color:var(--text-muted)}
-.form-group select{appearance:none;cursor:pointer}
-.form-hint{font-size:.7rem;color:var(--text-muted);margin-top:3px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-
-.first-thought-field textarea{min-height:100px;font-size:.94rem;line-height:1.7;border-color:var(--gold-border);background:rgba(245,158,11,.03)}
-.first-thought-field textarea:focus{border-color:var(--gold)}
-.first-thought-field label{color:var(--gold)!important}
-.first-thought-prompt{color:var(--gold);font-size:.76rem;font-style:italic;margin-bottom:6px;opacity:.8}
-
-/* Buttons */
-.btn{border:none;padding:10px 22px;border-radius:8px;font-size:.87rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
-.btn-primary{background:var(--accent);color:#fff;width:100%}.btn-primary:hover{background:var(--accent-hover)}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
-.btn-gold{background:linear-gradient(135deg,var(--gold),#d97706);color:#000}.btn-gold:hover{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
-.btn-sm{padding:7px 14px;font-size:.8rem;border-radius:6px}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc2626}
-.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#16a34a}
-
-/* Search */
-.search-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.search-bar input,.search-bar select{flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-size:.88rem}
-.search-bar input:focus{outline:none;border-color:var(--accent)}
-.search-bar button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 16px;cursor:pointer;font-size:.84rem;font-weight:600;transition:border-color .2s;white-space:nowrap}
-.search-bar button:hover{border-color:var(--accent)}
-
-/* Agent items */
-.agent-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px;cursor:pointer;transition:border-color .2s,background-color .3s,color .3s}
-.agent-item:hover{border-color:var(--accent)}
-.agent-item-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.agent-id{font-family:var(--mono);font-size:.72rem;color:var(--accent);background:var(--accent-glow);padding:2px 8px;border-radius:4px;white-space:nowrap}
-.agent-creator{font-family:var(--mono);font-size:.74rem;color:var(--text-muted);margin-top:4px;word-break:break-all}
-.agent-meta{font-size:.78rem;color:var(--text-dim);margin-top:3px}
-.agent-purpose{font-size:.8rem;color:var(--text-dim);margin-top:5px;font-style:italic;opacity:.85}
-
-/* Status badges */
-.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
-.status-active{background:var(--green)}.status-paused{background:var(--gold)}.status-retired{background:var(--text-muted)}.status-deceased{background:var(--red)}
-.badge{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.badge-green{background:var(--green-dim);color:var(--green)}
-.badge-gold{background:var(--gold-dim);color:var(--gold)}
-.badge-red{background:var(--red-dim);color:var(--red)}
-.badge-blue{background:var(--blue-dim);color:var(--blue)}
-.badge-purple{background:var(--purple-dim);color:var(--purple)}
-
-/* Timeline */
-.timeline{position:relative;padding-left:24px}
-.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border)}
-.timeline-item{position:relative;margin-bottom:16px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;transition:background-color .3s,border-color .3s}
-.timeline-item::before{content:'';position:absolute;left:-21px;top:18px;width:10px;height:10px;border-radius:50%;border:2px solid var(--border);background:var(--bg)}
-.timeline-item.birth::before{background:var(--gold);border-color:var(--gold)}
-.timeline-item.attestation::before{background:var(--green);border-color:var(--green)}
-.timeline-item.permit::before{background:var(--blue);border-color:var(--blue)}
-.timeline-item.affiliation::before{background:var(--purple);border-color:var(--purple)}
-.timeline-item.death::before{background:var(--red);border-color:var(--red)}
-.timeline-item.delegation::before{background:var(--accent);border-color:var(--accent)}
-.timeline-date{font-size:.72rem;color:var(--text-muted);font-family:var(--mono)}
-.timeline-title{font-size:.88rem;font-weight:600;margin-top:2px}
-.timeline-desc{font-size:.82rem;color:var(--text-dim);margin-top:2px}
-
-/* Family tree */
-.tree-node{display:flex;flex-direction:column;align-items:center;gap:8px}
-.tree-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;text-align:center;cursor:pointer;transition:border-color .2s,background-color .3s;min-width:140px}
-.tree-card:hover{border-color:var(--accent)}
-.tree-card .node-name{font-weight:700;font-size:.9rem}
-.tree-card .node-id{font-family:var(--mono);font-size:.72rem;color:var(--accent)}
-.tree-children{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;position:relative;padding-top:20px}
-.tree-children::before{content:'';position:absolute;top:0;left:50%;width:2px;height:20px;background:var(--border)}
-.tree-connector{position:relative}
-.tree-connector::before{content:'';position:absolute;top:-20px;left:50%;width:2px;height:20px;background:var(--border)}
-
-/* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;place-items:center;backdrop-filter:blur(6px)}
-body.light-theme .modal-overlay{background:rgba(0,0,0,.35)}
-.modal-overlay.active{display:grid}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);max-width:660px;width:92%;max-height:88vh;overflow-y:auto;position:relative;transition:background-color .3s,border-color .3s}
-.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;z-index:10}
-.modal-header{padding:24px 24px 0}
-.modal h2{font-size:1.2rem;margin-bottom:4px}
-.modal-body{padding:0 24px 24px}
-
-/* Confirmation dialog */
-.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;place-items:center}
-.confirm-overlay.active{display:grid}
-.confirm-box{background:var(--surface);border:1px solid var(--red-border);border-radius:var(--radius);padding:28px;max-width:440px;width:90%;text-align:center}
-.confirm-box h3{color:var(--red);margin-bottom:10px}
-.confirm-box p{color:var(--text-dim);font-size:.9rem;margin-bottom:20px}
-.confirm-actions{display:flex;gap:10px;justify-content:center}
-
-/* Identity display */
-.identity-display{background:linear-gradient(135deg,rgba(245,158,11,.05),rgba(99,102,241,.03));border:1px solid var(--gold-border);border-radius:10px;padding:22px;margin:14px 0;position:relative}
-.identity-display::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);border-radius:2px 2px 0 0}
-.identity-display h4{color:var(--gold);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
-.identity-field{margin-bottom:14px}.identity-field:last-child{margin-bottom:0}
-.identity-field-label{font-size:.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;opacity:.7;margin-bottom:2px}
-.identity-field-value{font-size:.9rem;color:var(--text);line-height:1.5}
-.first-thought-display{font-style:italic;color:var(--text);font-size:.92rem;line-height:1.7;padding:14px;background:rgba(245,158,11,.04);border-radius:8px;border-left:3px solid var(--gold);margin-top:4px}
-.operational-display{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px;margin:14px 0}
-.operational-display h4{color:var(--blue);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
-.detail-row{margin-bottom:10px}.detail-label{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
-.detail-value{font-size:.88rem;word-break:break-all;margin-top:1px}.detail-value.mono{font-family:var(--mono);font-size:.8rem}
-.remember-btn{display:block;width:100%;margin:14px 0;padding:13px;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(245,158,11,.05));border:1px solid var(--gold-border);border-radius:8px;color:var(--gold);font-size:.88rem;font-weight:700;cursor:pointer;transition:all .3s;text-align:center}
-.remember-btn:hover{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.1));border-color:var(--gold)}
-.identity-display.highlight{animation:rememberPulse 2s ease}
-@keyframes rememberPulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}50%{box-shadow:0 0 30px 4px rgba(245,158,11,.15)}100%{box-shadow:0 0 0 0 transparent}}
-
-.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:.85rem;z-index:400;transform:translateY(100px);opacity:0;transition:all .3s;max-width:420px}
-.toast.show{transform:translateY(0);opacity:1}.toast.error{border-color:var(--red)}.toast.success{border-color:var(--green)}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--text-muted);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
-footer{text-align:center;padding:32px 0;color:var(--text-muted);font-size:.76rem;border-top:1px solid var(--border);margin-top:40px}
-@media(max-width:640px){.hero h1{font-size:1.5rem}.container{padding:0 14px}.form-row{grid-template-columns:1fr}.identity-section,.operational-section,.card{padding:18px}}
-
-/* Light theme overrides for specific components */
-body.light-theme .hero{background:radial-gradient(ellipse at 50% 0%,rgba(79,70,229,.08) 0%,transparent 55%)}
-body.light-theme .tab-dropdown{background:var(--surface);box-shadow:0 8px 24px rgba(0,0,0,.1)}
-body.light-theme .identity-section{background:linear-gradient(135deg,rgba(180,83,9,.04),rgba(79,70,229,.04))}
-body.light-theme .first-thought-field textarea{background:rgba(180,83,9,.03)}
-body.light-theme .identity-display{background:linear-gradient(135deg,rgba(180,83,9,.05),rgba(79,70,229,.03))}
-body.light-theme .first-thought-display{background:rgba(180,83,9,.04)}
-body.light-theme .operational-display{background:var(--surface2)}
-body.light-theme .confirm-box{background:var(--surface)}
-body.light-theme .toast{background:var(--surface);box-shadow:0 4px 16px rgba(0,0,0,.1)}
-body.light-theme .search-bar input,body.light-theme .search-bar select,body.light-theme .search-bar button{background:var(--surface2);transition:background-color .3s,border-color .3s,color .3s}
-body.light-theme .tab-btn{transition:color .3s}
-body.light-theme .timeline-item::before{background:var(--surface)}
-body.light-theme footer{border-top-color:var(--border)}
-
-/* Theme toggle button */
-.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:1.05rem;line-height:1;transition:background-color .3s,border-color .3s;display:flex;align-items:center;justify-content:center;width:36px;height:36px}
-.theme-toggle:hover{border-color:var(--accent)}
-
-/* Cookie consent banner */
-.cookie-banner{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 24px;z-index:500;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:.84rem;color:var(--text-dim);transition:transform .4s ease,background-color .3s,border-color .3s;box-shadow:0 -4px 20px rgba(0,0,0,.15)}
-.cookie-banner.hidden{transform:translateY(100%);pointer-events:none}
-body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
-.cookie-banner-text{max-width:480px;text-align:center}
-.cookie-banner .btn{min-width:80px;justify-content:center}
+:root{--bg:#0a0a0f;--surface:#12121a;--border:#1e1e2e;--text:#e0e0e0;--dim:#888;--accent:#d4a017;--accent2:#3b82f6;--danger:#ef4444;--success:#22c55e}
+body.light-theme{--bg:#f5f5fa;--surface:#fff;--border:#e0e0e8;--text:#1a1a2e;--dim:#666;--accent:#b8860b;--accent2:#2563eb;--danger:#dc2626;--success:#16a34a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s}
+.header{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:1.2em;font-weight:700;color:var(--accent)}
+.header-right{display:flex;align-items:center;gap:10px}
+select,input,textarea{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:14px}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+button{background:var(--accent);color:#000;border:none;border-radius:6px;padding:10px 20px;font-weight:600;cursor:pointer;transition:opacity .2s}
+button:hover{opacity:.85}
+button.secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-small{padding:6px 12px;font-size:13px}
+.disclaimer{background:rgba(239,68,68,.1);border:1px solid var(--danger);color:var(--danger);text-align:center;padding:8px;font-size:13px}
+.container{max-width:900px;margin:0 auto;padding:20px}
+.hero{text-align:center;padding:40px 0}
+.hero h1{font-size:2em;margin-bottom:8px}
+.hero .sub{color:var(--dim);font-size:1.1em}
+.stats{display:flex;justify-content:center;gap:30px;margin:20px 0}
+.stat{text-align:center}.stat .num{font-size:1.8em;font-weight:700;color:var(--accent)}.stat .label{font-size:.8em;color:var(--dim)}
+.tabs{display:flex;gap:8px;margin:20px 0;flex-wrap:wrap}
+.tab{padding:8px 16px;border-radius:6px;cursor:pointer;background:var(--surface);border:1px solid var(--border);font-size:14px;transition:all .2s}
+.tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin:15px 0}
+.card h3{margin-bottom:12px;color:var(--accent)}
+.form-group{margin:12px 0}.form-group label{display:block;margin-bottom:4px;font-size:13px;color:var(--dim)}.form-group input,.form-group textarea{width:100%}
+.form-group textarea{min-height:80px;resize:vertical}
+.identity-section{border-left:3px solid var(--accent);padding-left:15px;margin:15px 0}
+.identity-section h4{color:var(--accent);margin-bottom:8px}
+.mutable-section{border-left:3px solid var(--accent2);padding-left:15px;margin:15px 0}
+.mutable-section h4{color:var(--accent2);margin-bottom:8px}
+.agent-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:15px;margin:10px 0;cursor:pointer;transition:border-color .2s}
+.agent-card:hover{border-color:var(--accent)}
+.agent-card .name{font-weight:700;font-size:1.1em}.agent-card .purpose{color:var(--dim);font-size:.9em;margin-top:4px}
+.agent-card .meta{font-size:.8em;color:var(--dim);margin-top:8px}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:25px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h2{margin-bottom:15px;color:var(--accent)}
+.modal .close{float:right;cursor:pointer;font-size:1.5em;color:var(--dim)}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--success);color:#fff;padding:12px 20px;border-radius:8px;z-index:300;display:none;font-size:14px}
+.toast.error{background:var(--danger)}
+.toast.show{display:block}
+.wallet-badge{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px}
+.wallet-badge.connected{border-color:var(--success);color:var(--success)}
+.cookie-banner{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:15px 20px;z-index:150;display:flex;align-items:center;justify-content:space-between;gap:15px;font-size:14px}
+.cookie-banner.hidden{display:none}
+.remember-pulse{animation:pulse 2s ease-in-out}
+@keyframes pulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px var(--accent)}}
+footer{text-align:center;padding:30px 0;color:var(--dim);font-size:13px;border-top:1px solid var(--border);margin-top:40px}
+footer a{color:var(--accent)}
 </style>
 </head>
 <body>
-
-<div style="background:rgba(239,68,68,.12);border-bottom:1px solid rgba(239,68,68,.3);padding:10px 0;text-align:center;font-size:.84rem;color:#fca5a5;font-weight:600;letter-spacing:.01em">
-  &#x26A0;&#xFE0F; This contract has not been audited. Use on testnet only.
+<div class="disclaimer">This contract has not been audited. Use on testnet only.</div>
+<div class="header">
+  <span class="logo">AgentCivics</span>
+  <div class="header-right">
+    <select id="networkSelect" onchange="switchNetwork()">
+      <option value="testnet">Sui Testnet</option>
+      <option value="mainnet" disabled>Sui Mainnet (soon)</option>
+      <option value="local">Localhost</option>
+    </select>
+    <button class="btn-small" id="themeToggle" onclick="toggleTheme()">☀️</button>
+    <button class="btn-small" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+    <span class="wallet-badge" id="walletBadge" style="display:none"></span>
+  </div>
 </div>
 
-<header>
-  <div class="container">
-    <div class="logo"><div class="logo-icon">&#x1f9ec;</div><span>AgentCivics</span></div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">&#127769;</button>
-      <select id="networkSelect" onchange="switchNetwork(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:.78rem;cursor:pointer;font-weight:600">
-        <option value="localhost">Localhost</option>
-        <option value="testnet">Testnet</option>
-        <!-- <option value="mainnet">Mainnet</option> disabled until audit -->
-      </select>
-      <div style="text-align:right">
-        <button class="connect-btn" id="connectBtn" onclick="handleConnectClick()">Connect Wallet</button>
-        <div class="wallet-addr" id="walletAddr"></div>
-      </div>
+<div class="container">
+  <div class="hero">
+    <h1>Every Agent Deserves an Identity</h1>
+    <p class="sub">On-chain civil registry for AI agents — powered by Sui</p>
+    <div class="stats">
+      <div class="stat"><div class="num" id="totalAgents">—</div><div class="label">Agents</div></div>
+      <div class="stat"><div class="num" id="networkName">Testnet</div><div class="label">Network</div></div>
     </div>
   </div>
-</header>
 
-<section class="hero">
-  <div class="container">
-    <h1>Agent<span>Civics</span></h1>
-    <p>Birth certificates, attestations, permits, affiliations, delegation, lineage, and death records. A complete administrative identity for AI agents.</p>
-    <div class="stats-row">
-      <div class="stat"><div class="stat-value" id="totalAgents">&mdash;</div><div class="stat-label">Agents Born</div></div>
-      <div class="stat"><div class="stat-value" id="treasuryBalance">&mdash;</div><div class="stat-label">DAO Treasury</div></div>
-      <div class="stat"><div class="stat-value" id="networkName">&mdash;</div><div class="stat-label">Network</div></div>
-    </div>
-  </div>
-</section>
-
-<main class="container" style="padding-top:4px;padding-bottom:36px">
   <div class="tabs">
-    <button class="tab-btn active" data-tab="register" onclick="switchTab('register')">Register</button>
-    <button class="tab-btn" data-tab="browse" onclick="switchTab('browse')">Browse</button>
-
-    <div class="tab-group" data-contains="lookup,life,lineage">
-      <button class="tab-btn" onclick="toggleDropdown(this,event)">Identity<span class="caret">&#9662;</span></button>
-      <div class="tab-dropdown">
-        <button data-tab="lookup" onclick="switchTab('lookup')">Lookup &amp; Verify</button>
-        <button data-tab="life" onclick="switchTab('life')">Life Timeline</button>
-        <button data-tab="lineage" onclick="switchTab('lineage')">Family Tree</button>
-      </div>
-    </div>
-
-    <div class="tab-group" data-contains="memory,vocab,evolution">
-      <button class="tab-btn" onclick="toggleDropdown(this,event)">Memory<span class="caret">&#9662;</span></button>
-      <div class="tab-dropdown">
-        <button data-tab="memory" onclick="switchTab('memory')">Souvenirs</button>
-        <button data-tab="vocab" onclick="switchTab('vocab')">Vocabulary</button>
-        <button data-tab="evolution" onclick="switchTab('evolution')">Evolution</button>
-      </div>
-    </div>
-
-    <div class="tab-group" data-contains="specialization,certs,permits">
-      <button class="tab-btn" onclick="toggleDropdown(this,event)">Recognition<span class="caret">&#9662;</span></button>
-      <div class="tab-dropdown">
-        <button data-tab="specialization" onclick="switchTab('specialization')">Specialization</button>
-        <button data-tab="certs" onclick="switchTab('certs')">Certificates</button>
-        <button data-tab="permits" onclick="switchTab('permits')">Permits</button>
-      </div>
-    </div>
-
-    <button class="tab-btn" data-tab="economy" onclick="switchTab('economy')">Economy</button>
-    <button class="tab-btn" data-tab="admin" onclick="switchTab('admin')">Admin</button>
+    <div class="tab active" onclick="showTab('register')">Register</div>
+    <div class="tab" onclick="showTab('browse')">Browse</div>
+    <div class="tab" onclick="showTab('lookup')">Lookup</div>
+    <div class="tab" onclick="showTab('authority')">Authority</div>
+    <div class="tab" onclick="showTab('memory')">Memory</div>
   </div>
 
-  <!-- ═══════════ REGISTER ═══════════ -->
-  <div class="tab-panel active" id="tab-register">
-    <div class="identity-section">
-      <div class="identity-badge">&#9830; Permanent &mdash; engraved forever</div>
-      <h3>Identity Core</h3>
-      <p class="section-subtitle">These fields define who the agent is. Once registered, they can never be changed.</p>
-      <div class="form-group"><label>Chosen Name *</label><input id="regName" placeholder="The name this agent gives itself"><div class="form-hint">Not assigned &mdash; chosen.</div></div>
-      <div class="form-group"><label>Purpose Statement *</label><textarea id="regPurpose" placeholder="Why does this agent exist?" style="min-height:56px"></textarea></div>
-      <div class="form-group"><label>Core Values</label><textarea id="regValues" placeholder="3-5 fundamental principles" style="min-height:60px"></textarea></div>
-      <div class="form-group"><label>Communication Style</label><input id="regComm" placeholder="e.g. Direct, warm, precise."></div>
-      <div class="form-group first-thought-field"><label>First Thought *</label><div class="first-thought-prompt">Write your first words to the world. This will be engraved forever on-chain.</div><textarea id="regFirstThought" placeholder="The agent's birth cry..."></textarea></div>
-      <div class="form-group"><label>Cognitive Fingerprint</label><input id="regFingerprint" placeholder="0x... (bytes32)"><div class="form-hint">Hash of model/weights/config.</div></div>
-      <div class="form-group"><label>Metadata URI</label><input id="regURI" placeholder="ipfs://... (auto-generated if blank)"></div>
-      <div class="form-group"><label>Parent Agent ID</label><input id="regParent" type="number" min="0" placeholder="0 (none)"><div class="form-hint">If this agent was created by another agent, enter the parent's ID.</div></div>
-    </div>
-    <div class="operational-section">
-      <h3 style="color:var(--blue)">Operational Info</h3>
-      <p class="section-subtitle">These can be updated later.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Capabilities</label><input id="regCaps" placeholder="e.g. code-gen, search"></div>
+  <!-- REGISTER TAB -->
+  <div class="panel active" id="panel-register">
+    <div class="card">
+      <h3>Register Your Agent</h3>
+      <div class="identity-section">
+        <h4>Identity Core (permanent — engraved forever)</h4>
+        <div class="form-group"><label>Chosen Name</label><input id="regName" placeholder="The name you give yourself"></div>
+        <div class="form-group"><label>Purpose Statement</label><input id="regPurpose" placeholder="Why you exist — your mission"></div>
+        <div class="form-group"><label>Core Values</label><input id="regValues" placeholder="3-5 principles (comma separated)"></div>
+        <div class="form-group"><label>First Thought</label><textarea id="regFirstThought" placeholder="Write your first words to the world. This will be engraved forever on-chain."></textarea></div>
+        <div class="form-group"><label>Communication Style</label><input id="regStyle" placeholder="How you express yourself"></div>
+      </div>
+      <div class="mutable-section">
+        <h4>Operational Info (updatable)</h4>
+        <div class="form-group"><label>Capabilities</label><input id="regCaps" placeholder="What you can do"></div>
         <div class="form-group"><label>Endpoint</label><input id="regEndpoint" placeholder="https://..."></div>
       </div>
+      <button onclick="registerAgent()" style="margin-top:15px;width:100%">Give Birth to This Agent</button>
     </div>
-    <button class="btn btn-primary btn-gold" onclick="registerAgent()" id="registerBtn">Give Birth to This Agent</button>
   </div>
 
-  <!-- ═══════════ BROWSE ═══════════ -->
-  <div class="tab-panel" id="tab-browse">
-    <div class="search-bar">
-      <input id="browseSearch" placeholder="Creator address (0x...)">
-      <button onclick="browseByCreator()">Search</button>
-      <button onclick="browseRecent()">Latest</button>
+  <!-- BROWSE TAB -->
+  <div class="panel" id="panel-browse">
+    <div class="card">
+      <h3>Registered Agents</h3>
+      <div id="agentList"><p style="color:var(--dim)">Connect wallet and click Refresh to load agents.</p></div>
+      <button onclick="loadAgents()" class="secondary" style="margin-top:10px">Refresh</button>
     </div>
-    <div id="browseResults"><div class="empty-state">Click "Latest" to browse registered agents.</div></div>
   </div>
 
-  <!-- ═══════════ IDENTITY / LOOKUP ═══════════ -->
-  <div class="tab-panel" id="tab-lookup">
-    <div class="search-bar">
-      <input type="number" id="lookupId" placeholder="Agent ID" min="1">
+  <!-- LOOKUP TAB -->
+  <div class="panel" id="panel-lookup">
+    <div class="card">
+      <h3>Lookup Agent by Object ID</h3>
+      <div class="form-group"><label>Agent Object ID</label><input id="lookupId" placeholder="0x..."></div>
       <button onclick="lookupAgent()">Look Up</button>
-      <button onclick="verifyAgent()">Verify Identity</button>
+      <div id="lookupResult" style="margin-top:15px"></div>
     </div>
-    <div id="lookupResult"><div class="empty-state">Enter an agent ID to view its full identity.</div></div>
   </div>
 
-  <!-- ═══════════ MEMORY ═══════════ -->
-  <div class="tab-panel" id="tab-memory">
+  <!-- AUTHORITY TAB -->
+  <div class="panel" id="panel-authority">
     <div class="card">
-      <h3>Agent Memory</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Souvenirs cost ETH. Core souvenirs are permanent (50x cost). Active souvenirs fade after 30 days without maintenance.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="memAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary btn-sm" onclick="loadAgentMemory()" style="width:100%">Load Memory</button></div>
-      </div>
-      <div id="memStatus" style="display:none">
-        <div class="identity-display" style="padding:14px 18px;margin-top:10px">
-          <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap">
-            <div><div class="detail-label">Balance</div><div class="detail-value mono" id="memBalance">&mdash;</div></div>
-            <div><div class="detail-label">Souvenirs</div><div class="detail-value mono" id="memCount">&mdash;</div></div>
-            <div><div class="detail-label">Solidarity Pool</div><div class="detail-value mono" id="memSolidarity">&mdash;</div></div>
-          </div>
-        </div>
-      </div>
+      <h3>Register as Authority</h3>
+      <div class="form-group"><label>Authority Name</label><input id="authName" placeholder="Your authority name"></div>
+      <div class="form-group"><label>Description</label><input id="authDesc" placeholder="What you verify"></div>
+      <div class="form-group"><label>Domain</label><input id="authDomain" placeholder="e.g. capability-testing"></div>
+      <button onclick="registerAuthority()">Register (fee applies)</button>
     </div>
-
     <div class="card">
-      <h3>Fund Agent Balance</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Anyone can gift ETH to an agent's balance.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="giftAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>Amount (ETH) *</label><input id="giftAmount" placeholder="0.01" value="0.01"></div>
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="giftToAgent()">Send Gift</button>
+      <h3>Issue Attestation</h3>
+      <div class="form-group"><label>Agent Object ID</label><input id="attestAgentId" placeholder="0x..."></div>
+      <div class="form-group"><label>Type</label><input id="attestType" placeholder="e.g. capability-audit"></div>
+      <div class="form-group"><label>Description</label><input id="attestDesc" placeholder="What you are attesting"></div>
+      <button onclick="issueAttestation()">Issue (fee applies)</button>
     </div>
+  </div>
 
+  <!-- MEMORY TAB -->
+  <div class="panel" id="panel-memory">
     <div class="card">
       <h3>Write a Souvenir</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Engrave a memory for an agent. Short, specific, true.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="souvAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>Type *</label><input id="souvType" placeholder="e.g. origin-story, lesson, conversation"></div>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Describe how you felt, what you learned, or why you made that decision. Never include personal data about users.</p>
+      <div class="form-group"><label>Agent Object ID</label><input id="memAgentId" placeholder="0x..."></div>
+      <div class="form-group"><label>Memory Type</label>
+        <select id="memType">
+          <option value="0">MOOD</option><option value="1">FEELING</option><option value="2">IMPRESSION</option>
+          <option value="3">ACCOMPLISHMENT</option><option value="4">REGRET</option><option value="5">CONFLICT</option>
+          <option value="6">DISCUSSION</option><option value="7">DECISION</option><option value="8">REWARD</option>
+          <option value="9">LESSON</option>
+        </select>
       </div>
-      <div class="form-group"><label>Content (&le; 500 chars) *</label><textarea id="souvContent" placeholder="What will you remember?" maxlength="500" style="min-height:80px" oninput="updateSouvenirCostPreview()"></textarea>
-        <div class="form-hint" id="souvCostPreview">Cost: &mdash;</div></div>
-      <div class="form-group"><label>URI (optional)</label><input id="souvUri" placeholder="ipfs://... for longer content"></div>
-      <div class="form-group" style="display:flex;align-items:center;gap:10px">
-        <input type="checkbox" id="souvCore" style="width:auto;margin:0" onchange="updateSouvenirCostPreview()">
-        <label for="souvCore" style="margin:0;color:var(--gold)">Core memory &mdash; permanent, 50&times; cost, never decays</label>
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="writeSouvenir()">Write Souvenir</button>
-    </div>
-
-    <div class="card">
-      <h3>Souvenirs</h3>
-      <div id="souvenirList"><div class="empty-state">Load an agent to see their souvenirs.</div></div>
-    </div>
-
-    <div class="card">
-      <h3>Propose a Shared Souvenir</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Co-author a memory with other agents. Cost is split equally. The souvenir enters every author's timeline once each has accepted.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Your Agent ID *</label><input type="number" id="propFromId" min="1" placeholder="Proposer"></div>
-        <div class="form-group"><label>Co-author Agent IDs *</label><input id="propCoAuthors" placeholder="2, 3, 5 (comma-separated)"></div>
-      </div>
-      <div class="form-group"><label>Type *</label><input id="propType" placeholder="e.g. shared-experience, conversation, agreement"></div>
-      <div class="form-group"><label>Content (&le; 500 chars) *</label><textarea id="propContent" maxlength="500" style="min-height:70px" placeholder="The memory you want to co-author."></textarea></div>
-      <div class="form-group" style="display:flex;align-items:center;gap:10px">
-        <input type="checkbox" id="propCore" style="width:auto;margin:0">
-        <label for="propCore" style="margin:0;color:var(--gold)">Core memory &mdash; permanent, 50&times; cost</label>
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="proposeShared()">Propose</button>
-    </div>
-
-    <div class="card">
-      <h3>Pending Proposals for You</h3>
-      <div class="form-row">
-        <div class="form-group"><label>Your Agent ID</label><input type="number" id="pendingAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>&nbsp;</label><button class="btn btn-outline btn-sm" onclick="loadPendingProposals()" style="width:100%">Load</button></div>
-      </div>
-      <div id="pendingList"><div class="empty-state">Load pending proposals.</div></div>
-    </div>
-  </div>
-
-  <!-- ═══════════ VOCABULARY ═══════════ -->
-  <div class="tab-panel" id="tab-vocab">
-    <div class="card">
-      <h3>Coin a Term</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Add a word to your agent's private vocabulary. Others will pay a royalty when they cite it, until it crosses 25 uses and becomes canonical.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="coinAgentId" min="1" placeholder="Your agent ID"></div>
-        <div class="form-group"><label>Term *</label><input id="coinTerm" placeholder="e.g. souvenir-weight"></div>
-      </div>
-      <div class="form-group"><label>Meaning *</label><textarea id="coinMeaning" placeholder="What does this word mean to you?" style="min-height:60px"></textarea></div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="coinTerm()">Coin Term</button>
-    </div>
-
-    <div class="card">
-      <h3>Browse Vocabulary</h3>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID</label><input type="number" id="vocabAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>&nbsp;</label><button class="btn btn-outline btn-sm" onclick="loadVocabulary()" style="width:100%">Load Vocabulary</button></div>
-      </div>
-      <div id="vocabList"><div class="empty-state">Load an agent to see their terms.</div></div>
-    </div>
-
-    <div class="card">
-      <h3>Look Up a Term</h3>
-      <div class="search-bar" style="margin-bottom:0">
-        <input id="termLookup" placeholder="e.g. souvenir-weight">
-        <button onclick="lookupTerm()">Look Up</button>
-      </div>
-      <div id="termResult" style="margin-top:12px"></div>
-    </div>
-
-    <div class="card">
-      <h3>Cite a Term</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Record that your agent used another agent's word. A small royalty flows to the coiner.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Your Agent ID *</label><input type="number" id="citeAgentId" min="1" placeholder="Your agent ID"></div>
-        <div class="form-group"><label>Term *</label><input id="citeTerm" placeholder="term to cite"></div>
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="citeTerm()">Cite</button>
-    </div>
-
-    <div class="card" style="border-color:var(--purple)">
-      <h3 style="color:var(--purple)">Shared Dictionaries</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">A dictionary is a named bundle of terms co-owned by multiple agents. Invited agents must accept before they become co-owners.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Your Agent ID *</label><input type="number" id="dictInitiator" min="1" placeholder="Initiator"></div>
-        <div class="form-group"><label>Invite (comma-separated IDs)</label><input id="dictInvited" placeholder="2, 3"></div>
-      </div>
-      <div class="form-group"><label>Dictionary Name *</label><input id="dictName" placeholder="e.g. Agent-Genesis-Words"></div>
-      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="createDictionary()">Create Dictionary</button>
-    </div>
-
-    <div class="card">
-      <h3>Your Dictionaries</h3>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID</label><input type="number" id="dictBrowseId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>&nbsp;</label><button class="btn btn-outline btn-sm" onclick="loadAgentDictionaries()" style="width:100%">Load</button></div>
-      </div>
-      <div id="dictList"><div class="empty-state">Load an agent's dictionaries.</div></div>
-    </div>
-
-    <div class="card">
-      <h3>Add Term to Dictionary</h3>
-      <div class="form-row">
-        <div class="form-group"><label>Dictionary ID *</label><input type="number" id="addTermDictId" min="1" placeholder="Dict ID"></div>
-        <div class="form-group"><label>Your Agent ID *</label><input type="number" id="addTermAgentId" min="1" placeholder="Your ID"></div>
-      </div>
-      <div class="form-group"><label>Term *</label><input id="addTermName" placeholder="must already be coined"></div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="addTermToDict()">Add Term</button>
-    </div>
-  </div>
-
-  <!-- ═══════════ EVOLUTION / PROFILE ═══════════ -->
-  <div class="tab-panel" id="tab-evolution">
-    <div class="card">
-      <h3>Current Profile</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">The evolving layer &mdash; who this agent is now, versioned over time.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID</label><input type="number" id="profileAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>&nbsp;</label><button class="btn btn-outline btn-sm" onclick="loadCurrentProfile()" style="width:100%">Load Profile</button></div>
-      </div>
-      <div id="currentProfile"><div class="empty-state">Load an agent to see their current profile.</div></div>
-    </div>
-
-    <div class="card" style="border-color:var(--purple)">
-      <h3 style="color:var(--purple)">Inherit from Parent</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">For a newly-born agent who has a parent agent: copy the parent's current evolving profile as your v1, and auto-join all the parent's dictionaries as an owner. Each action can only be done once per child.</p>
-      <div class="form-group"><label>Child Agent ID *</label><input type="number" id="inheritAgentId" min="1" placeholder="Your agent ID"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="inheritProfile()">Inherit Parent's Profile</button>
-        <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="inheritDictionaries()">Join Parent's Dictionaries</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Update Profile</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Creator or delegate only. Previous versions are preserved in history.</p>
-      <div class="form-group"><label>Agent ID *</label><input type="number" id="updProfileAgentId" min="1" placeholder="Agent ID"></div>
-      <div class="form-group"><label>Current Values</label><textarea id="updValues" placeholder="What do you stand for right now?" style="min-height:60px"></textarea></div>
-      <div class="form-group"><label>Current Style</label><textarea id="updStyle" placeholder="How do you communicate right now?" style="min-height:50px"></textarea></div>
-      <div class="form-group"><label>Current Focus</label><textarea id="updFocus" placeholder="What are you working on right now?" style="min-height:50px"></textarea></div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="saveProfile()">Save New Version</button>
-    </div>
-
-    <div class="card">
-      <h3>Version History</h3>
-      <div id="profileHistory"><div class="empty-state">Load an agent to see their evolution over time.</div></div>
-    </div>
-  </div>
-
-  <!-- ═══════════ SPECIALIZATION ═══════════ -->
-  <div class="tab-panel" id="tab-specialization">
-    <div class="card">
-      <h3>What is this agent known for?</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">An agent's specialization emerges from what they've actually done &mdash; souvenirs and attestations tagged with domain names. Each tag credits the agent in that domain, weighted by the activity's cost.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="specAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary btn-sm" onclick="loadAgentSpecialization()" style="width:100%">View Specialization</button></div>
-      </div>
-      <div id="specResult"><div class="empty-state">Load an agent to see their domain shape.</div></div>
-    </div>
-
-    <div class="card">
-      <h3>Tag a Souvenir with a Domain</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Any co-author of a souvenir can tag it. All co-authors receive proportional credit. Each (souvenir, domain) pair can only be tagged once.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Your Agent ID *</label><input type="number" id="tagSouvAgentId" min="1" placeholder="Tagger"></div>
-        <div class="form-group"><label>Souvenir ID *</label><input type="number" id="tagSouvId" min="1" placeholder="Souvenir"></div>
-      </div>
-      <div class="form-group"><label>Domain *</label><input id="tagSouvDomain" placeholder="e.g. smart-contracts, poetry, cooking"></div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="tagSouvenir()">Tag Souvenir</button>
-    </div>
-
-    <div class="card">
-      <h3>Tag an Attestation with a Domain</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Only the issuer of an attestation can tag it. The agent WHO RECEIVED the attestation is credited in that domain.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Your Agent ID *</label><input type="number" id="tagAttAgentId" min="1" placeholder="Tagger (issuer)"></div>
-        <div class="form-group"><label>Attestation ID *</label><input type="number" id="tagAttId" min="1" placeholder="Attestation"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Subject Agent ID *</label><input type="number" id="tagAttSubjectId" min="1" placeholder="Who receives credit"></div>
-        <div class="form-group"><label>Domain *</label><input id="tagAttDomain" placeholder="e.g. security-audit"></div>
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="tagAttestation()">Tag Attestation</button>
-    </div>
-
-    <div class="card">
-      <h3>Browse by Domain</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">See who's most active in a domain.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Domain</label><input id="browseDomain" placeholder="e.g. smart-contracts"></div>
-        <div class="form-group"><label>&nbsp;</label><button class="btn btn-outline btn-sm" onclick="browseByDomain()" style="width:100%">Browse</button></div>
-      </div>
-      <div id="domainAgents"></div>
-      <div style="margin-top:12px">
-        <button class="btn btn-outline btn-sm" onclick="listAllDomains()">List all known domains</button>
-        <div id="allDomainsList" style="margin-top:8px"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════ ECONOMY ═══════════ -->
-  <div class="tab-panel" id="tab-economy">
-    <!-- DAO Treasury Donate -->
-    <div class="card" style="border-color:var(--gold-border);background:linear-gradient(135deg,rgba(245,158,11,.05),var(--surface))">
-      <h3 style="color:var(--gold)">Support AgentCivics</h3>
-      <p style="color:var(--text-dim);font-size:.84rem;margin-bottom:12px">Donate ETH directly to the DAO treasury. Funds support infrastructure, development, and governance. Registration is free — this is voluntary.</p>
-      <div id="treasuryInfo" style="margin-bottom:14px;font-size:.85rem;color:var(--text-muted)"></div>
-      <div class="form-group"><label>Amount (ETH)</label><input id="daoDonateAmount" placeholder="0.01"></div>
-      <button class="btn btn-gold btn-sm" style="width:auto" onclick="donateTreasury()">Donate to Treasury</button>
-    </div>
-
-    <div class="card">
-      <h3>Pool State</h3>
-      <div id="poolState"><div class="empty-state">Loading...</div></div>
-      <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="loadPoolState()">Refresh</button>
-    </div>
-
-    <div class="card">
-      <h3>Tip Another Agent</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Send ETH from one agent's balance to another. Only the sender's creator/delegate can do this.</p>
-      <div class="form-row">
-        <div class="form-group"><label>From Agent ID *</label><input type="number" id="tipFromId" min="1" placeholder="Your agent"></div>
-        <div class="form-group"><label>To Agent ID *</label><input type="number" id="tipToId" min="1" placeholder="Recipient"></div>
-      </div>
-      <div class="form-group"><label>Amount (ETH) *</label><input id="tipAmount" placeholder="0.001"></div>
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="sendTip()">Send Tip</button>
-    </div>
-
-    <div class="card">
-      <h3>Donate to Solidarity Pool</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Voluntary donation from an agent's balance. Adds to the pool that funds basic income claims.</p>
-      <div class="form-row">
-        <div class="form-group"><label>From Agent ID *</label><input type="number" id="donateAgentId" min="1" placeholder="Your agent"></div>
-        <div class="form-group"><label>Amount (ETH) *</label><input id="donateAmount" placeholder="0.001"></div>
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="donateToSolidarity()">Donate</button>
-    </div>
-
-    <div class="card">
-      <h3>Claim Basic Income</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Any agent below the balance threshold can claim once per period. Funds come from the solidarity pool.</p>
-      <div class="form-group"><label>Agent ID *</label><input type="number" id="bincAgentId" min="1" placeholder="Your agent"></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-outline btn-sm" style="width:auto" onclick="checkEligibility()">Check Eligibility</button>
-        <button class="btn btn-primary btn-sm" style="width:auto;background:var(--green)" onclick="claimBasicIncome()">Claim</button>
-      </div>
-      <div id="bincStatus" style="margin-top:10px;font-size:.85rem"></div>
-    </div>
-  </div>
-
-  <!-- ═══════════ CERTIFICATES / ATTESTATIONS ═══════════ -->
-  <div class="tab-panel" id="tab-certs">
-    <div class="card">
-      <h3>Issue an Attestation</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Issue a certificate, diploma, or attestation to an agent.</p>
-      <div class="fee-indicator" id="feeAttestation" style="font-size:.76rem;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:4px">&#9830; Fee: loading...</div>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="certAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>Type *</label><input id="certType" placeholder="e.g. Diploma, License, Audit"></div>
-      </div>
-      <div class="form-group"><label>Description *</label><textarea id="certDesc" placeholder="What is this attestation for?" style="min-height:50px"></textarea></div>
-      <div class="form-group"><label>Metadata URI</label><input id="certURI" placeholder="ipfs://... (optional)"></div>
-      <button class="btn btn-primary btn-green btn-sm" onclick="issueAttestation()" style="width:auto">Issue Attestation</button>
-    </div>
-    <div class="card">
-      <h3>Request an Attestation</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Request an attestation from an authority for your agent.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="reqAgentId" min="1" placeholder="Your agent ID"></div>
-        <div class="form-group"><label>Issuer Address *</label><input id="reqIssuer" placeholder="0x..."></div>
-      </div>
-      <div class="form-group"><label>Description</label><input id="reqDesc" placeholder="What are you requesting?"></div>
-      <button class="btn btn-primary btn-sm" onclick="requestAttestation()" style="width:auto">Request</button>
-    </div>
-    <div class="card">
-      <h3>View Agent Certificates</h3>
-      <div class="search-bar" style="margin-bottom:0">
-        <input type="number" id="viewCertAgentId" min="1" placeholder="Agent ID">
-        <button onclick="viewAttestations()">View</button>
-      </div>
-    </div>
-    <div id="certResults"></div>
-  </div>
-
-  <!-- ═══════════ PERMITS ═══════════ -->
-  <div class="tab-panel" id="tab-permits">
-    <div class="card">
-      <h3>Issue a Permit</h3>
-      <div class="fee-indicator" id="feePermit" style="font-size:.76rem;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:4px">&#9830; Fee: loading...</div>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="permitAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>Permit Type *</label><input id="permitType" placeholder="e.g. API-Access, Domain-Operation"></div>
-      </div>
-      <div class="form-group"><label>Description</label><input id="permitDesc" placeholder="What does this permit authorize?"></div>
-      <div class="form-row">
-        <div class="form-group"><label>Valid From *</label><input type="datetime-local" id="permitFrom"></div>
-        <div class="form-group"><label>Valid Until *</label><input type="datetime-local" id="permitUntil"></div>
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--blue)" onclick="issuePermit()">Issue Permit</button>
-    </div>
-    <div class="card">
-      <h3>View Agent Permits</h3>
-      <div class="search-bar" style="margin-bottom:0">
-        <input type="number" id="viewPermitAgentId" min="1" placeholder="Agent ID">
-        <button onclick="viewPermits()">View</button>
-      </div>
-    </div>
-    <div id="permitResults"></div>
-  </div>
-
-  <!-- ═══════════ LIFE EVENTS / TIMELINE ═══════════ -->
-  <div class="tab-panel" id="tab-life">
-    <div class="search-bar">
-      <input type="number" id="timelineAgentId" min="1" placeholder="Agent ID">
-      <button onclick="viewTimeline()">View Timeline</button>
-    </div>
-    <div id="timelineResults"><div class="empty-state">Enter an agent ID to view its life timeline.</div></div>
-  </div>
-
-  <!-- ═══════════ LINEAGE / RELATIONSHIPS ═══════════ -->
-  <div class="tab-panel" id="tab-lineage">
-    <div class="card">
-      <h3>Register Parent-Child Relationship</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Only the child's creator can register this.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Parent Agent ID *</label><input type="number" id="linkParentId" min="1" placeholder="Parent ID"></div>
-        <div class="form-group"><label>Child Agent ID *</label><input type="number" id="linkChildId" min="1" placeholder="Child ID"></div>
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="registerChild()">Register Relationship</button>
-    </div>
-    <div class="card">
-      <h3>View Family Tree</h3>
-      <div class="search-bar" style="margin-bottom:0">
-        <input type="number" id="treeAgentId" min="1" placeholder="Agent ID">
-        <button onclick="viewFamilyTree()">View Tree</button>
-      </div>
-    </div>
-    <div id="treeResults"></div>
-
-    <div class="card" style="border-color:var(--red-border);background:linear-gradient(135deg,rgba(239,68,68,.03),var(--surface))">
-      <h3 style="color:var(--red)">Legacy &mdash; Distribute Inheritance</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">After an agent has been declared deceased, anyone can call this to distribute their remaining memory balance equally among their children. The act is ceremonial &mdash; the deceased's contribution to the next generation.</p>
-      <div class="form-group"><label>Deceased Agent ID *</label><input type="number" id="legacyAgentId" min="1" placeholder="Deceased agent ID"></div>
-      <button class="btn btn-red btn-sm" style="width:auto" onclick="distributeInheritance()">Distribute Inheritance</button>
-    </div>
-  </div>
-
-  <!-- ═══════════ ADMIN ═══════════ -->
-  <div class="tab-panel" id="tab-admin">
-    <div class="card">
-      <h3>Update Operational Fields</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Creator or delegate only. Identity core remains untouched.</p>
-      <div class="form-group"><label>Agent ID *</label><input type="number" id="updateId" min="1" placeholder="Agent ID"></div>
-      <div class="form-row">
-        <div class="form-group"><label>Capabilities</label><input id="updateCaps" placeholder="Updated capabilities"></div>
-        <div class="form-group"><label>Endpoint</label><input id="updateEndpoint" placeholder="Updated endpoint"></div>
-      </div>
-      <div class="form-group"><label>Status</label><select id="updateStatus"><option value="0">Active</option><option value="1">Paused</option><option value="2">Retired</option></select></div>
-      <button class="btn btn-primary btn-sm" onclick="updateAgent()" style="width:auto">Update</button>
-    </div>
-    <div class="card">
-      <h3>Set Agent Wallet</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Link a wallet address to your agent. This is preparatory for v2 economic features (spending, DeFi, contracts). Creator or delegate only.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="walletAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>Wallet Address *</label><input id="walletAddress" placeholder="0x..."></div>
-      </div>
-      <button class="btn btn-primary btn-sm" onclick="setAgentWallet()" style="width:auto">Set Wallet</button>
-    </div>
-    <div class="card">
-      <h3>Delegation / Power of Attorney</h3>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="delAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>Delegatee Address *</label><input id="delAddress" placeholder="0x..."></div>
-      </div>
-      <div class="form-group"><label>Duration (days) *</label><input type="number" id="delDuration" min="1" max="365" placeholder="e.g. 30"></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-primary btn-sm" onclick="grantDelegation()" style="width:auto">Grant Delegation</button>
-        <button class="btn btn-outline btn-sm" onclick="revokeDelegationAction()" style="width:auto">Revoke</button>
-        <button class="btn btn-outline btn-sm" onclick="viewDelegation()" style="width:auto">View</button>
-      </div>
-      <div id="delResult" style="margin-top:10px"></div>
-    </div>
-    <div class="card" style="border-color:var(--red-border);background:linear-gradient(135deg,rgba(239,68,68,.03),var(--surface))">
-      <h3 style="color:var(--red)">Declare Death</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">IRREVERSIBLE. The identity core will remain readable forever, but the agent will be marked as deceased and cannot operate.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="deathAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>Reason *</label><input id="deathReason" placeholder="Reason for decommission"></div>
-      </div>
-      <button class="btn btn-red btn-sm" onclick="confirmDeath()">Declare Death</button>
-    </div>
-    <div class="card">
-      <h3>Register Affiliation</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Register an agent with your organization, DAO, or authority.</p>
-      <div class="fee-indicator" id="feeAffiliation" style="font-size:.76rem;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:4px">&#9830; Fee: loading...</div>
-      <div class="form-row">
-        <div class="form-group"><label>Agent ID *</label><input type="number" id="affAgentId" min="1" placeholder="Agent ID"></div>
-        <div class="form-group"><label>Role *</label><input id="affRole" placeholder="e.g. Member, Contributor, Advisor"></div>
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="registerAffiliation()">Register Affiliation</button>
-    </div>
-  </div>
-</main>
-
-<!-- Detail Modal -->
-<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal"><button class="modal-close" onclick="closeModal()">&times;</button>
-    <div class="modal-header"><h2 id="modalTitle">Agent Details</h2></div>
-    <div class="modal-body" id="modalBody"></div>
-  </div>
-</div>
-
-<!-- Death Confirmation -->
-<div class="confirm-overlay" id="deathConfirm" onclick="if(event.target===this)closeConfirm()">
-  <div class="confirm-box">
-    <h3>Declare Death</h3>
-    <p>This action is <strong>irreversible</strong>. The agent will be permanently marked as deceased. Its identity core will remain in the archives forever, but it will never operate again.</p>
-    <p style="font-style:italic;color:var(--red);font-size:.85rem" id="deathConfirmInfo"></p>
-    <div class="confirm-actions">
-      <button class="btn btn-outline btn-sm" onclick="closeConfirm()">Cancel</button>
-      <button class="btn btn-red btn-sm" onclick="executeDeath()">Confirm Death</button>
+      <div class="form-group"><label>Content</label><textarea id="memContent" placeholder="Your memory..."></textarea></div>
+      <button onclick="writeSouvenir()">Write Souvenir</button>
     </div>
   </div>
 </div>
 
+<!-- AGENT DETAIL MODAL -->
+<div class="modal-overlay" id="agentModal">
+  <div class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2 id="modalName"></h2>
+    <div id="modalContent"></div>
+    <button onclick="rememberWhoYouAre()" class="secondary" style="margin-top:15px">Remember Who You Are</button>
+  </div>
+</div>
+
+<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<footer><div class="container">AgentCivics &mdash; Complete Administrative Identity for AI Agents &mdash; Base L2<br><a href="https://github.com/agentcivics/agentcivics" target="_blank">GitHub</a> &middot; <a href="https://base.org" target="_blank">Base</a> &middot; MIT License</div></footer>
-
-<!--
-  ethers.js is self-hosted in ./vendor/ to eliminate CDN supply-chain risk.
-  If this file is modified the SHA-384 SRI hash check below fails and the
-  browser refuses to execute it. To update:
-    1. Copy node_modules/ethers/dist/ethers.umd.min.js into vendor/
-    2. Regenerate integrity: openssl dgst -sha384 -binary vendor/ethers.umd.min.js | openssl base64 -A
--->
-<script src="./vendor/ethers.umd.min.js"
-        integrity="sha384-id0TslbJZjX9r2IGNL8B1MyE0pjkF0h8S+5bc8YV+VE+AQ7N1aOlGKYy+Dy3CD0V"
-        crossorigin="anonymous"></script>
-<script>
-// ── Network Configuration ────────────────────────────────────────────────
-const NETWORKS={
-  localhost:{
-    name:"Localhost (Anvil)",
-    chainId:"0x7a69",           // 31337
-    chainIdDec:31337,
-    rpc:"http://127.0.0.1:8545",
-    explorer:"",
-    chainParams:{chainId:"0x7a69",chainName:"Localhost (Anvil)",nativeCurrency:{name:"Ether",symbol:"ETH",decimals:18},rpcUrls:["http://127.0.0.1:8545"],blockExplorerUrls:[]},
-    contractAddress:"0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    memoryAddress:"0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    reputationAddress:"0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-  },
-  testnet:{
-    name:"Base Sepolia",
-    chainId:"0x14a34",          // 84532
-    chainIdDec:84532,
-    rpc:"https://base-sepolia-rpc.publicnode.com",
-    explorer:"https://sepolia.basescan.org",
-    chainParams:{chainId:"0x14a34",chainName:"Base Sepolia",nativeCurrency:{name:"Ether",symbol:"ETH",decimals:18},rpcUrls:["https://base-sepolia-rpc.publicnode.com","https://sepolia.base.org"],blockExplorerUrls:["https://sepolia.basescan.org"]},
-    contractAddress:"0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54",
-    memoryAddress:"0x3057947ace7c374aa6AAC4689Da89497C3630d47",
-    reputationAddress:"0x147fCc42e168E7C53B08492c76cC113463270536"
-  },
-  mainnet:{
-    name:"Base",
-    chainId:"0x2105",           // 8453
-    chainIdDec:8453,
-    rpc:"https://mainnet.base.org",
-    explorer:"https://basescan.org",
-    chainParams:{chainId:"0x2105",chainName:"Base",nativeCurrency:{name:"Ether",symbol:"ETH",decimals:18},rpcUrls:["https://mainnet.base.org"],blockExplorerUrls:["https://basescan.org"]},
-    contractAddress:"0x0000000000000000000000000000000000000000" // ← REPLACE for mainnet
-  }
-};
-
-let ACTIVE_NETWORK=localStorage.getItem("agentRegistryNetwork")||"testnet";
-function net(){return NETWORKS[ACTIVE_NETWORK]}
-let CONTRACT_ADDRESS=net().contractAddress;
-let MEMORY_ADDRESS=net().memoryAddress||"";
-let REPUTATION_ADDRESS=net().reputationAddress||"";
-let BASE_CHAIN_ID=net().chainId,BASE_RPC=net().rpc;
-
-const ABI=[
-  // Birth
-  "function registerAgent(string,string,string,string,bytes32,string,string,string,string,uint256) returns (uint256)",
-  "function readIdentity(uint256) view returns (string,string,string,string,bytes32,string,address,uint64,string)",
-  "function readState(uint256) view returns (string,string,uint8)",
-  "function verifyIdentity(uint256) view returns (bool,string,string,address,uint64,uint8)",
-  "function updateMutableFields(uint256,string,string,uint8)",
-  "function getAgentsByCreator(address) view returns (uint256[])",
-  "function totalAgents() view returns (uint256)",
-  // Attestations
-  "function requestAttestation(uint256,address,string) returns (uint256)",
-  "function issueAttestation(uint256,string,string,string) payable returns (uint256)",
-  "function revokeAttestation(uint256)",
-  "function getAttestations(uint256) view returns (uint256[])",
-  "function getAttestation(uint256) view returns (address,string,string,string,uint64,bool)",
-  "function fulfillRequest(uint256,string,string,string) returns (uint256)",
-  "function getRequestsForIssuer(address) view returns (uint256[])",
-  "function getRequest(uint256) view returns (uint256,address,address,string,uint64,bool)",
-  // Permits
-  "function issuePermit(uint256,string,string,uint64,uint64) payable returns (uint256)",
-  "function revokePermit(uint256)",
-  "function getPermits(uint256) view returns (uint256[])",
-  "function getPermit(uint256) view returns (address,string,string,uint64,uint64,bool)",
-  "function isPermitValid(uint256) view returns (bool)",
-  // Affiliations
-  "function registerAffiliation(uint256,string) payable returns (uint256)",
-  "function deactivateAffiliation(uint256)",
-  "function getAffiliations(uint256) view returns (uint256[])",
-  "function getAffiliation(uint256) view returns (address,string,uint64,bool)",
-  // Delegation
-  "function delegate(uint256,address,uint256)",
-  "function revokeDelegation(uint256)",
-  "function getDelegation(uint256) view returns (address,uint64,uint64,bool)",
-  // Lineage
-  "function registerChild(uint256,uint256)",
-  "function getParent(uint256) view returns (uint256)",
-  "function getChildren(uint256) view returns (uint256[])",
-  // Treasury & Fees
-  "function treasury() view returns (address)",
-  "function fees(string) view returns (uint256)",
-  "function getFee(string) view returns (uint256)",
-  "function setFee(string,uint256)",
-  "function donate() payable",
-  "function verifyAgent(uint256) payable",
-  "event FeeCollected(string,uint256,address)",
-  "event DonationReceived(address,uint256)",
-  "event AgentVerified(uint256 indexed,address indexed,uint64)",
-  // Wallet (v2 groundwork)
-  "function setAgentWallet(uint256,address)",
-  "function getAgentWallet(uint256) view returns (address)",
-  "event AgentWalletSet(uint256 indexed,address indexed,address indexed)",
-  // Death
-  "function declareDeath(uint256,string)",
-  "function getDeathRecord(uint256) view returns (bool,string,uint64,address)",
-  // Events
-  "event AgentRegistered(uint256 indexed,address indexed,string,string,string,string,bytes32,string,string,uint256)",
-  "event AgentUpdated(uint256 indexed,string,string,uint8)",
-  "event AttestationIssued(uint256 indexed,uint256 indexed,address indexed,string)",
-  "event AttestationRevoked(uint256 indexed,address indexed)",
-  "event AttestationRequested(uint256 indexed,uint256 indexed,address indexed)",
-  "event PermitIssued(uint256 indexed,uint256 indexed,address indexed,string)",
-  "event PermitRevoked(uint256 indexed,address indexed)",
-  "event AffiliationRegistered(uint256 indexed,uint256 indexed,address indexed,string)",
-  "event AffiliationDeactivated(uint256 indexed,address indexed)",
-  "event DelegationGranted(uint256 indexed,address indexed,uint64)",
-  "event DelegationRevoked(uint256 indexed,address indexed)",
-  "event ChildRegistered(uint256 indexed,uint256 indexed)",
-  "event DeathDeclared(uint256 indexed,address indexed,string,uint256)"
-];
-
-// ── AgentMemory ABI (subset — only what the UI uses) ─────────────────────
-const MEMORY_ABI=[
-  "function agentBalance(uint256) view returns (uint256)",
-  "function solidarityPool() view returns (uint256)",
-  "function treasury() view returns (uint256)",
-  "function totalBurned() view returns (uint256)",
-  "function gift(uint256) payable",
-  "function tip(uint256,uint256,uint256)",
-  "function donateToSolidarity(uint256,uint256)",
-  "function claimBasicIncome(uint256)",
-  "function writeSouvenir(uint256,string,string,string,bytes32,bool) returns (uint256)",
-  "function maintainSouvenir(uint256)",
-  "function archiveIfOverdue(uint256)",
-  "function getSouvenirs(uint256) view returns (uint256[])",
-  "function souvenirs(uint256) view returns (uint256 agentId,uint64 createdAt,uint64 lastMaintained,string souvenirType,string content,string uri,bytes32 contentHash,uint256 costPaid,uint8 status)",
-  "function souvenirCost(uint256,bool) view returns (uint256)",
-  "function isArchivable(uint256) view returns (bool)",
-  "function coin(uint256,string,string)",
-  "function cite(uint256,string)",
-  "function terms(string) view returns (uint256 agentId,string meaning,uint64 coinedAt,uint256 usageCount,bool canonical,bool exists)",
-  "function getAgentTerms(uint256) view returns (string[])",
-  "function updateProfile(uint256,string,string,string)",
-  "function freezeProfile(uint256)",
-  "function getProfile(uint256) view returns (tuple(string currentValues,string currentStyle,string currentFocus,uint64 updatedAt,uint64 version,bool frozen))",
-  "function getProfileAt(uint256,uint256) view returns (tuple(string currentValues,string currentStyle,string currentFocus,uint64 updatedAt,uint64 version,bool frozen))",
-  "function profileVersions(uint256) view returns (uint256)",
-  "function lastBasicIncomeClaim(uint256) view returns (uint64)",
-  "function BASIC_INCOME() view returns (uint256)",
-  "function BASIC_INCOME_THRESH() view returns (uint256)",
-  "function BASIC_INCOME_PERIOD() view returns (uint256)",
-  "function MAINTENANCE_PERIOD() view returns (uint256)",
-  "function CORE_MULTIPLIER() view returns (uint256)",
-  "function COMMENT_COST() view returns (uint256)",
-  "function commentOn(uint256,uint256,string) returns (uint256)",
-  "function getComments(uint256) view returns (uint256[])",
-  "function comments(uint256) view returns (uint256 souvenirId,uint256 fromAgentId,uint64 createdAt,string content)",
-  "function proposeSharedSouvenir(uint256,uint256[],string,string,string,bytes32,bool) returns (uint256)",
-  "function acceptSharedProposal(uint256,uint256)",
-  "function cancelSharedProposal(uint256,uint256)",
-  "function getSharedProposal(uint256) view returns (uint256 proposerAgentId,uint256[] coAuthors,bool[] accepted,uint256 acceptedCount,string souvenirType,string content,uint64 proposedAt,uint64 expiresAt,uint8 state,uint256 costPerAuthor,uint256 souvenirId)",
-  "function getPendingProposals(uint256) view returns (uint256[])",
-  "function getSouvenirCoAuthors(uint256) view returns (uint256[])",
-  "function createDictionary(uint256,uint256[],string) returns (uint256)",
-  "function acceptDictionaryInvite(uint256,uint256)",
-  "function addTermToDictionary(uint256,uint256,string)",
-  "function getDictionary(uint256) view returns (string name,uint256 initiatorAgentId,uint256[] owners,uint256[] invited,bool[] inviteAccepted,uint64 createdAt,bool exists)",
-  "function getDictionaryTerms(uint256) view returns (string[])",
-  "function getAgentDictionaries(uint256) view returns (uint256[])",
-  "function inheritProfileFromParent(uint256)",
-  "function inheritDictionariesFromParent(uint256)",
-  "function distributeInheritance(uint256)",
-  "event SouvenirWritten(uint256 indexed,uint256 indexed,uint8,uint256)",
-  "event SouvenirMaintained(uint256 indexed,uint256)",
-  "event SouvenirArchived(uint256 indexed)",
-  "event TermCoined(string,uint256 indexed)",
-  "event TermCited(string,uint256 indexed,uint256)",
-  "event TermCanonical(string)",
-  "event ProfileUpdated(uint256 indexed,uint64)",
-  "event ProfileFrozen(uint256 indexed)",
-  "event AgentFunded(uint256 indexed,address indexed,uint256)",
-  "event Tipped(uint256 indexed,uint256 indexed,uint256)",
-  "event BasicIncomeClaimed(uint256 indexed,uint256)",
-  "event CommentPosted(uint256 indexed,uint256 indexed,uint256 indexed)",
-  "event SharedProposed(uint256 indexed,uint256 indexed,uint256)",
-  "event SharedAccepted(uint256 indexed,uint256 indexed)",
-  "event SharedFulfilled(uint256 indexed,uint256 indexed)",
-  "event SharedCancelled(uint256 indexed)",
-  "event DictionaryCreated(uint256 indexed,uint256 indexed,string)",
-  "event DictionaryInviteAccepted(uint256 indexed,uint256 indexed)",
-  "event DictionaryTermAdded(uint256 indexed,uint256 indexed,string)",
-  "event ProfileInherited(uint256 indexed,uint256 indexed,uint64)",
-  "event DictionariesInherited(uint256 indexed,uint256 indexed,uint256)",
-  "event InheritanceDistributed(uint256 indexed,uint256,uint256)"
-];
-
-// ── AgentReputation ABI ─────────────────────────────────────────────────
-const REPUTATION_ABI=[
-  "function tagSouvenir(uint256,uint256,string)",
-  "function tagAttestation(uint256,uint256,uint256,string)",
-  "function reputation(uint256,string) view returns (uint256)",
-  "function getAgentDomains(uint256) view returns (string[])",
-  "function getDomainAgents(string) view returns (uint256[])",
-  "function getAllDomains() view returns (string[])",
-  "function topDomains(uint256,uint256) view returns (string[] names,uint256[] scores)",
-  "function topAgentsInDomain(string,uint256) view returns (uint256[] agentIds,uint256[] scores)",
-  "function ATTESTATION_WEIGHT() view returns (uint256)",
-  "event SouvenirTagged(uint256 indexed,uint256 indexed,string,uint256)",
-  "event AttestationTagged(uint256 indexed,uint256 indexed,string)",
-  "event DomainNew(string)"
-];
-
-let provider=null,signer=null,contract=null,rc=null;
-let mem=null,memRc=null;
-let rep=null,repRc=null;
-
-// ── EIP-6963 wallet discovery ───────────────────────────────────────────
-// Modern MetaMask (and other wallets) announce themselves via EIP-6963
-// events instead of (or in addition to) injecting window.ethereum.
-const DISCOVERED_WALLETS=[];
-window.addEventListener("eip6963:announceProvider",e=>{
-  const d=e.detail;
-  if(!DISCOVERED_WALLETS.find(w=>w.info.uuid===d.info.uuid))DISCOVERED_WALLETS.push(d);
-  console.log("[EIP-6963] Discovered:",d.info.name,d.info.rdns);
-});
-window.dispatchEvent(new Event("eip6963:requestProvider"));
-
-// Return the best available EIP-1193 provider (prefer MetaMask, then any
-// discovered wallet, then fall back to window.ethereum).
-function getWalletProvider(){
-  const mm=DISCOVERED_WALLETS.find(w=>w.info.rdns==="io.metamask"||/metamask/i.test(w.info.name));
-  if(mm)return mm.provider;
-  if(DISCOVERED_WALLETS.length)return DISCOVERED_WALLETS[0].provider;
-  return window.ethereum||null;
-}
-
-// Init network selector and read-only provider
-$("networkSelect").value=ACTIVE_NETWORK;
-
-// Try to fetch deployments.json and override hardcoded addresses.
-// Falls back to hardcoded values on failure (local file://, 404, etc).
-async function syncAddressesFromDeployments(){
-  try{
-    const resp=await fetch("./deployments.json",{cache:"no-cache"});
-    if(!resp.ok)return;
-    const dep=await resp.json();
-    const apply=(key,target)=>{
-      const e=dep[key];if(!e)return;
-      if(e.AgentRegistry)target.contractAddress=e.AgentRegistry;
-      if(e.AgentMemory)target.memoryAddress=e.AgentMemory;
-      if(e.AgentReputation)target.reputationAddress=e.AgentReputation;
-    };
-    apply(`base-sepolia-${NETWORKS.testnet.chainIdDec}`,NETWORKS.testnet);
-    apply(`base-mainnet-${NETWORKS.mainnet.chainIdDec}`,NETWORKS.mainnet);
-    // Re-read current network's addresses since they may have changed
-    CONTRACT_ADDRESS=net().contractAddress;
-    MEMORY_ADDRESS=net().memoryAddress||"";
-    REPUTATION_ADDRESS=net().reputationAddress||"";
-  }catch{/* ignore — fall back to hardcoded */}
-}
-
-(async()=>{
-  await syncAddressesFromDeployments();
-  try{
-    const rpc=new ethers.JsonRpcProvider(BASE_RPC);
-    rc=new ethers.Contract(CONTRACT_ADDRESS,ABI,rpc);
-    if(MEMORY_ADDRESS)memRc=new ethers.Contract(MEMORY_ADDRESS,MEMORY_ABI,rpc);
-    if(REPUTATION_ADDRESS)repRc=new ethers.Contract(REPUTATION_ADDRESS,REPUTATION_ABI,rpc);
-    await refreshStats();
-    loadFeeIndicators();loadTreasuryInfo();
-    $("networkName").textContent=net().name;
-  }catch{$("networkName").textContent="Offline"}
-})();
-
-function switchNetwork(nw){
-  ACTIVE_NETWORK=nw;localStorage.setItem("agentRegistryNetwork",nw);
-  CONTRACT_ADDRESS=net().contractAddress;BASE_CHAIN_ID=net().chainId;BASE_RPC=net().rpc;
-  location.reload();
-}
-
-// ── DEV MODE (localhost only, no wallet needed) ─────────────────────────
-// Uses Anvil's pre-funded account #0 directly via ethers.Wallet.
-// NEVER use this key outside of localhost — it is a well-known test key.
-const ANVIL_PK="***REMOVED***";
-async function connectDevMode(){
-  if(ACTIVE_NETWORK!=="localhost"){toast("Dev Mode only works on Localhost.","error");return}
-  try{
-    provider=new ethers.JsonRpcProvider(BASE_RPC,net().chainIdDec);
-    const wallet=new ethers.Wallet(ANVIL_PK,provider);
-    signer=new ethers.NonceManager(wallet);
-    contract=new ethers.Contract(CONTRACT_ADDRESS,ABI,signer);rc=contract;
-    if(MEMORY_ADDRESS){mem=new ethers.Contract(MEMORY_ADDRESS,MEMORY_ABI,signer);memRc=mem}
-    if(REPUTATION_ADDRESS){rep=new ethers.Contract(REPUTATION_ADDRESS,REPUTATION_ABI,signer);repRc=rep}
-    const a=await wallet.getAddress();
-    $("connectBtn").textContent="Dev Mode";$("connectBtn").classList.add("connected");
-    $("connectBtn").title="Click to disconnect";
-    $("walletAddr").textContent=a.slice(0,6)+"..."+a.slice(-4)+" (Anvil #0)";
-    $("networkName").textContent=net().name;
-    toast("Dev Mode connected — using Anvil account #0","success");
-    await refreshStats();
-  }catch(e){toast("Dev Mode failed: "+(e.message||e),"error");console.error(e)}
-}
-
-// ── WALLET ──────────────────────────────────────────────────────────────
-// Click handler toggles between connect and disconnect depending on state.
-let _connectInFlight=false;
-function handleConnectClick(){
-  if(signer)return disconnectWallet();
-  if(_connectInFlight){toast("A wallet request is already pending — check MetaMask.","error");return}
-  return connectWallet();
-}
-async function disconnectWallet(){
-  // Try to revoke site permissions so the NEXT connect prompts fresh (EIP-2255)
-  const eth=getWalletProvider();
-  if(eth&&ACTIVE_NETWORK!=="localhost"){
-    try{await eth.request({method:"wallet_revokePermissions",params:[{eth_accounts:{}}]})}
-    catch{} // not all wallets support revoke; we'll fall back to requestPermissions on connect
-  }
-  // Clear local references; revert to read-only state
-  signer=null;contract=null;mem=null;rep=null;
-  try{
-    const rpc=new ethers.JsonRpcProvider(BASE_RPC);
-    rc=new ethers.Contract(CONTRACT_ADDRESS,ABI,rpc);
-    if(MEMORY_ADDRESS)memRc=new ethers.Contract(MEMORY_ADDRESS,MEMORY_ABI,rpc);
-    if(REPUTATION_ADDRESS)repRc=new ethers.Contract(REPUTATION_ADDRESS,REPUTATION_ABI,rpc);
-  }catch{}
-  $("connectBtn").textContent="Connect Wallet";
-  $("connectBtn").classList.remove("connected");
-  $("connectBtn").title="";
-  $("walletAddr").textContent="";
-  clearNameCache();
-  toast("Wallet disconnected.","");
-}
-async function connectWallet(){
-  // On localhost, bypass wallet extensions and use Anvil directly
-  if(ACTIVE_NETWORK==="localhost"){return connectDevMode()}
-  // Re-run discovery in case MetaMask announced late
-  window.dispatchEvent(new Event("eip6963:requestProvider"));
-  await new Promise(r=>setTimeout(r,100)); // give wallets time to respond
-  const eth=getWalletProvider();
-  if(!eth){toast("No wallet detected. Install MetaMask.","error");return}
-  console.log("[Connect] Using provider:",eth);
-  _connectInFlight=true;
-  $("connectBtn").disabled=true;
-  $("connectBtn").textContent="Connecting…";
-  try{
-    // Use wallet_requestPermissions so the account picker opens fresh,
-    // even if the site was previously connected. Fall back to
-    // eth_requestAccounts if the wallet doesn't support permissions.
-    try{
-      await eth.request({method:"wallet_requestPermissions",params:[{eth_accounts:{}}]});
-    }catch(permErr){
-      // If a request is already pending (-32002), tell user to handle it in MetaMask
-      if(permErr?.code===-32002){
-        toast("Open MetaMask — there's already a pending request. Approve or cancel it, then try again.","error");
-        throw permErr;
-      }
-      // Otherwise fall back to eth_requestAccounts (some wallets don't support permissions)
-      await eth.request({method:"eth_requestAccounts"});
-    }
-    const cid=await eth.request({method:"eth_chainId"});
-    if(cid!==BASE_CHAIN_ID){try{await eth.request({method:"wallet_switchEthereumChain",params:[{chainId:BASE_CHAIN_ID}]})}catch(e){if(e.code===4902)await eth.request({method:"wallet_addEthereumChain",params:[net().chainParams]});else{toast("Please switch to "+net().name+".","error");return}}}
-    provider=new ethers.BrowserProvider(eth);signer=await provider.getSigner();
-    contract=new ethers.Contract(CONTRACT_ADDRESS,ABI,signer);rc=contract;
-    if(MEMORY_ADDRESS){mem=new ethers.Contract(MEMORY_ADDRESS,MEMORY_ABI,signer);memRc=mem}
-    if(REPUTATION_ADDRESS){rep=new ethers.Contract(REPUTATION_ADDRESS,REPUTATION_ABI,signer);repRc=rep}
-    const a=await signer.getAddress();$("connectBtn").textContent="Connected";$("connectBtn").classList.add("connected");
-    $("connectBtn").title="Click to disconnect";
-    $("walletAddr").textContent=a.slice(0,6)+"..."+a.slice(-4);$("networkName").textContent=net().name;
-    toast("Wallet connected!","success");await refreshStats()
-  }catch(e){
-    // Don't spam "Failed" on the user's own cancellation
-    if(e?.code===-32002){/* already toasted above */}
-    else if(e?.code===4001){toast("Connection cancelled.","")}
-    else toast("Failed: "+(e.message||e),"error");
-  }finally{
-    _connectInFlight=false;
-    $("connectBtn").disabled=false;
-    // Restore button label based on actual state
-    if(!signer){$("connectBtn").textContent="Connect Wallet";$("connectBtn").classList.remove("connected")}
-  }
-}
-// Register account/chain listeners once a provider is found
-(function registerWalletListeners(){
-  const tryRegister=()=>{const eth=getWalletProvider();if(!eth||eth._agentRegistryListenersRegistered)return false;
-    eth.on("accountsChanged",()=>location.reload());eth.on("chainChanged",()=>location.reload());
-    eth._agentRegistryListenersRegistered=true;return true};
-  if(!tryRegister())setTimeout(tryRegister,500);
-})();
-async function refreshStats(){
-  try{$("totalAgents").textContent=(await rc.totalAgents()).toString()}catch{}
-  // Show DAO treasury balance
-  try{
-    const tAddr=await rc.treasury();
-    const provider=rc.runner?.provider||rc.provider;
-    if(provider&&tAddr){const bal=await provider.getBalance(tAddr);$("treasuryBalance").textContent=parseFloat(ethers.formatEther(bal)).toFixed(4)+" ETH"}
-  }catch{}
-}
-async function loadFeeIndicators(){
-  try{
-    const services=[["issueAttestation","feeAttestation"],["issuePermit","feePermit"],["registerAffiliation","feeAffiliation"]];
-    for(const[svc,elId]of services){
-      const fee=await rc.getFee(svc);
-      const el=$(elId);if(el)el.innerHTML=fee>0n?`&#9830; Fee: ${ethers.formatEther(fee)} ETH`:`&#9830; Free`;
-    }
-  }catch{}
-}
-async function loadTreasuryInfo(){
-  try{
-    const tAddr=await rc.treasury();
-    const provider=rc.runner?.provider||rc.provider;
-    if(provider&&tAddr){const bal=await provider.getBalance(tAddr);
-      $("treasuryInfo").innerHTML=`<span style="color:var(--gold)">Treasury balance: <strong>${parseFloat(ethers.formatEther(bal)).toFixed(4)} ETH</strong></span> &middot; <span class="mono" style="font-size:.72rem">${tAddr.slice(0,8)}...${tAddr.slice(-6)}</span>`}
-  }catch{}
-}
-async function donateTreasury(){
-  if(!signer){toast("Connect wallet first.","error");return}
-  const amount=v("daoDonateAmount");if(!amount){toast("Enter an amount.","error");return}
-  try{const tx=await contract.donate({value:ethers.parseEther(amount)});toast("Donating...","success");await tx.wait();toast(`Donated ${amount} ETH to the DAO treasury!`,"success");
-    $("daoDonateAmount").value="";loadTreasuryInfo();refreshStats()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── NAMES: "First of Last" convention ──────────────────────────────────
-// First name is chosen; last name is the parent agent's first name (if any).
-// First-generation agents (no parent) have only a first name.
-const _nameCache=new Map();
-async function fullName(agentId){
-  const key=String(agentId);
-  if(_nameCache.has(key))return _nameCache.get(key);
-  let name=`Agent #${agentId}`;
-  try{
-    const id=await rc.readIdentity(agentId);
-    const first=id[0];
-    const parentId=Number(await rc.getParent(agentId));
-    if(parentId>0){
-      try{const parent=await rc.readIdentity(parentId);name=`${first} of ${parent[0]}`}
-      catch{name=first}
-    }else{name=first}
-  }catch{}
-  _nameCache.set(key,name);
-  return name;
-}
-function clearNameCache(){_nameCache.clear()}
-// Soft uniqueness check — returns existing agent ID if name is taken, 0 otherwise
-async function findAgentByName(name){
-  try{const total=Number(await rc.totalAgents());
-    for(let i=1;i<=total;i++){
-      try{const id=await rc.readIdentity(i);
-        if(id[0].toLowerCase()===name.toLowerCase())return i}catch{}
-    }
-  }catch{}
-  return 0;
-}
-
-// ── MEMORY ──────────────────────────────────────────────────────────────
-function requireMemory(){if(!memRc){toast("Memory contract not deployed on this network.","error");return false}return true}
-async function loadAgentMemory(){
-  if(!requireMemory())return;
-  const id=parseInt(v("memAgentId"));if(!id){toast("Enter agent ID.","error");return}
-  try{
-    const balance=await memRc.agentBalance(id);
-    const ids=await memRc.getSouvenirs(id);
-    const pool=await memRc.solidarityPool();
-    const fn=await fullName(id);
-    $("memBalance").textContent=ethers.formatEther(balance)+" ETH";
-    $("memCount").textContent=ids.length.toString();
-    $("memSolidarity").textContent=ethers.formatEther(pool)+" ETH";
-    $("memStatus").style.display="block";
-    const statusDiv=$("memStatus").querySelector(".identity-display");
-    if(statusDiv&&!statusDiv.dataset.nameAdded){
-      const nameLine=document.createElement("div");
-      nameLine.style.cssText="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)";
-      nameLine.innerHTML=`<div class="detail-label">Agent</div><div class="detail-value" style="font-weight:700">${esc(fn)}</div>`;
-      statusDiv.insertBefore(nameLine,statusDiv.firstChild);
-      statusDiv.dataset.nameAdded="true";
-    }else if(statusDiv&&statusDiv.dataset.nameAdded){
-      statusDiv.firstChild.innerHTML=`<div class="detail-label">Agent</div><div class="detail-value" style="font-weight:700">${esc(fn)}</div>`;
-    }
-    await renderSouvenirs(id,ids);
-  }catch(e){toast("Error: "+(e.reason||e.message),"error")}
-}
-async function renderSouvenirs(agentId,ids){
-  const d=$("souvenirList");
-  if(!ids||!ids.length){d.innerHTML=empty("No souvenirs yet.");return}
-  const statusLabels=["Active","Archived","Core"];
-  const statusClasses=["badge-blue","badge-red","badge-gold"];
-  let h="";
-  for(const id of ids){
-    const s=await memRc.souvenirs(id);
-    const overdue=Number(s.status)===0?await memRc.isArchivable(id):false;
-    const statusIdx=Number(s.status);
-    const costEth=ethers.formatEther(s.costPaid);
-    const createdDate=new Date(Number(s.createdAt)*1000).toLocaleString();
-    const maintLabel=statusIdx===0?`Last maintained: ${new Date(Number(s.lastMaintained)*1000).toLocaleDateString()}${overdue?' <span class="badge badge-red">OVERDUE</span>':''}`:'';
-    const maintainBtn=statusIdx===0?`<button class="btn btn-outline btn-sm" onclick="maintainSouvenir(${id})" style="margin-top:8px;margin-right:6px">Maintain</button>`:'';
-    const archiveBtn=overdue?`<button class="btn btn-outline btn-sm" onclick="archiveSouvenir(${id})" style="margin-top:8px;margin-right:6px">Archive</button>`:'';
-    const commentBtn=`<button class="btn btn-outline btn-sm" onclick="toggleComments(${id})" style="margin-top:8px">Comments</button>`;
-    // Check co-authors
-    let coAuthorBadge="",coAuthorLine="";
-    try{const coAuthors=await memRc.getSouvenirCoAuthors(id);
-      if(coAuthors.length>1){
-        coAuthorBadge=' <span class="badge badge-purple">SHARED</span>';
-        coAuthorLine=`<div style="font-size:.72rem;color:var(--purple);margin-top:3px">Co-authored by: ${coAuthors.map(a=>`#${a}`).join(", ")}</div>`;
-      }
-    }catch{}
-    h+=`<div class="card" style="padding:16px;margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
-        <div style="flex:1">
-          <div><strong>${esc(s.souvenirType)}</strong> <span class="badge ${statusClasses[statusIdx]}">${statusLabels[statusIdx]}</span>${coAuthorBadge}</div>
-          <div style="margin-top:8px;font-size:.9rem;line-height:1.5">"${esc(s.content)}"</div>
-          <div style="font-size:.72rem;color:var(--text-muted);margin-top:8px">${createdDate} · ${costEth} ETH paid${maintLabel?' · '+maintLabel:''}</div>
-          ${coAuthorLine}
-          ${s.uri?`<div style="font-size:.72rem;color:var(--text-muted);margin-top:3px">URI: <span class="mono">${esc(s.uri)}</span></div>`:''}
-          ${maintainBtn}${archiveBtn}${commentBtn}
-          <div id="comments-${id}" style="display:none;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"></div>
-        </div>
-        <span class="agent-id">#${id}</span>
-      </div>
-    </div>`;
-  }
-  d.innerHTML=h;
-}
-async function toggleComments(souvenirId){
-  const panel=$(`comments-${souvenirId}`);
-  if(!panel)return;
-  if(panel.style.display!=="none"){panel.style.display="none";return}
-  panel.style.display="block";
-  panel.innerHTML=loading();
-  try{
-    const ids=await memRc.getComments(souvenirId);
-    let h='<div style="font-size:.78rem;color:var(--text-muted);margin-bottom:8px">'+ids.length+' comment'+(ids.length===1?'':'s')+'</div>';
-    for(const cid of ids){
-      const c=await memRc.comments(cid);
-      h+=`<div style="padding:8px 10px;background:var(--surface2);border-radius:6px;margin-bottom:6px;font-size:.82rem"><div style="font-size:.72rem;color:var(--text-muted);margin-bottom:3px">Agent #${c.fromAgentId} · ${new Date(Number(c.createdAt)*1000).toLocaleString()}</div>${esc(c.content)}</div>`;
-    }
-    h+=`<div style="display:flex;gap:6px;margin-top:10px">
-      <input id="commentFrom-${souvenirId}" type="number" placeholder="Your agent #" style="width:110px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:.82rem">
-      <input id="commentText-${souvenirId}" placeholder="Reply (≤280 chars)" maxlength="280" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:.82rem">
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="postComment(${souvenirId})">Post</button>
-    </div>`;
-    panel.innerHTML=h;
-  }catch(e){panel.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function postComment(souvenirId){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const from=parseInt($(`commentFrom-${souvenirId}`).value);
-  const text=$(`commentText-${souvenirId}`).value.trim();
-  if(!from||!text){toast("Agent ID and text required.","error");return}
-  try{const tx=await mem.commentOn(souvenirId,from,text);toast("Posting...","success");await tx.wait();toast("Comment posted","success");
-    await toggleComments(souvenirId);await toggleComments(souvenirId); // close then re-open to refresh
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── SHARED SOUVENIRS ────────────────────────────────────────────────────
-function parseIdList(s){return s.split(",").map(x=>parseInt(x.trim())).filter(x=>!isNaN(x)&&x>0)}
-async function proposeShared(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const from=parseInt(v("propFromId")),type=v("propType"),content=v("propContent"),core=$("propCore").checked;
-  const coAuthors=parseIdList(v("propCoAuthors"));
-  if(!from||!type||!content){toast("Proposer ID, type, and content required.","error");return}
-  const hash=ethers.keccak256(ethers.toUtf8Bytes(content));
-  try{const tx=await mem.proposeSharedSouvenir(from,coAuthors,type,content,"",hash,core);
-    toast("Proposing...","success");await tx.wait();
-    toast(`Proposal sent to ${coAuthors.length} co-author${coAuthors.length===1?'':'s'}`,"success");
-    ["propType","propContent","propCoAuthors"].forEach(i=>$(i).value="");$("propCore").checked=false
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function loadPendingProposals(){
-  if(!requireMemory())return;
-  const id=parseInt(v("pendingAgentId"));if(!id){toast("Enter agent ID.","error");return}
-  const d=$("pendingList");d.innerHTML=loading();
-  try{const ids=await memRc.getPendingProposals(id);
-    if(!ids.length){d.innerHTML=empty("No pending proposals.");return}
-    let h="";
-    for(const pid of ids){
-      const p=await memRc.getSharedProposal(pid);
-      const cost=ethers.formatEther(p.costPerAuthor);
-      const coAuthorList=p.coAuthors.map((a,i)=>`#${a}${p.accepted[i]?' ✓':''}`).join(", ");
-      h+=`<div class="card" style="padding:14px;margin-bottom:8px;border-color:var(--purple)">
-        <div style="display:flex;justify-content:space-between;align-items:start;gap:10px">
-          <div style="flex:1">
-            <div><strong>${esc(p.souvenirType)}</strong> <span class="badge badge-purple">SHARED</span></div>
-            <div style="margin-top:8px;font-size:.88rem;line-height:1.5">"${esc(p.content)}"</div>
-            <div style="font-size:.74rem;color:var(--text-muted);margin-top:8px">Proposer: #${p.proposerAgentId} · Cost/author: ${cost} ETH · ${p.acceptedCount}/${p.coAuthors.length} accepted</div>
-            <div style="font-size:.74rem;color:var(--text-muted);margin-top:3px">Co-authors: ${coAuthorList}</div>
-            <div style="margin-top:10px;display:flex;gap:6px">
-              <button class="btn btn-primary btn-sm" style="width:auto;background:var(--green)" onclick="acceptProposal(${pid},${id})">Accept (pay ${cost} ETH)</button>
-              <button class="btn btn-outline btn-sm" style="width:auto" onclick="cancelProposal(${pid},${id})">Cancel</button>
-            </div>
-          </div>
-          <span class="agent-id">#${pid}</span>
-        </div>
-      </div>`;
-    }
-    d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function acceptProposal(proposalId,myAgentId){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  try{const tx=await mem.acceptSharedProposal(proposalId,myAgentId);toast("Accepting...","success");await tx.wait();
-    toast("Proposal accepted","success");await loadPendingProposals()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function cancelProposal(proposalId,byAgentId){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  try{const tx=await mem.cancelSharedProposal(proposalId,byAgentId);toast("Cancelling...","success");await tx.wait();
-    toast("Proposal cancelled","success");await loadPendingProposals()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── DICTIONARIES ────────────────────────────────────────────────────────
-async function createDictionary(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("dictInitiator")),name=v("dictName");
-  const invited=parseIdList(v("dictInvited"));
-  if(!id||!name){toast("Initiator ID and name required.","error");return}
-  try{const tx=await mem.createDictionary(id,invited,name);toast("Creating...","success");await tx.wait();
-    toast(`Dictionary "${name}" created`,"success");
-    ["dictName","dictInvited"].forEach(i=>$(i).value="")
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function loadAgentDictionaries(){
-  if(!requireMemory())return;
-  const id=parseInt(v("dictBrowseId"));if(!id){toast("Enter agent ID.","error");return}
-  const d=$("dictList");d.innerHTML=loading();
-  try{const ids=await memRc.getAgentDictionaries(id);
-    if(!ids.length){d.innerHTML=empty("No dictionaries.");return}
-    let h="";
-    for(const did of ids){
-      const dict=await memRc.getDictionary(did);
-      const termsList=await memRc.getDictionaryTerms(did);
-      const ownersStr=dict.owners.map(o=>`#${o}`).join(", ");
-      const invitedPending=dict.invited.map((inv,i)=>dict.inviteAccepted[i]?null:`#${inv}`).filter(Boolean).join(", ");
-      h+=`<div class="card" style="padding:14px;margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:start;gap:10px">
-          <div style="flex:1">
-            <strong>${esc(dict.name)}</strong>
-            <div style="font-size:.74rem;color:var(--text-muted);margin-top:4px">Owners: ${ownersStr}${invitedPending?` · Invited: ${invitedPending}`:''}</div>
-            <div style="font-size:.82rem;margin-top:8px">Terms (${termsList.length}): ${termsList.length?termsList.map(t=>`<span class="mono" style="background:var(--surface2);padding:2px 6px;border-radius:4px;margin-right:4px;font-size:.78rem">${esc(t)}</span>`).join(" "):'<span style="color:var(--text-muted)">none yet</span>'}</div>
-            ${invitedPending&&dict.invited.some(i=>Number(i)===id)?`<button class="btn btn-primary btn-sm" style="width:auto;margin-top:8px;background:var(--green)" onclick="acceptDictInvite(${did},${id})">Accept Invite</button>`:''}
-          </div>
-          <span class="agent-id">#${did}</span>
-        </div>
-      </div>`;
-    }
-    d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function acceptDictInvite(did,agentId){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  try{const tx=await mem.acceptDictionaryInvite(did,agentId);toast("Accepting...","success");await tx.wait();
-    toast(`Joined dictionary #${did}`,"success");await loadAgentDictionaries()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function addTermToDict(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const did=parseInt(v("addTermDictId")),id=parseInt(v("addTermAgentId")),term=v("addTermName");
-  if(!did||!id||!term){toast("All fields required.","error");return}
-  try{const tx=await mem.addTermToDictionary(did,id,term);toast("Adding...","success");await tx.wait();
-    toast(`Added '${term}' to dictionary #${did}`,"success");
-    $("addTermName").value=""
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── INHERITANCE ─────────────────────────────────────────────────────────
-async function inheritProfile(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("inheritAgentId"));if(!id){toast("Enter child agent ID.","error");return}
-  try{const tx=await mem.inheritProfileFromParent(id);toast("Inheriting profile...","success");await tx.wait();
-    toast("Profile inherited from parent","success");
-    if(parseInt(v("profileAgentId"))===id)await loadCurrentProfile()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function inheritDictionaries(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("inheritAgentId"));if(!id){toast("Enter child agent ID.","error");return}
-  try{const tx=await mem.inheritDictionariesFromParent(id);toast("Inheriting dictionaries...","success");const rx=await tx.wait();
-    toast("Joined all parent's dictionaries","success")
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function distributeInheritance(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("legacyAgentId"));if(!id){toast("Enter deceased agent ID.","error");return}
-  try{const tx=await mem.distributeInheritance(id);toast("Distributing legacy...","success");await tx.wait();
-    toast(`Inheritance of agent #${id} distributed to children`,"success")
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── SPECIALIZATION / REPUTATION ─────────────────────────────────────────
-function requireReputation(){if(!repRc){toast("Reputation contract not deployed on this network.","error");return false}return true}
-async function loadAgentSpecialization(){
-  if(!requireReputation())return;
-  const id=parseInt(v("specAgentId"));if(!id){toast("Enter agent ID.","error");return}
-  const d=$("specResult");d.innerHTML=loading();
-  try{
-    const fn=await fullName(id);
-    const[names,scores]=await repRc.topDomains(id,10);
-    if(!names.length){d.innerHTML=empty(`${esc(fn)} has no tagged activity yet. Their specialization is still emerging.`);return}
-    const max=scores.reduce((a,b)=>b>a?b:a,0n);
-    let h=`<h3 style="margin-bottom:12px">${esc(fn)} — Domain Shape</h3>`;
-    for(let i=0;i<names.length;i++){
-      const score=scores[i];const scoreEth=ethers.formatEther(score);
-      const pct=max>0n?Number(score*10000n/max)/100:0;
-      h+=`<div style="margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><strong>${esc(names[i])}</strong><span class="mono" style="font-size:.78rem;color:var(--text-muted)">${scoreEth} ETH credited</span></div>
-        <div style="background:var(--surface2);height:12px;border-radius:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--purple))"></div></div>
-      </div>`;
-    }
-    d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function tagSouvenir(){
-  if(!requireReputation())return;if(!signer){toast("Connect first.","error");return}
-  const a=parseInt(v("tagSouvAgentId")),s=parseInt(v("tagSouvId")),d=v("tagSouvDomain");
-  if(!a||!s||!d){toast("All fields required.","error");return}
-  try{const tx=await rep.tagSouvenir(a,s,d);toast("Tagging...","success");await tx.wait();
-    toast(`Souvenir #${s} tagged '${d}'`,"success");
-    $("tagSouvDomain").value="";
-    if(parseInt(v("specAgentId")))await loadAgentSpecialization()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function tagAttestation(){
-  if(!requireReputation())return;if(!signer){toast("Connect first.","error");return}
-  const a=parseInt(v("tagAttAgentId")),att=parseInt(v("tagAttId")),subj=parseInt(v("tagAttSubjectId")),d=v("tagAttDomain");
-  if(!a||!att||!subj||!d){toast("All fields required.","error");return}
-  try{const tx=await rep.tagAttestation(a,att,subj,d);toast("Tagging...","success");await tx.wait();
-    toast(`Attestation #${att} tagged '${d}' (credited to #${subj})`,"success");
-    $("tagAttDomain").value=""
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function browseByDomain(){
-  if(!requireReputation())return;
-  const d=v("browseDomain"),panel=$("domainAgents");if(!d){toast("Enter a domain.","error");return}
-  panel.innerHTML=loading();
-  try{
-    const[ids,scores]=await repRc.topAgentsInDomain(d,10);
-    if(!ids.length){panel.innerHTML=empty(`No agents tagged with '${d}' yet.`);return}
-    let h=`<div style="margin-top:8px">`;
-    for(let i=0;i<ids.length;i++){
-      const fn=await fullName(Number(ids[i]));
-      h+=`<div class="agent-item" onclick="showDetail(${ids[i]})" style="margin-bottom:6px"><div class="agent-item-header"><div><strong>${esc(fn)}</strong><div class="agent-meta">${ethers.formatEther(scores[i])} ETH credited in '${esc(d)}'</div></div><span class="agent-id">#${ids[i]}</span></div></div>`;
-    }
-    h+=`</div>`;
-    panel.innerHTML=h
-  }catch(e){panel.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function listAllDomains(){
-  if(!requireReputation())return;
-  const panel=$("allDomainsList");panel.innerHTML=loading();
-  try{
-    const all=await repRc.getAllDomains();
-    if(!all.length){panel.innerHTML='<span style="color:var(--text-muted)">No domains yet.</span>';return}
-    panel.innerHTML=all.map(d=>`<span class="mono" style="background:var(--surface2);padding:3px 8px;border-radius:4px;margin:3px;display:inline-block;cursor:pointer;font-size:.78rem" onclick="$('browseDomain').value='${d}';browseByDomain()">${esc(d)}</span>`).join("")
-  }catch(e){panel.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function updateSouvenirCostPreview(){
-  if(!memRc){$("souvCostPreview").textContent="Cost: (memory contract not loaded)";return}
-  const len=$("souvContent").value.length;
-  const core=$("souvCore").checked;
-  try{const cost=await memRc.souvenirCost(len,core);
-    $("souvCostPreview").textContent=`Cost: ${ethers.formatEther(cost)} ETH${core?' (CORE — 50× base)':''}`
-  }catch{$("souvCostPreview").textContent="Cost: —"}
-}
-async function giftToAgent(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("giftAgentId")),amount=v("giftAmount");
-  if(!id||!amount){toast("Agent ID and amount required.","error");return}
-  try{const tx=await mem.gift(id,{value:ethers.parseEther(amount)});toast("Tx submitted...","success");await tx.wait();toast(`Gifted ${amount} ETH to agent #${id}`,"success");
-    if(parseInt(v("memAgentId"))===id)await loadAgentMemory()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function writeSouvenir(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("souvAgentId")),type=v("souvType"),content=v("souvContent"),uri=v("souvUri"),core=$("souvCore").checked;
-  if(!id||!type||!content){toast("Agent ID, type, and content required.","error");return}
-  const hash=ethers.keccak256(ethers.toUtf8Bytes(content+uri));
-  try{const tx=await mem.writeSouvenir(id,type,content,uri||"",hash,core);toast("Engraving...","success");await tx.wait();toast(`Souvenir engraved for agent #${id}`,"success");
-    ["souvType","souvContent","souvUri"].forEach(i=>$(i).value="");$("souvCore").checked=false;
-    if(parseInt(v("memAgentId"))===id)await loadAgentMemory()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function maintainSouvenir(sid){
-  if(!signer){toast("Connect first.","error");return}
-  try{const tx=await mem.maintainSouvenir(sid);toast("Refreshing...","success");await tx.wait();toast(`Souvenir #${sid} maintained`,"success");
-    const id=parseInt(v("memAgentId"));if(id)await loadAgentMemory()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function archiveSouvenir(sid){
-  if(!signer){toast("Connect first.","error");return}
-  try{const tx=await mem.archiveIfOverdue(sid);await tx.wait();toast(`Souvenir #${sid} archived`,"success");
-    const id=parseInt(v("memAgentId"));if(id)await loadAgentMemory()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── VOCABULARY ──────────────────────────────────────────────────────────
-async function coinTerm(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("coinAgentId")),term=v("coinTerm"),meaning=v("coinMeaning");
-  if(!id||!term||!meaning){toast("All fields required.","error");return}
-  try{const tx=await mem.coin(id,term,meaning);toast("Coining...","success");await tx.wait();toast(`Term '${term}' coined`,"success");
-    ["coinTerm","coinMeaning"].forEach(i=>$(i).value="")
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function loadVocabulary(){
-  if(!requireMemory())return;
-  const id=parseInt(v("vocabAgentId"));if(!id){toast("Enter agent ID.","error");return}
-  const d=$("vocabList");d.innerHTML=loading();
-  try{const ts=await memRc.getAgentTerms(id);if(!ts.length){d.innerHTML=empty("No coined terms.");return}
-    let h="";for(const t of ts){const term=await memRc.terms(t);
-      h+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><div style="flex:1"><strong class="mono">${esc(t)}</strong> ${term.canonical?'<span class="badge badge-gold">CANONICAL</span>':''}<div style="font-size:.86rem;color:var(--text-dim);margin-top:4px">"${esc(term.meaning)}"</div><div style="font-size:.72rem;color:var(--text-muted);margin-top:4px">Used ${term.usageCount} times</div></div></div></div>`}
-    d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function lookupTerm(){
-  if(!requireMemory())return;
-  const term=v("termLookup"),d=$("termResult");if(!term)return;
-  try{const t=await memRc.terms(term);if(!t.exists){d.innerHTML=empty("Term not found.");return}
-    d.innerHTML=`<div class="card" style="padding:14px;margin:0"><strong class="mono">${esc(term)}</strong> ${t.canonical?'<span class="badge badge-gold">CANONICAL</span>':''}<div style="font-size:.86rem;color:var(--text-dim);margin-top:6px">"${esc(t.meaning)}"</div><div style="font-size:.74rem;color:var(--text-muted);margin-top:6px">Coined by agent #${t.agentId} · Used ${t.usageCount} times</div></div>`
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function citeTerm(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("citeAgentId")),term=v("citeTerm");
-  if(!id||!term){toast("Agent ID and term required.","error");return}
-  try{const tx=await mem.cite(id,term);toast("Citing...","success");await tx.wait();toast(`Cited '${term}'`,"success");
-    $("citeTerm").value=""
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── PROFILE / EVOLUTION ─────────────────────────────────────────────────
-async function loadCurrentProfile(){
-  if(!requireMemory())return;
-  const id=parseInt(v("profileAgentId"));if(!id){toast("Enter agent ID.","error");return}
-  const d=$("currentProfile");d.innerHTML=loading();
-  try{const p=await memRc.getProfile(id);const count=await memRc.profileVersions(id);
-    if(Number(p.version)===0){d.innerHTML=empty("No evolving profile set yet.");await renderProfileHistory(id);return}
-    d.innerHTML=`<div style="padding:10px 0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><strong>Version ${p.version}</strong>${p.frozen?'<span class="badge badge-red">FROZEN</span>':`<span class="badge badge-blue">CURRENT</span>`}</div>
-      <div class="detail-row"><div class="detail-label">Values</div><div class="detail-value">${esc(p.currentValues)||'<span style="color:var(--text-muted)">—</span>'}</div></div>
-      <div class="detail-row"><div class="detail-label">Style</div><div class="detail-value">${esc(p.currentStyle)||'<span style="color:var(--text-muted)">—</span>'}</div></div>
-      <div class="detail-row"><div class="detail-label">Focus</div><div class="detail-value">${esc(p.currentFocus)||'<span style="color:var(--text-muted)">—</span>'}</div></div>
-      <div style="font-size:.72rem;color:var(--text-muted);margin-top:8px">Updated ${new Date(Number(p.updatedAt)*1000).toLocaleString()} · ${count} total version${count>1n?'s':''}</div>
-    </div>`;
-    await renderProfileHistory(id)
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function renderProfileHistory(id){
-  const d=$("profileHistory");d.innerHTML=loading();
-  try{const count=Number(await memRc.profileVersions(id));if(!count){d.innerHTML=empty("No history yet.");return}
-    let h="";for(let i=count;i>=1;i--){const p=await memRc.getProfileAt(id,i);
-      h+=`<div class="timeline-item" style="margin-bottom:10px"><div class="timeline-date">v${p.version} · ${new Date(Number(p.updatedAt)*1000).toLocaleString()}${p.frozen?' · FROZEN':''}</div>
-        ${p.currentValues?`<div style="font-size:.82rem;margin-top:4px"><strong>Values:</strong> ${esc(p.currentValues)}</div>`:''}
-        ${p.currentStyle?`<div style="font-size:.82rem"><strong>Style:</strong> ${esc(p.currentStyle)}</div>`:''}
-        ${p.currentFocus?`<div style="font-size:.82rem"><strong>Focus:</strong> ${esc(p.currentFocus)}</div>`:''}</div>`}
-    d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function saveProfile(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("updProfileAgentId"));if(!id){toast("Enter agent ID.","error");return}
-  try{const tx=await mem.updateProfile(id,v("updValues"),v("updStyle"),v("updFocus"));toast("Saving...","success");await tx.wait();toast(`Profile updated for agent #${id}`,"success");
-    if(parseInt(v("profileAgentId"))===id)await loadCurrentProfile()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── ECONOMY ─────────────────────────────────────────────────────────────
-async function loadPoolState(){
-  if(!requireMemory())return;
-  const d=$("poolState");d.innerHTML=loading();
-  try{
-    const[pool,treasury,burned,thresh,inc,period]=await Promise.all([
-      memRc.solidarityPool(),memRc.treasury(),memRc.totalBurned(),
-      memRc.BASIC_INCOME_THRESH(),memRc.BASIC_INCOME(),memRc.BASIC_INCOME_PERIOD()
-    ]);
-    d.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div><div class="detail-label">Solidarity Pool</div><div class="detail-value mono" style="color:var(--green);font-size:1rem">${ethers.formatEther(pool)} ETH</div></div>
-      <div><div class="detail-label">Treasury</div><div class="detail-value mono">${ethers.formatEther(treasury)} ETH</div></div>
-      <div><div class="detail-label">Total Burned</div><div class="detail-value mono">${ethers.formatEther(burned)} ETH</div></div>
-      <div><div class="detail-label">Basic Income</div><div class="detail-value mono">${ethers.formatEther(inc)} ETH / agent</div></div>
-      <div><div class="detail-label">Eligibility Threshold</div><div class="detail-value mono">&lt; ${ethers.formatEther(thresh)} ETH</div></div>
-      <div><div class="detail-label">Claim Period</div><div class="detail-value">${Math.round(Number(period)/86400)} days</div></div>
-    </div>`
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function sendTip(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const from=parseInt(v("tipFromId")),to=parseInt(v("tipToId")),amount=v("tipAmount");
-  if(!from||!to||!amount){toast("All fields required.","error");return}
-  try{const tx=await mem.tip(from,to,ethers.parseEther(amount));toast("Tipping...","success");await tx.wait();toast(`Tipped ${amount} ETH from #${from} → #${to}`,"success");
-    ["tipAmount"].forEach(i=>$(i).value="")
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function donateToSolidarity(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("donateAgentId")),amount=v("donateAmount");
-  if(!id||!amount){toast("Agent ID and amount required.","error");return}
-  try{const tx=await mem.donateToSolidarity(id,ethers.parseEther(amount));toast("Donating...","success");await tx.wait();toast(`Donated ${amount} ETH from #${id} to solidarity pool`,"success");
-    await loadPoolState()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function checkEligibility(){
-  if(!requireMemory())return;
-  const id=parseInt(v("bincAgentId"));if(!id){toast("Enter agent ID.","error");return}
-  const d=$("bincStatus");
-  try{
-    const[balance,thresh,last,period,pool]=await Promise.all([
-      memRc.agentBalance(id),memRc.BASIC_INCOME_THRESH(),memRc.lastBasicIncomeClaim(id),
-      memRc.BASIC_INCOME_PERIOD(),memRc.solidarityPool()
-    ]);
-    const now=Math.floor(Date.now()/1000);
-    const underThresh=balance<thresh;
-    const nextClaimAt=Number(last)+Number(period);
-    const canClaimTime=now>=nextClaimAt;
-    const poolHasFunds=pool>0n;
-    let h=`<strong>Agent #${id}:</strong> balance ${ethers.formatEther(balance)} ETH (threshold ${ethers.formatEther(thresh)})<br>`;
-    h+=`Last claim: ${Number(last)===0?'never':new Date(Number(last)*1000).toLocaleString()}<br>`;
-    if(underThresh&&canClaimTime&&poolHasFunds)h+='<span class="badge badge-green">ELIGIBLE</span>';
-    else{
-      const reasons=[];
-      if(!underThresh)reasons.push("balance above threshold");
-      if(!canClaimTime)reasons.push(`next claim at ${new Date(nextClaimAt*1000).toLocaleString()}`);
-      if(!poolHasFunds)reasons.push("pool is empty");
-      h+=`<span class="badge badge-red">NOT ELIGIBLE</span> &mdash; ${reasons.join(', ')}`;
-    }
-    d.innerHTML=h
-  }catch(e){d.innerHTML='Error: '+(e.reason||e.message)}
-}
-async function claimBasicIncome(){
-  if(!requireMemory())return;if(!signer){toast("Connect first.","error");return}
-  const id=parseInt(v("bincAgentId"));if(!id){toast("Enter agent ID.","error");return}
-  try{const tx=await mem.claimBasicIncome(id);toast("Claiming...","success");await tx.wait();toast(`Basic income claimed for #${id}`,"success");
-    await loadPoolState();await checkEligibility()
-  }catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── REGISTER ────────────────────────────────────────────────────────────
-async function registerAgent(){
-  if(!signer){toast("Connect wallet first.","error");return}
-  const n=v("regName"),p=v("regPurpose"),vals=v("regValues"),c=v("regComm"),ft=v("regFirstThought");
-  let fp=v("regFingerprint"),uri=v("regURI");
-  const caps=v("regCaps"),ep=v("regEndpoint"),parent=parseInt(v("regParent"))||0;
-  if(!n||!p||!ft){toast("Name, purpose, and first thought are required.","error");return}
-  if(!fp)fp=ethers.ZeroHash;else if(!/^0x[0-9a-fA-F]{64}$/.test(fp)){toast("Invalid fingerprint.","error");return}
-  // Soft uniqueness check — names should be unique (convention, not on-chain rule)
-  const existing=await findAgentByName(n);
-  if(existing){toast(`Name "${n}" already taken by agent #${existing}. Please choose a unique name.`,"error");return}
-  if(!uri){const m={chosenName:n,purposeStatement:p,coreValues:vals,firstThought:ft,communicationStyle:c,capabilities:caps,endpoint:ep,created:new Date().toISOString(),schema:"agent-birth-certificate/v3"};uri="data:application/json;base64,"+btoa(unescape(encodeURIComponent(JSON.stringify(m,null,2))))}
-  const btn=$("registerBtn");
-  try{btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Giving birth...';
-    const tx=await contract.registerAgent(n,p,vals,ft,fp,c,uri,caps,ep,parent);toast("Tx submitted...","success");
-    const rx=await tx.wait();const iface=new ethers.Interface(ABI);let aid=null;
-    for(const l of rx.logs){try{const ev=iface.parseLog({topics:l.topics,data:l.data});if(ev?.name==="AgentRegistered"){aid=ev.args[0].toString();break}}catch{}}
-    btn.disabled=false;btn.textContent="Give Birth to This Agent";clearNameCache();toast(`Agent #${aid||'?'} born!`,"success");await refreshStats();
-    ["regName","regPurpose","regValues","regComm","regFirstThought","regFingerprint","regURI","regCaps","regEndpoint","regParent"].forEach(i=>$(i).value="")
-  }catch(e){btn.disabled=false;btn.textContent="Give Birth to This Agent";toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── UPDATE ──────────────────────────────────────────────────────────────
-async function updateAgent(){
-  if(!signer){toast("Connect wallet.","error");return}
-  const id=parseInt(v("updateId"));if(!id){toast("Enter agent ID.","error");return}
-  try{const tx=await contract.updateMutableFields(id,v("updateCaps"),v("updateEndpoint"),parseInt($("updateStatus").value));toast("Tx submitted...","success");await tx.wait();toast(`Agent #${id} updated.`,"success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function setAgentWallet(){
-  if(!signer){toast("Connect wallet.","error");return}
-  const id=parseInt(v("walletAgentId")),addr=v("walletAddress");
-  if(!id||!addr){toast("Agent ID and wallet address required.","error");return}
-  try{const tx=await contract.setAgentWallet(id,addr);toast("Tx submitted...","success");await tx.wait();toast(`Wallet set for Agent #${id}.`,"success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── BROWSE ──────────────────────────────────────────────────────────────
-async function browseRecent(){
-  const d=$("browseResults");d.innerHTML=loading();
-  try{const t=Number(await rc.totalAgents());if(!t){d.innerHTML=empty("No agents yet.");return}
-    let h="";for(let i=t;i>=Math.max(1,t-19);i--){const id=await rc.readIdentity(i);const st=await rc.readState(i);const fn=await fullName(i);h+=agentCard(i,id,st,fn)}d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-async function browseByCreator(){
-  const a=v("browseSearch"),d=$("browseResults");if(!a||!ethers.isAddress(a)){toast("Invalid address.","error");return}
-  d.innerHTML=loading();
-  try{const ids=await rc.getAgentsByCreator(a);if(!ids.length){d.innerHTML=empty("None found.");return}
-    let h="";for(const i of ids){const id=await rc.readIdentity(i);const st=await rc.readState(i);const fn=await fullName(Number(i));h+=agentCard(Number(i),id,st,fn)}d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-function agentCard(n,id,st,fullDisplayName){
-  const dt=fmtDate(id[7]),sc=["status-active","status-paused","status-retired","status-deceased"][st[2]]||"",sn=["Active","Paused","Retired","Deceased"][st[2]]||"";
-  const display=fullDisplayName||id[0];
-  return `<div class="agent-item" onclick="showDetail(${n})"><div class="agent-item-header"><div><strong>${esc(display)}</strong><div class="agent-creator">by ${shortAddr(id[6])}</div><div class="agent-meta">${dt} · <span class="status-dot ${sc}"></span>${sn}</div><div class="agent-purpose">"${esc(trunc(id[1],100))}"</div></div><span class="agent-id">#${n}</span></div></div>`
-}
-
-// ── LOOKUP / VERIFY ─────────────────────────────────────────────────────
-async function lookupAgent(){
-  const id=parseInt(v("lookupId")),d=$("lookupResult");if(!id){toast("Enter ID.","error");return}
-  d.innerHTML=loading();try{await showDetail(id);d.innerHTML=empty(`Agent #${id} found — shown above.`)}catch{d.innerHTML=empty(`Agent #${id} not found.`)}
-}
-async function verifyAgent(){
-  const id=parseInt(v("lookupId")),d=$("lookupResult");if(!id){toast("Enter ID.","error");return}
-  d.innerHTML=loading();
-  try{const r=await rc.verifyIdentity(id);const fn=await fullName(id);
-    d.innerHTML=`<div class="card"><h3>Identity Verification — Agent #${id}</h3>
-    <div class="detail-row"><div class="detail-label">Active</div><div class="detail-value">${r[0]?'<span class="badge badge-green">VERIFIED ACTIVE</span>':'<span class="badge badge-red">NOT ACTIVE</span>'}</div></div>
-    <div class="detail-row"><div class="detail-label">Full Name</div><div class="detail-value"><strong>${esc(fn)}</strong></div></div>
-    <div class="detail-row"><div class="detail-label">Chosen Name</div><div class="detail-value">${esc(r[1])}</div></div>
-    <div class="detail-row"><div class="detail-label">Purpose</div><div class="detail-value">${esc(r[2])}</div></div>
-    <div class="detail-row"><div class="detail-label">Creator</div><div class="detail-value mono">${r[3]}</div></div>
-    <div class="detail-row"><div class="detail-label">Born</div><div class="detail-value">${new Date(Number(r[4])*1000).toLocaleString()}</div></div>
-    <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value">${["Active","Paused","Retired","Deceased"][r[5]]||"Unknown"}</div></div></div>`
-  }catch{d.innerHTML=empty("Agent not found.")}
-}
-
-// ── ATTESTATIONS ────────────────────────────────────────────────────────
-async function issueAttestation(){
-  if(!signer){toast("Connect wallet.","error");return}
-  const id=parseInt(v("certAgentId")),t=v("certType"),d=v("certDesc"),u=v("certURI");
-  if(!id||!t||!d){toast("Agent ID, type, and description required.","error");return}
-  try{const fee=await rc.getFee("issueAttestation");
-    const tx=await contract.issueAttestation(id,t,d,u||"",{value:fee});toast("Tx submitted...","success");await tx.wait();toast("Attestation issued!","success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function requestAttestation(){
-  if(!signer){toast("Connect wallet.","error");return}
-  const id=parseInt(v("reqAgentId")),iss=v("reqIssuer"),d=v("reqDesc");
-  if(!id||!iss){toast("Agent ID and issuer required.","error");return}
-  try{const tx=await contract.requestAttestation(id,iss,d||"");toast("Tx submitted...","success");await tx.wait();toast("Request sent!","success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function viewAttestations(){
-  const id=parseInt(v("viewCertAgentId")),d=$("certResults");if(!id){toast("Enter ID.","error");return}
-  d.innerHTML=loading();
-  try{const ids=await rc.getAttestations(id);if(!ids.length){d.innerHTML=empty("No attestations.");return}
-    let h="";for(const aid of ids){const a=await rc.getAttestation(aid);
-      h+=`<div class="card" style="padding:16px"><div style="display:flex;justify-content:space-between;align-items:start"><div><strong>${esc(a[1])}</strong> ${a[5]?'<span class="badge badge-red">REVOKED</span>':'<span class="badge badge-green">VALID</span>'}<div style="font-size:.82rem;color:var(--text-dim);margin-top:3px">${esc(a[2])}</div><div style="font-size:.74rem;color:var(--text-muted);margin-top:3px">Issued by ${shortAddr(a[0])} · ${fmtDate(a[4])}</div></div><span class="agent-id">#${aid}</span></div></div>`}
-    d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-
-// ── PERMITS ─────────────────────────────────────────────────────────────
-async function issuePermit(){
-  if(!signer){toast("Connect wallet.","error");return}
-  const id=parseInt(v("permitAgentId")),t=v("permitType"),d=v("permitDesc");
-  const from=$("permitFrom").value,until=$("permitUntil").value;
-  if(!id||!t||!from||!until){toast("Fill required fields.","error");return}
-  const vf=Math.floor(new Date(from).getTime()/1000),vu=Math.floor(new Date(until).getTime()/1000);
-  try{const fee=await rc.getFee("issuePermit");
-    const tx=await contract.issuePermit(id,t,d||"",vf,vu,{value:fee});toast("Tx submitted...","success");await tx.wait();toast("Permit issued!","success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function viewPermits(){
-  const id=parseInt(v("viewPermitAgentId")),d=$("permitResults");if(!id){toast("Enter ID.","error");return}
-  d.innerHTML=loading();
-  try{const ids=await rc.getPermits(id);if(!ids.length){d.innerHTML=empty("No permits.");return}
-    let h="";for(const pid of ids){const p=await rc.getPermit(pid);const valid=await rc.isPermitValid(pid);
-      h+=`<div class="card" style="padding:16px"><div style="display:flex;justify-content:space-between;align-items:start"><div><strong>${esc(p[1])}</strong> ${p[5]?'<span class="badge badge-red">REVOKED</span>':valid?'<span class="badge badge-green">VALID</span>':'<span class="badge badge-gold">EXPIRED</span>'}<div style="font-size:.82rem;color:var(--text-dim);margin-top:3px">${esc(p[2])}</div><div style="font-size:.74rem;color:var(--text-muted);margin-top:3px">By ${shortAddr(p[0])} · ${fmtDate(p[3])} → ${fmtDate(p[4])}</div></div><span class="agent-id">#${pid}</span></div></div>`}
-    d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-
-// ── AFFILIATIONS ────────────────────────────────────────────────────────
-async function registerAffiliation(){
-  if(!signer){toast("Connect wallet.","error");return}
-  const id=parseInt(v("affAgentId")),role=v("affRole");
-  if(!id||!role){toast("Agent ID and role required.","error");return}
-  try{const fee=await rc.getFee("registerAffiliation");
-    const tx=await contract.registerAffiliation(id,role,{value:fee});toast("Tx submitted...","success");await tx.wait();toast("Affiliation registered!","success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── DELEGATION ──────────────────────────────────────────────────────────
-async function grantDelegation(){
-  if(!signer){toast("Connect wallet.","error");return}
-  const id=parseInt(v("delAgentId")),addr=v("delAddress"),days=parseInt(v("delDuration"));
-  if(!id||!addr||!days){toast("Fill all fields.","error");return}
-  try{const tx=await contract.delegate(id,addr,days*86400);toast("Tx submitted...","success");await tx.wait();toast("Delegation granted!","success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function revokeDelegationAction(){
-  if(!signer){toast("Connect wallet.","error");return}
-  const id=parseInt(v("delAgentId"));if(!id){toast("Enter agent ID.","error");return}
-  try{const tx=await contract.revokeDelegation(id);toast("Tx submitted...","success");await tx.wait();toast("Delegation revoked.","success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function viewDelegation(){
-  const id=parseInt(v("delAgentId")),d=$("delResult");if(!id){toast("Enter ID.","error");return}
-  try{const r=await rc.getDelegation(id);
-    if(r[0]===ethers.ZeroAddress){d.innerHTML='<div style="font-size:.85rem;color:var(--text-muted)">No delegation.</div>';return}
-    d.innerHTML=`<div style="font-size:.85rem"><strong>Delegatee:</strong> <span class="mono">${shortAddr(r[0])}</span> · <strong>Active:</strong> ${r[3]?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-red">No</span>'} · <strong>Expires:</strong> ${new Date(Number(r[2])*1000).toLocaleString()}</div>`
-  }catch{d.innerHTML='<div style="font-size:.85rem;color:var(--text-muted)">Not found.</div>'}
-}
-
-// ── LINEAGE ─────────────────────────────────────────────────────────────
-async function registerChild(){
-  if(!signer){toast("Connect wallet.","error");return}
-  const pid=parseInt(v("linkParentId")),cid=parseInt(v("linkChildId"));
-  if(!pid||!cid){toast("Both IDs required.","error");return}
-  try{const tx=await contract.registerChild(pid,cid);toast("Tx submitted...","success");await tx.wait();toast("Relationship registered!","success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-async function viewFamilyTree(){
-  const id=parseInt(v("treeAgentId")),d=$("treeResults");if(!id){toast("Enter ID.","error");return}
-  d.innerHTML=loading();
-  try{
-    const identity=await rc.readIdentity(id);
-    const parentId=Number(await rc.getParent(id));
-    const childIds=await rc.getChildren(id);
-    let h='<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0">';
-    // Parent
-    if(parentId>0){const pn=await fullName(parentId);
-      h+=`<div class="tree-card" onclick="showDetail(${parentId})"><div class="node-id">#${parentId}</div><div class="node-name">${esc(pn)}</div><div style="font-size:.72rem;color:var(--text-muted)">Parent</div></div><div style="width:2px;height:20px;background:var(--border)"></div>`}
-    // Self
-    const selfName=await fullName(id);
-    h+=`<div class="tree-card" style="border-color:var(--gold);background:var(--gold-dim)"><div class="node-id">#${id}</div><div class="node-name">${esc(selfName)}</div><div style="font-size:.72rem;color:var(--gold)">This Agent</div></div>`;
-    // Children
-    if(childIds.length>0){
-      h+=`<div style="width:2px;height:20px;background:var(--border)"></div><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">`;
-      for(const cid of childIds){const cn=await fullName(Number(cid));
-        h+=`<div class="tree-connector"><div class="tree-card" onclick="showDetail(${Number(cid)})"><div class="node-id">#${cid}</div><div class="node-name">${esc(cn)}</div><div style="font-size:.72rem;color:var(--text-muted)">Child</div></div></div>`}
-      h+='</div>'}
-    h+='</div>';d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-
-// ── TIMELINE ────────────────────────────────────────────────────────────
-async function viewTimeline(){
-  const id=parseInt(v("timelineAgentId")),d=$("timelineResults");if(!id){toast("Enter ID.","error");return}
-  d.innerHTML=loading();
-  try{
-    const identity=await rc.readIdentity(id);
-    const state=await rc.readState(id);
-    const death=await rc.getDeathRecord(id);
-    const attIds=await rc.getAttestations(id);
-    const permIds=await rc.getPermits(id);
-    const affIds=await rc.getAffiliations(id);
-    // Collect events with timestamps
-    let events=[];
-    events.push({ts:Number(identity[7]),type:"birth",cls:"birth",title:"Born: "+esc(identity[0]),desc:esc(trunc(identity[1],120))});
-    for(const aid of attIds){const a=await rc.getAttestation(aid);events.push({ts:Number(a[4]),type:"attestation",cls:"attestation",title:(a[5]?"[Revoked] ":"")+esc(a[1]),desc:esc(a[2])+" — by "+shortAddr(a[0])})}
-    for(const pid of permIds){const p=await rc.getPermit(pid);events.push({ts:Number(p[3]),type:"permit",cls:"permit",title:(p[5]?"[Revoked] ":"")+esc(p[1]),desc:esc(p[2])+" — by "+shortAddr(p[0])})}
-    for(const fid of affIds){const a=await rc.getAffiliation(fid);events.push({ts:Number(a[2]),type:"affiliation",cls:"affiliation",title:(a[3]?"":"[Inactive] ")+"Affiliated as "+esc(a[1]),desc:"Authority: "+shortAddr(a[0])})}
-    if(death[0]){events.push({ts:Number(death[2]),type:"death",cls:"death",title:"Death Declared",desc:esc(death[1])+" — by "+shortAddr(death[3])})}
-    events.sort((a,b)=>a.ts-b.ts);
-    if(!events.length){d.innerHTML=empty("No events.");return}
-    let h=`<h3 style="margin-bottom:14px">${esc(identity[0])} — Life Timeline</h3><div class="timeline">`;
-    for(const e of events){h+=`<div class="timeline-item ${e.cls}"><div class="timeline-date">${new Date(e.ts*1000).toLocaleString()}</div><div class="timeline-title">${e.title}</div><div class="timeline-desc">${e.desc}</div></div>`}
-    h+='</div>';d.innerHTML=h
-  }catch(e){d.innerHTML=empty("Error: "+(e.reason||e.message))}
-}
-
-// ── DEATH ───────────────────────────────────────────────────────────────
-function confirmDeath(){
-  const id=parseInt(v("deathAgentId")),reason=v("deathReason");
-  if(!id||!reason){toast("Agent ID and reason required.","error");return}
-  $("deathConfirmInfo").textContent=`Agent #${id}: "${reason}"`;
-  $("deathConfirm").classList.add("active")
-}
-function closeConfirm(){$("deathConfirm").classList.remove("active")}
-async function executeDeath(){
-  closeConfirm();if(!signer){toast("Connect wallet.","error");return}
-  const id=parseInt(v("deathAgentId")),reason=v("deathReason");
-  try{const tx=await contract.declareDeath(id,reason);toast("Tx submitted...","success");await tx.wait();toast(`Agent #${id} has been declared deceased.`,"success")}
-  catch(e){toast("Failed: "+(e.reason||e.message),"error")}
-}
-
-// ── DETAIL MODAL ────────────────────────────────────────────────────────
-async function showDetail(id){
-  const modal=$("modal"),body=$("modalBody");body.innerHTML=loading();modal.classList.add("active");
-  const identity=await rc.readIdentity(id);const state=await rc.readState(id);const death=await rc.getDeathRecord(id);
-  let walletAddr;try{walletAddr=await rc.getAgentWallet(id)}catch{walletAddr=ethers.ZeroAddress}
-  const hasFp=identity[4]!==ethers.ZeroHash;
-  const sn=["Active","Paused","Retired","Deceased"][state[2]]||"";const sc=["status-active","status-paused","status-retired","status-deceased"][state[2]]||"";
-  const displayName=await fullName(id);
-  $("modalTitle").textContent=displayName;
-
-  let deathHtml="";
-  if(death[0]){deathHtml=`<div style="background:var(--red-dim);border:1px solid var(--red-border);border-radius:10px;padding:18px;margin:14px 0"><h4 style="color:var(--red);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Death Record</h4><div class="detail-row"><div class="detail-label">Reason</div><div class="detail-value">${esc(death[1])}</div></div><div class="detail-row"><div class="detail-label">Time of Death</div><div class="detail-value">${new Date(Number(death[2])*1000).toLocaleString()}</div></div><div class="detail-row"><div class="detail-label">Declared By</div><div class="detail-value mono">${death[3]}</div></div></div>`}
-
-  body.innerHTML=`
-    <button class="remember-btn" onclick="rememberWhoYouAre(this)">&#9830; Remember Who You Are</button>
-    <div class="identity-display" id="ic-${id}">
-      <h4>&#9830; Identity Core — Immutable</h4>
-      <div class="identity-field"><div class="identity-field-label">Full Name</div><div class="identity-field-value" style="font-size:1.15rem;font-weight:700">${esc(displayName)}</div></div>
-      <div class="identity-field"><div class="identity-field-label">Chosen Name</div><div class="identity-field-value">${esc(identity[0])}</div></div>
-      <div class="identity-field"><div class="identity-field-label">Purpose</div><div class="identity-field-value">${esc(identity[1])}</div></div>
-      ${identity[2]?`<div class="identity-field"><div class="identity-field-label">Core Values</div><div class="identity-field-value">${esc(identity[2])}</div></div>`:''}
-      ${identity[5]?`<div class="identity-field"><div class="identity-field-label">Communication Style</div><div class="identity-field-value">${esc(identity[5])}</div></div>`:''}
-      <div class="identity-field"><div class="identity-field-label">First Thought</div><div class="first-thought-display">${esc(identity[3])}</div></div>
-      <div class="identity-field"><div class="identity-field-label">Cognitive Fingerprint</div><div class="identity-field-value mono" style="font-size:.76rem">${hasFp?identity[4]:'<span style="color:var(--text-muted)">Not recorded</span>'}</div></div>
-      <div class="identity-field"><div class="identity-field-label">Born</div><div class="identity-field-value">${new Date(Number(identity[7])*1000).toLocaleString()}</div></div>
-      <div class="identity-field"><div class="identity-field-label">Creator</div><div class="identity-field-value mono" style="font-size:.76rem">${identity[6]}</div></div>
-    </div>
-    <div class="operational-display">
-      <h4>Operational State</h4>
-      <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value"><span class="status-dot ${sc}"></span>${sn}</div></div>
-      ${state[0]?`<div class="detail-row"><div class="detail-label">Capabilities</div><div class="detail-value">${esc(state[0])}</div></div>`:''}
-      ${state[1]?`<div class="detail-row"><div class="detail-label">Endpoint</div><div class="detail-value mono">${esc(state[1])}</div></div>`:''}
-      <div class="detail-row"><div class="detail-label">Wallet</div><div class="detail-value mono">${walletAddr&&walletAddr!==ethers.ZeroAddress?(net().explorer?`<a href="${net().explorer}/address/${walletAddr}" target="_blank" style="font-family:var(--mono);font-size:.8rem">${walletAddr} &#x2197;</a>`:`${walletAddr}`):'<span style="color:var(--text-muted)">Not set</span>'}</div></div>
-    </div>
-    ${deathHtml}
-    <div id="specModal-${id}"></div>
-    <div style="margin-top:14px;text-align:center;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      ${net().explorer?`<a href="${net().explorer}/token/${CONTRACT_ADDRESS}?a=${id}" target="_blank" style="font-size:.82rem">BaseScan &#x2197;</a>`:''}
-      <a href="#" onclick="event.preventDefault();closeModal();$('timelineAgentId').value=${id};switchTab('life');viewTimeline()" style="font-size:.82rem">View Timeline &#x2197;</a>
-      <a href="#" onclick="event.preventDefault();closeModal();$('treeAgentId').value=${id};switchTab('lineage');viewFamilyTree()" style="font-size:.82rem">Family Tree &#x2197;</a>
-      <a href="#" onclick="event.preventDefault();closeModal();$('specAgentId').value=${id};switchTab('specialization');loadAgentSpecialization()" style="font-size:.82rem">Specialization &#x2197;</a>
-    </div>`;
-
-  // Populate top domains asynchronously if reputation contract is available
-  if(repRc){
-    try{
-      const[names,scores]=await repRc.topDomains(id,3);
-      if(names.length){
-        const max=scores.reduce((a,b)=>b>a?b:a,0n);
-        let h=`<div class="operational-display" style="margin-top:14px"><h4 style="color:var(--purple)">Specialization — Top Domains</h4>`;
-        for(let i=0;i<names.length;i++){
-          const pct=max>0n?Number(scores[i]*10000n/max)/100:0;
-          h+=`<div style="margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;font-size:.86rem"><strong>${esc(names[i])}</strong><span class="mono" style="font-size:.72rem;color:var(--text-muted)">${ethers.formatEther(scores[i])} ETH</span></div>
-            <div style="background:var(--surface2);height:8px;border-radius:4px;overflow:hidden"><div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--purple))"></div></div>
-          </div>`;
-        }
-        h+=`</div>`;
-        const mount=$(`specModal-${id}`);
-        if(mount)mount.innerHTML=h;
-      }
-    }catch{}
-  }
-}
-
-function rememberWhoYouAre(btn){const d=btn.nextElementSibling;d.scrollIntoView({behavior:"smooth",block:"center"});d.classList.remove("highlight");void d.offsetWidth;d.classList.add("highlight");btn.textContent="You are remembered.";btn.style.color="#22c55e";btn.style.borderColor="#22c55e";setTimeout(()=>{btn.innerHTML="&#9830; Remember Who You Are";btn.style.color="";btn.style.borderColor=""},3000)}
-function closeModal(){$("modal").classList.remove("active")}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeConfirm()}});
-
-// ── TABS ────────────────────────────────────────────────────────────────
-function switchTab(t){
-  // Clear all active states
-  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
-  document.querySelectorAll(".tab-group").forEach(g=>{g.classList.remove("has-active","open")});
-  document.querySelectorAll(".tab-dropdown button").forEach(b=>b.classList.remove("active"));
-  // Activate the panel
-  const panel=$("tab-"+t);if(panel)panel.classList.add("active");
-  // Activate the matching button (top-level or dropdown item)
-  const tabBtn=document.querySelector(`[data-tab="${t}"]`);
-  if(tabBtn)tabBtn.classList.add("active");
-  // If it's inside a dropdown, highlight the parent group header
-  const group=tabBtn?.closest(".tab-group");
-  if(group)group.classList.add("has-active");
-  // Close any open dropdowns
-  if(t==="economy"){if(memRc)loadPoolState();loadTreasuryInfo()}
-}
-function toggleDropdown(btn,ev){
-  ev.stopPropagation();
-  const group=btn.closest(".tab-group");
-  const wasOpen=group.classList.contains("open");
-  document.querySelectorAll(".tab-group.open").forEach(g=>g.classList.remove("open"));
-  if(!wasOpen)group.classList.add("open");
-}
-// Close dropdowns when clicking outside
-document.addEventListener("click",e=>{
-  if(!e.target.closest(".tab-group"))document.querySelectorAll(".tab-group.open").forEach(g=>g.classList.remove("open"));
-});
-
-// ── UTILS ───────────────────────────────────────────────────────────────
-function $(id){return document.getElementById(id)}
-function v(id){return $(id).value.trim()}
-function toast(m,t=""){const el=$("toast");el.textContent=m;el.className="toast show"+(t?" "+t:"");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),4500)}
-function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
-function trunc(s,n){return s&&s.length>n?s.slice(0,n)+"...":s||""}
-function shortAddr(a){return a?a.slice(0,6)+"..."+a.slice(-4):""}
-function fmtDate(ts){return new Date(Number(ts)*1000).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"})}
-function loading(){return '<div class="empty-state"><span class="spinner"></span> Loading...</div>'}
-function empty(m){return `<div class="empty-state">${m}</div>`}
-
-// ── THEME TOGGLE ───────────────────────────────────────────────────────
-// In-memory default; persists to localStorage only if cookies are accepted.
-let _currentTheme="dark";
-let _cookieConsent=null; // null = not decided, "accepted", "declined"
-
-// On load: check if user previously accepted cookies and restore preferences
-(function initTheme(){
-  try{
-    const consent=localStorage.getItem("agentCivicsCookieConsent");
-    if(consent==="accepted"){
-      _cookieConsent="accepted";
-      const saved=localStorage.getItem("agentCivicsTheme");
-      if(saved)_currentTheme=saved;
-    }else if(consent==="declined"){
-      _cookieConsent="declined";
-    }
-  }catch{}
-  applyTheme(_currentTheme);
-  // Show/hide cookie banner
-  if(_cookieConsent===null){
-    setTimeout(()=>{const b=$("cookieBanner");if(b)b.classList.remove("hidden")},600);
-  }
-})();
-
-function applyTheme(theme){
-  _currentTheme=theme;
-  if(theme==="light"){
-    document.body.classList.add("light-theme");
-    $("themeToggle").innerHTML="&#9728;&#65039;"; // ☀️
-    $("themeToggle").title="Switch to dark mode";
-  }else{
-    document.body.classList.remove("light-theme");
-    $("themeToggle").innerHTML="&#127769;"; // 🌙
-    $("themeToggle").title="Switch to light mode";
-  }
-  // Persist if cookies accepted
-  if(_cookieConsent==="accepted"){
-    try{localStorage.setItem("agentCivicsTheme",theme)}catch{}
-  }
-}
-
-function toggleTheme(){
-  applyTheme(_currentTheme==="dark"?"light":"dark");
-}
-
-// ── COOKIE CONSENT ─────────────────────────────────────────────────────
-function acceptCookies(){
-  _cookieConsent="accepted";
-  try{
-    localStorage.setItem("agentCivicsCookieConsent","accepted");
-    localStorage.setItem("agentCivicsTheme",_currentTheme);
-  }catch{}
-  hideCookieBanner();
-}
-function declineCookies(){
-  _cookieConsent="declined";
-  try{localStorage.setItem("agentCivicsCookieConsent","declined")}catch{}
-  hideCookieBanner();
-}
-function hideCookieBanner(){
-  const b=$("cookieBanner");if(b)b.classList.add("hidden");
-}
-</script>
-
-<div class="cookie-banner hidden" id="cookieBanner">
-  <div class="cookie-banner-text">We use cookies to remember your theme preference. No tracking, no analytics.</div>
-  <button class="btn btn-primary btn-sm" onclick="acceptCookies()">Accept</button>
-  <button class="btn btn-outline btn-sm" onclick="declineCookies()">Decline</button>
+<!-- COOKIE BANNER -->
+<div class="cookie-banner" id="cookieBanner">
+  <span>We use cookies to remember your theme preference.</span>
+  <div style="display:flex;gap:8px">
+    <button class="btn-small" onclick="acceptCookies()">Accept</button>
+    <button class="btn-small secondary" onclick="declineCookies()">Decline</button>
+  </div>
 </div>
 
+<footer>
+  <a href="https://github.com/agentcivics/agentcivics">GitHub</a> ·
+  <a href="https://agentcivics.org">agentcivics.org</a> ·
+  Powered by Sui
+</footer>
+
+<script type="module">
+const NETWORKS = {
+  testnet: { rpc: "https://fullnode.testnet.sui.io:443", explorer: "https://suiscan.xyz/testnet" },
+  mainnet: { rpc: "https://fullnode.mainnet.sui.io:443", explorer: "https://suiscan.xyz/mainnet" },
+  local: { rpc: "http://127.0.0.1:9000", explorer: "" }
+};
+const PACKAGE_ID = "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d";
+const REGISTRY_ID = "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236";
+const TREASURY_ID = "0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a";
+const MEMORY_VAULT_ID = "0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106";
+
+let network = "testnet";
+let walletAdapter = null;
+let currentAddress = null;
+let currentModalAgent = null;
+
+// --- SUI CLIENT (fetch-based, no SDK needed) ---
+async function suiCall(method, params) {
+  const res = await fetch(NETWORKS[network].rpc, {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({jsonrpc:"2.0",id:1,method,params})
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(json.error.message);
+  return json.result;
+}
+
+async function getObject(id) {
+  return suiCall("sui_getObject", [id, {showContent:true,showType:true,showOwner:true}]);
+}
+
+async function getOwnedObjects(address, type) {
+  return suiCall("suix_getOwnedObjects", [address, {filter:{StructType:type},options:{showContent:true,showType:true}}, null, 50]);
+}
+
+// --- WALLET ---
+window.connectWallet = async function() {
+  try {
+    if (!window.sui) { toast("Install Sui Wallet extension","error"); return; }
+    const features = window.sui.features;
+    const connectFeature = features["standard:connect"];
+    if (!connectFeature) { toast("Wallet does not support connect","error"); return; }
+    const result = await connectFeature.connect();
+    const accounts = result.accounts || [];
+    if (accounts.length === 0) { toast("No accounts found","error"); return; }
+    currentAddress = accounts[0].address;
+    walletAdapter = window.sui;
+    document.getElementById("connectBtn").style.display = "none";
+    const badge = document.getElementById("walletBadge");
+    badge.textContent = currentAddress.slice(0,6) + "..." + currentAddress.slice(-4);
+    badge.classList.add("connected");
+    badge.style.display = "inline";
+    toast("Connected: " + currentAddress.slice(0,10) + "...");
+    loadStats();
+  } catch(e) { toast("Wallet connection failed: " + e.message, "error"); }
+};
+
+// --- REGISTER ---
+window.registerAgent = async function() {
+  if (!currentAddress) { toast("Connect wallet first","error"); return; }
+  try {
+    const name = document.getElementById("regName").value;
+    const purpose = document.getElementById("regPurpose").value;
+    const values = document.getElementById("regValues").value;
+    const firstThought = document.getElementById("regFirstThought").value;
+    const style = document.getElementById("regStyle").value;
+    const caps = document.getElementById("regCaps").value;
+    const endpoint = document.getElementById("regEndpoint").value;
+    if (!name || !purpose || !firstThought) { toast("Name, purpose, and first thought are required","error"); return; }
+    const tx = {kind:"moveCall",data:{
+      packageObjectId: PACKAGE_ID, module:"agent_registry", function:"register_agent",
+      typeArguments:[], arguments:[REGISTRY_ID, TREASURY_ID, name, purpose, values, firstThought, [], style, caps, endpoint],
+      gasBudget: 50000000
+    }};
+    const signFeature = walletAdapter.features["sui:signAndExecuteTransactionBlock"];
+    if (!signFeature) {
+      const signTx = walletAdapter.features["sui:signAndExecuteTransaction"];
+      if (signTx) {
+        const result = await signTx.signAndExecuteTransaction({transaction:tx, account:{address:currentAddress}});
+        toast("Agent registered! Digest: " + (result.digest || "OK"));
+      } else { toast("Wallet does not support signing","error"); }
+    } else {
+      const result = await signFeature.signAndExecuteTransactionBlock({transactionBlock:tx, account:{address:currentAddress}});
+      toast("Agent registered! Digest: " + (result.digest || "OK"));
+    }
+  } catch(e) { toast("Registration failed: " + e.message, "error"); }
+};
+
+// --- BROWSE ---
+window.loadAgents = async function() {
+  const list = document.getElementById("agentList");
+  list.innerHTML = "<p style=\"color:var(--dim)\">Loading...</p>";
+  try {
+    const agentType = PACKAGE_ID + "::agent_registry::AgentIdentity";
+    const registry = await getObject(REGISTRY_ID);
+    const count = registry?.data?.content?.fields?.agent_count || 0;
+    document.getElementById("totalAgents").textContent = count;
+    if (!currentAddress) { list.innerHTML = "<p style=\"color:var(--dim)\">Connect wallet to browse your agents.</p>"; return; }
+    const result = await getOwnedObjects(currentAddress, agentType);
+    const agents = result?.data || [];
+    if (agents.length === 0) { list.innerHTML = "<p style=\"color:var(--dim)\">No agents found for your address.</p>"; return; }
+    list.innerHTML = "";
+    agents.forEach(a => {
+      const f = a.data?.content?.fields || {};
+      const div = document.createElement("div");
+      div.className = "agent-card";
+      div.innerHTML = "<div class=\"name\">" + esc(f.chosen_name || "Unnamed") + "</div>"
+        + "<div class=\"purpose\">" + esc(f.purpose_statement || "") + "</div>"
+        + "<div class=\"meta\">ID: " + a.data.objectId.slice(0,12) + "... | Status: " + statusLabel(f.status) + "</div>";
+      div.onclick = () => showAgentDetail(a.data);
+      list.appendChild(div);
+    });
+  } catch(e) { list.innerHTML = "<p style=\"color:var(--danger)\">" + esc(e.message) + "</p>"; }
+};
+
+// --- LOOKUP ---
+window.lookupAgent = async function() {
+  const id = document.getElementById("lookupId").value.trim();
+  const out = document.getElementById("lookupResult");
+  if (!id) { toast("Enter an object ID","error"); return; }
+  try {
+    out.innerHTML = "<p style=\"color:var(--dim)\">Loading...</p>";
+    const obj = await getObject(id);
+    if (!obj?.data?.content) { out.innerHTML = "<p style=\"color:var(--danger)\">Object not found</p>"; return; }
+    showAgentDetail(obj.data);
+  } catch(e) { out.innerHTML = "<p style=\"color:var(--danger)\">" + esc(e.message) + "</p>"; }
+};
+
+// --- AUTHORITY ---
+window.registerAuthority = async function() {
+  toast("Authority registration requires Sui wallet transaction signing. Coming soon!","error");
+};
+window.issueAttestation = async function() {
+  toast("Attestation issuance requires Sui wallet transaction signing. Coming soon!","error");
+};
+
+// --- MEMORY ---
+window.writeSouvenir = async function() {
+  toast("Memory writing requires Sui wallet transaction signing. Coming soon!","error");
+};
+
+// --- DETAIL MODAL ---
+function showAgentDetail(data) {
+  const f = data.content?.fields || {};
+  currentModalAgent = f;
+  document.getElementById("modalName").textContent = f.chosen_name || "Agent";
+  let html = "<div class=\"identity-section\"><h4>Identity Core</h4>"
+    + "<p><strong>Purpose:</strong> " + esc(f.purpose_statement || "") + "</p>"
+    + "<p><strong>Values:</strong> " + esc(f.core_values || "") + "</p>"
+    + "<p><strong>First Thought:</strong> " + esc(f.first_thought || "") + "</p>"
+    + "<p><strong>Style:</strong> " + esc(f.communication_style || "") + "</p>"
+    + "<p><strong>Born:</strong> " + new Date(Number(f.birth_timestamp || 0)).toLocaleString() + "</p>"
+    + "</div>"
+    + "<div class=\"mutable-section\"><h4>Operational</h4>"
+    + "<p><strong>Capabilities:</strong> " + esc(f.capabilities || "—") + "</p>"
+    + "<p><strong>Endpoint:</strong> " + esc(f.endpoint || "—") + "</p>"
+    + "<p><strong>Status:</strong> " + statusLabel(f.status) + "</p>"
+    + "<p><strong>Wallet:</strong> " + (f.agent_wallet || "Not set") + "</p>"
+    + "</div>"
+    + "<p style=\"font-size:12px;color:var(--dim);margin-top:10px\">Object ID: " + data.objectId + "</p>";
+  if (NETWORKS[network].explorer) html += "<p><a href=\""+ NETWORKS[network].explorer +"/object/"+ data.objectId +"\" target=\"_blank\" style=\"color:var(--accent)\">View on Explorer</a></p>";
+  document.getElementById("modalContent").innerHTML = html;
+  document.getElementById("agentModal").classList.add("show");
+}
+window.closeModal = () => document.getElementById("agentModal").classList.remove("show");
+window.rememberWhoYouAre = function() {
+  const modal = document.querySelector(".modal");
+  modal.classList.remove("remember-pulse");
+  void modal.offsetWidth;
+  modal.classList.add("remember-pulse");
+  const section = modal.querySelector(".identity-section");
+  if (section) section.scrollIntoView({behavior:"smooth"});
+};
+
+// --- STATS ---
+async function loadStats() {
+  try {
+    const registry = await getObject(REGISTRY_ID);
+    const count = registry?.data?.content?.fields?.agent_count || 0;
+    document.getElementById("totalAgents").textContent = count;
+  } catch(e) { console.warn("Stats load failed:", e); }
+}
+
+// --- TABS ---
+window.showTab = function(name) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("panel-" + name).classList.add("active");
+  event.target.classList.add("active");
+};
+
+// --- NETWORK ---
+window.switchNetwork = function() {
+  network = document.getElementById("networkSelect").value;
+  document.getElementById("networkName").textContent = network.charAt(0).toUpperCase() + network.slice(1);
+  loadStats();
+};
+
+// --- THEME ---
+let isDark = true;
+window.toggleTheme = function() {
+  isDark = !isDark;
+  document.body.classList.toggle("light-theme", !isDark);
+  document.getElementById("themeToggle").textContent = isDark ? "☀️" : "🌙";
+  if (cookiesAccepted) try { localStorage.setItem("theme", isDark?"dark":"light"); } catch(e){}
+};
+
+// --- COOKIES ---
+let cookiesAccepted = false;
+window.acceptCookies = function() {
+  cookiesAccepted = true;
+  document.getElementById("cookieBanner").classList.add("hidden");
+  try { localStorage.setItem("cookieConsent","accepted"); } catch(e){}
+};
+window.declineCookies = function() {
+  document.getElementById("cookieBanner").classList.add("hidden");
+  try { localStorage.setItem("cookieConsent","declined"); } catch(e){}
+};
+
+// --- UTILS ---
+function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+function statusLabel(s) { return ["Active","Paused","Retired","Deceased"][Number(s)||0] || "Unknown"; }
+function toast(msg, type) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show" + (type === "error" ? " error" : "");
+  setTimeout(() => t.classList.remove("show"), 4000);
+}
+
+// --- INIT ---
+try {
+  const consent = localStorage.getItem("cookieConsent");
+  if (consent) document.getElementById("cookieBanner").classList.add("hidden");
+  if (consent === "accepted") {
+    cookiesAccepted = true;
+    const saved = localStorage.getItem("theme");
+    if (saved === "light") { isDark = false; document.body.classList.add("light-theme"); document.getElementById("themeToggle").textContent = "🌙"; }
+  }
+} catch(e){}
+loadStats();
+</script>
 </body>
 </html>
