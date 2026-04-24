@@ -420,8 +420,10 @@ window.registerAgent = async function() {
     toast("Building transaction...");
     
     // Use unsafe_moveCall RPC to build tx bytes
+    // Args: registry, chosen_name, purpose_statement, core_values, first_thought,
+    //        cognitive_fingerprint, communication_style, metadata_uri, capabilities, endpoint, clock
     const txResult = await buildMoveCallTx("agent_registry", "register_agent", [
-      REGISTRY_ID, TREASURY_ID, name, purpose, values, firstThought, [], style, caps, endpoint
+      REGISTRY_ID, name, purpose, values, firstThought, [], style, "", caps, endpoint, "0x6"
     ]);
     
     // Sign and execute via wallet
