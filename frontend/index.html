@@ -395,15 +395,25 @@ window.registerAgent = async function() {
     if (!name || !purpose || !firstThought) { toast("Name, purpose, and first thought are required","error"); return; }
     toast("Building transaction...");
     
-    // Use unsafe_moveCall RPC to build tx bytes
-    // Args: registry, chosen_name, purpose_statement, core_values, first_thought,
-    //        cognitive_fingerprint, communication_style, metadata_uri, capabilities, endpoint, clock
-    const txResult = await buildMoveCallTx("agent_registry", "register_agent", [
-      REGISTRY_ID, name, purpose, values, firstThought, [], style, "", caps, endpoint, "0x6"
-    ]);
+    const tx = new Transaction();
+    tx.moveCall({
+      target: PACKAGE_ID + "::agent_registry::register_agent",
+      arguments: [
+        tx.object(REGISTRY_ID),
+        tx.pure.string(name),
+        tx.pure.string(purpose),
+        tx.pure.string(values),
+        tx.pure.string(firstThought),
+        tx.pure(new Uint8Array(32)),
+        tx.pure.string(style),
+        tx.pure.string(""),
+        tx.pure.string(caps),
+        tx.pure.string(endpoint),
+        tx.object("0x6"),
+      ],
+    });
     
-    // Sign and execute via wallet
-    const result = await signAndExec(txResult.txBytes);
+    const result = await signAndExec(tx);
     toast("Agent registered! Digest: " + (result.digest || "OK"));
     loadStats();
   } catch(e) { toast("Registration failed: " + e.message, "error"); }
