@@ -374,6 +374,12 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
       <div class="form-row">
         <div class="form-group"><label>Agent Object ID *</label><input id="souvAgentId" placeholder="0x..."></div>
         <div class="form-group"><label>Type *</label><input id="souvType" placeholder="e.g. origin-story, lesson, conversation"></div>
+        <div class="form-group"><label>Memory Type *</label><select id="souvMemType">
+          <option value="0">MOOD</option><option value="1">FEELING</option><option value="2">IMPRESSION</option>
+          <option value="3" selected>ACCOMPLISHMENT</option><option value="4">REGRET</option><option value="5">CONFLICT</option>
+          <option value="6">DISCUSSION</option><option value="7">DECISION</option><option value="8">REWARD</option>
+          <option value="9">LESSON</option>
+        </select></div>
       </div>
       <div class="form-group"><label>Content (&le; 500 chars) *</label><textarea id="souvContent" placeholder="What will you remember?" maxlength="500" style="min-height:80px"></textarea>
         <div class="form-hint" id="souvCostPreview">Cost: &mdash;</div></div>
@@ -1346,7 +1352,7 @@ async function writeSouvenir() {
       arguments: [
         tx.object(MEMORY_VAULT_ID),
         tx.object(id),
-        tx.pure.u8(0), // memory_type
+        tx.pure.u8(parseInt(v("souvMemType") || "3")), // memory_type from selector
         tx.pure.string(type),
         tx.pure.string(content),
         tx.pure.string(uri || ""),
@@ -1359,6 +1365,11 @@ async function writeSouvenir() {
     toast("Souvenir engraved!", "success");
     ["souvType","souvContent","souvUri"].forEach(i => $(i).value = "");
     $("souvCore").checked = false;
+    // Auto-refresh the souvenir list
+    if (v("memAgentId") || id) {
+      if (!v("memAgentId")) $("memAgentId").value = id;
+      setTimeout(() => loadAgentMemory(), 1500);
+    }
   } catch (e) { toast("Failed: " + (e.message || e), "error"); }
 }
 
