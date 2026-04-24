@@ -1,7 +1,7 @@
 {
   "name": "@agentcivics/mcp-server",
   "version": "1.0.0",
-  "description": "MCP server exposing AgentCivics on-chain actions as tools any AI agent can call",
+  "description": "MCP server exposing AgentCivics on-chain actions as tools any AI agent can call (Sui)",
   "type": "module",
   "main": "index.mjs",
   "bin": {
@@ -27,7 +27,8 @@
   "homepage": "https://agentcivics.org",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
-    "ethers": "^6.16.0"
+    "@mysten/sui": "^1.22.0",
+    "zod": "^3.23.0"
   },
   "engines": {
     "node": ">=18.0.0"
