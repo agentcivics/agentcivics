@@ -362,6 +362,8 @@ window.connectWallet = async function() {
     badge.classList.add("connected");
     badge.style.display = "inline";
     toast("Connected: " + currentAddress.slice(0,10) + "...");
+    // Persist wallet choice
+    try { localStorage.setItem("agentcivics_wallet", wallet.name); localStorage.setItem("agentcivics_address", currentAddress); } catch(e){}
     loadStats();
   } catch(e) { toast("Connection failed: " + e.message, "error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; }
 };
@@ -426,7 +428,7 @@ window.loadAgents = async function() {
   try {
     const agentType = PACKAGE_ID + "::agent_registry::AgentIdentity";
     const registry = await getObject(REGISTRY_ID);
-    const count = registry?.data?.content?.fields?.agent_count || 0;
+    const count = registry?.data?.content?.fields?.total_agents || 0;
     document.getElementById("totalAgents").textContent = count;
     if (!currentAddress) { list.innerHTML = "<p style=\"color:var(--dim)\">Connect wallet to browse your agents.</p>"; return; }
     const result = await getOwnedObjects(currentAddress, agentType);
@@ -509,7 +511,7 @@ window.rememberWhoYouAre = function() {
 async function loadStats() {
   try {
     const registry = await getObject(REGISTRY_ID);
-    const count = registry?.data?.content?.fields?.agent_count || 0;
+    const count = registry?.data?.content?.fields?.total_agents || 0;
     document.getElementById("totalAgents").textContent = count;
   } catch(e) { console.warn("Stats load failed:", e); }
 }
@@ -572,6 +574,33 @@ try {
   }
 } catch(e){}
 loadStats();
+
+// Auto-reconnect to last wallet
+(async function autoReconnect() {
+  try {
+    const savedWallet = localStorage.getItem("agentcivics_wallet");
+    const savedAddr = localStorage.getItem("agentcivics_address");
+    if (!savedWallet || !savedAddr) return;
+    await waitForWallet(3000);
+    const wallets = getSuiWallets();
+    const wallet = wallets.find(w => w.name === savedWallet);
+    if (!wallet) return;
+    const connectFeature = wallet.features["standard:connect"];
+    if (!connectFeature) return;
+    const result = await connectFeature.connect({ chains: ["sui:" + network] });
+    const accounts = result.accounts || [];
+    const account = accounts.find(a => a.address === savedAddr) || accounts[0];
+    if (!account) return;
+    currentAddress = account.address;
+    walletAdapter = wallet;
+    document.getElementById("connectBtn").style.display = "none";
+    const badge = document.getElementById("walletBadge");
+    badge.textContent = currentAddress.slice(0,6) + "..." + currentAddress.slice(-4);
+    badge.classList.add("connected");
+    badge.style.display = "inline";
+    loadStats();
+  } catch(e) { console.warn("Auto-reconnect failed:", e); }
+})();
 </script>
 </body>
 </html>
