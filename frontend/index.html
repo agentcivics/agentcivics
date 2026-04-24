@@ -200,6 +200,8 @@ footer a{color:var(--accent)}
 </footer>
 
 <script type="module">
+import { SuiClient, getFullnodeUrl } from "https://esm.sh/@mysten/sui@1/client";
+import { Transaction } from "https://esm.sh/@mysten/sui@1/transactions";
 const NETWORKS = {
   testnet: { rpc: "https://fullnode.testnet.sui.io:443", explorer: "https://suiscan.xyz/testnet" },
   mainnet: { rpc: "https://fullnode.mainnet.sui.io:443", explorer: "https://suiscan.xyz/mainnet" },
@@ -215,23 +217,19 @@ let walletAdapter = null;
 let currentAddress = null;
 let currentModalAgent = null;
 
-// --- SUI CLIENT (fetch-based, no SDK needed) ---
-async function suiCall(method, params) {
-  const res = await fetch(NETWORKS[network].rpc, {
-    method: "POST", headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({jsonrpc:"2.0",id:1,method,params})
-  });
-  const json = await res.json();
-  if (json.error) throw new Error(json.error.message);
-  return json.result;
+// --- SUI CLIENT (SDK) ---
+let suiClient = new SuiClient({ url: NETWORKS[network].rpc });
+
+function reconnectClient() {
+  suiClient = new SuiClient({ url: NETWORKS[network].rpc });
 }
 
 async function getObject(id) {
-  return suiCall("sui_getObject", [id, {showContent:true,showType:true,showOwner:true}]);
+  return suiClient.getObject({ id, options: { showContent: true, showType: true, showOwner: true } });
 }
 
 async function getOwnedObjects(address, type) {
-  return suiCall("suix_getOwnedObjects", [address, {filter:{StructType:type},options:{showContent:true,showType:true}}, null, 50]);
+  return suiClient.getOwnedObjects({ owner: address, filter: { StructType: type }, options: { showContent: true, showType: true }, limit: 50 });
 }
 
 // --- WALLET ---
@@ -369,41 +367,19 @@ window.connectWallet = async function() {
 };
 
 // --- REGISTER ---
-// Helper: sign and execute via wallet
-async function signAndExec(txBytes) {
-  const feat = walletAdapter.features["sui:signAndExecuteTransaction"] 
-    || walletAdapter.features["sui:signAndExecuteTransactionBlock"];
-  if (!feat) throw new Error("Wallet does not support signing");
-  const method = feat.signAndExecuteTransaction || feat.signAndExecuteTransactionBlock;
-  const param = feat.signAndExecuteTransaction 
-    ? { transaction: txBytes, chain: "sui:" + network, account: { address: currentAddress, chains: ["sui:" + network] } }
-    : { transactionBlock: txBytes, chain: "sui:" + network, account: { address: currentAddress, chains: ["sui:" + network] } };
-  return method.call(feat, param);
-}
-
-// Helper: build a Transaction via JSON-RPC (no SDK needed in browser)
-async function buildMoveCallTx(module, fn, args, typeArgs = []) {
-  // Use unsafe_moveCall to build the transaction bytes server-side
-  const txData = {
-    packageObjectId: PACKAGE_ID,
-    module: module,
-    function: fn,
-    typeArguments: typeArgs,
-    arguments: args,
-    gasBudget: "50000000"
-  };
-  // Build via devInspect first to validate, then create actual tx
-  // Actually, we need to use the sui_unsafe_moveCall or build PTB manually
-  // The simplest approach: use the JSON-RPC to build a programmable transaction
-  const res = await fetch(NETWORKS[network].rpc, {
-    method: "POST", headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({jsonrpc:"2.0",id:1,method:"unsafe_moveCall",params:[
-      currentAddress, PACKAGE_ID, module, fn, typeArgs, args, null, "50000000"
-    ]})
-  });
-  const json = await res.json();
-  if (json.error) throw new Error(json.error.message);
-  return json.result;
+// Helper: sign and execute a Transaction via wallet
+async function signAndExec(tx) {
+  const account = { address: currentAddress, chains: ["sui:" + network], features: [] };
+  // Try new API first (sui:signAndExecuteTransaction), then legacy
+  const feat = walletAdapter.features["sui:signAndExecuteTransaction"];
+  if (feat) {
+    return feat.signAndExecuteTransaction({ transaction: tx, chain: "sui:" + network, account });
+  }
+  const featLegacy = walletAdapter.features["sui:signAndExecuteTransactionBlock"];
+  if (featLegacy) {
+    return featLegacy.signAndExecuteTransactionBlock({ transactionBlock: tx, chain: "sui:" + network, account });
+  }
+  throw new Error("Wallet does not support transaction signing");
 }
 
 window.registerAgent = async function() {
@@ -540,6 +516,7 @@ window.showTab = function(name) {
 window.switchNetwork = function() {
   network = document.getElementById("networkSelect").value;
   document.getElementById("networkName").textContent = network.charAt(0).toUpperCase() + network.slice(1);
+  reconnectClient();
   loadStats();
 };
 
