@@ -713,57 +713,78 @@ const client = new SuiClient({ url: "https://fullnode.testnet.sui.io:443" });
 let currentWallet = null;
 let currentAccount = null;
 
-// ── Wallet Standard (with Slush priority, deduplicate by name) ──────────
-function getWallets() {
-  const walletsApi = window.navigator?.wallets || window.__suiWallets;
-  // Wallet Standard: get registered wallets
-  const registered = [];
-  if (window.navigator?.wallets) {
-    // Try the standard get() API
-    try {
-      const api = window.navigator.wallets;
-      if (typeof api.get === 'function') {
-        registered.push(...api.get());
-      } else if (api.wallets) {
-        registered.push(...api.wallets);
+// ── Wallet Standard (with Slush priority, deduplicate by name) ───────���──
+const _discoveredWallets = [];
+
+function _discover() {
+  // Method 1: __@wallet-standard/get-wallets__ (works with Slush)
+  try {
+    const api = window["__@wallet-standard/get-wallets__"];
+    if (api) {
+      const { get, on } = api();
+      for (const w of get()) {
+        if (!_discoveredWallets.some(e => e.name === w.name)) _discoveredWallets.push(w);
       }
-    } catch {}
-  }
-  // Also check the global walletStandard registry
-  if (window.__walletStandard?.wallets) {
-    for (const w of window.__walletStandard.wallets) {
-      if (!registered.find(r => r.name === w.name)) registered.push(w);
+      on("register", w => {
+        if (w && !_discoveredWallets.some(e => e.name === w.name)) _discoveredWallets.push(w);
+      });
     }
-  }
-  // Filter for sui:testnet support and deduplicate by name
+  } catch {}
+  // Method 2: app-ready event
+  try {
+    window.dispatchEvent(new CustomEvent("wallet-standard:app-ready", {
+      detail: { register: w => { if (w && !_discoveredWallets.some(e => e.name === w.name)) _discoveredWallets.push(w); } }
+    }));
+  } catch {}
+}
+
+// Run discovery immediately and again after delays (wallets inject async)
+_discover();
+setTimeout(_discover, 500);
+setTimeout(_discover, 1500);
+setTimeout(_discover, 3000);
+
+function getWallets() {
+  _discover(); // re-scan
   const seen = new Set();
-  const filtered = [];
-  // Prioritize Slush
-  const sorted = [...registered].sort((a, b) => {
+  const result = [];
+  // Sort: Slush first
+  const sorted = [..._discoveredWallets].sort((a, b) => {
     if (/slush/i.test(a.name)) return -1;
     if (/slush/i.test(b.name)) return 1;
     return 0;
   });
   for (const w of sorted) {
+    if (!w.features?.["standard:connect"]) continue;
     if (seen.has(w.name)) continue;
     seen.add(w.name);
-    // Check if wallet supports the sui:testnet chain
     const chains = w.chains || [];
-    const features = w.features || {};
-    if (chains.includes(SUI_CHAIN) || chains.includes("sui:all") || Object.keys(features).length > 0) {
-      filtered.push(w);
+    if (chains.some(c => c.startsWith("sui:")) || /slush|sui/i.test(w.name)) {
+      result.push(w);
     }
   }
-  return filtered;
+  return result;
 }
 
 async function connectWallet() {
+  // Wait a bit for wallets to register
+  if (!getWallets().length) await new Promise(r => setTimeout(r, 2000));
   const wallets = getWallets();
   if (!wallets.length) {
     toast("No Sui wallet detected. Install Slush or Sui Wallet.", "error");
     return;
   }
-  const wallet = wallets[0]; // Slush-priority sorted
+  let wallet;
+  if (wallets.length === 1) {
+    wallet = wallets[0];
+  } else {
+    // Show picker
+    const names = wallets.map((w,i) => `${i+1}. ${w.name}`).join("\n");
+    const choice = prompt("Multiple wallets found:\n" + names + "\nEnter number:");
+    const idx = parseInt(choice) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= wallets.length) return;
+    wallet = wallets[idx];
+  }
   try {
     const connectFeature = wallet.features["standard:connect"];
     if (!connectFeature) { toast("Wallet doesn't support connect.", "error"); return; }
