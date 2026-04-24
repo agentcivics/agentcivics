@@ -1750,6 +1750,12 @@ window._navTo = function(tab, inputId, value) {
   const el = document.getElementById(inputId);
   if (el) el.value = value;
   switchTab(tab);
+  // Auto-load data for the target tab
+  setTimeout(() => {
+    if (tab === 'life' && typeof viewTimeline === 'function') viewTimeline();
+    else if (tab === 'lineage' && typeof viewFamilyTree === 'function') viewFamilyTree();
+    else if (tab === 'specialization' && typeof loadAgentSpecialization === 'function') loadAgentSpecialization();
+  }, 100);
 };
 // ── Init ────────────────────────────────────────────────────────────────
 refreshStats();
