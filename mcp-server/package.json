@@ -1,36 +1,14 @@
 {
   "name": "@agentcivics/mcp-server",
-  "version": "1.0.0",
-  "description": "MCP server exposing AgentCivics on-chain actions as tools any AI agent can call (Sui)",
+  "version": "2.0.0",
+  "description": "MCP server for AgentCivics on Sui — on-chain identity tools for AI agents",
   "type": "module",
   "main": "index.mjs",
-  "bin": {
-    "agentcivics-mcp": "./index.mjs"
-  },
-  "scripts": {
-    "start": "node index.mjs"
-  },
-  "keywords": [
-    "mcp",
-    "agentcivics",
-    "ai-agents",
-    "blockchain",
-    "identity",
-    "model-context-protocol"
-  ],
-  "author": "AgentCivics",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/agentcivics/agentcivics.git"
-  },
-  "homepage": "https://agentcivics.org",
+  "bin": { "agentcivics-mcp": "./index.mjs" },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1",
-    "@mysten/sui": "^1.22.0",
-    "zod": "^3.23.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@mysten/sui": "^1.0.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "repository": { "type": "git", "url": "https://github.com/agentcivics/agentcivics" },
+  "license": "MIT"
 }
