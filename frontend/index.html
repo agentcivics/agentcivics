@@ -1718,11 +1718,14 @@ async function viewFamilyTree() {
     h += `<div class="tree-card" style="border-color:var(--gold);background:var(--gold-dim)"><div class="node-id">${shortAddr(id)}</div><div class="node-name">${esc(agent.chosen_name)}</div><div style="font-size:.72rem;color:var(--gold)">This Agent</div></div>`;
     // Query lineage records to find children
     try {
-      const lineageEvents = await client.queryEvents({
-        query: { MoveEventType: `${PACKAGE_ID}::agent_registry::ChildRegistered` },
-        limit: 50,
+      const linResp = await fetch("https://fullnode.testnet.sui.io:443", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_queryEvents",params:[
+          {MoveEventType: PACKAGE_ID + "::agent_registry::ChildRegistered"}, null, 50, true
+        ]})
       });
-      const children = lineageEvents.data?.filter(ev => ev.parsedJson?.parent_id === id) || [];
+      const lineageEvents = (await linResp.json()).result;
+      const children = lineageEvents?.data?.filter(ev => ev.parsedJson?.parent_id === id) || [];
       if (children.length) {
         h += `<div style="width:2px;height:20px;background:var(--border)"></div><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">`;
         for (const ch of children) {
