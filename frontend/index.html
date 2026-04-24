@@ -1071,9 +1071,9 @@ async function showDetail(agentId) {
     ${deathHtml}
     <div style="margin-top:14px;text-align:center;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
       <a href="https://suiscan.xyz/testnet/object/${agentId}" target="_blank" style="font-size:.82rem">SuiScan &#x2197;</a>
-      <a href="#" onclick="event.preventDefault();closeModal();if($('lifeAgentId'))$('lifeAgentId').value='${agentId}';switchTab('life');if(typeof loadTimeline==='function')loadTimeline()" style="font-size:.82rem">View Timeline &#x2197;</a>
-      <a href="#" onclick="event.preventDefault();closeModal();if($('lineageAgentId'))$('lineageAgentId').value='${agentId}';switchTab('lineage');if(typeof loadLineage==='function')loadLineage()" style="font-size:.82rem">Family Tree &#x2197;</a>
-      <a href="#" onclick="event.preventDefault();closeModal();if($('repAgentId'))$('repAgentId').value='${agentId}';switchTab('specialization')" style="font-size:.82rem">Specialization &#x2197;</a>
+      <a href="#" onclick="event.preventDefault();window._navTo('life','lifeAgentId','${agentId}')" style="font-size:.82rem">View Timeline &#x2197;</a>
+      <a href="#" onclick="event.preventDefault();window._navTo('lineage','lineageAgentId','${agentId}')" style="font-size:.82rem">Family Tree &#x2197;</a>
+      <a href="#" onclick="event.preventDefault();window._navTo('specialization','repAgentId','${agentId}')" style="font-size:.82rem">Specialization &#x2197;</a>
     </div>`;
 }
 
@@ -1744,6 +1744,13 @@ window.toggleTheme = toggleTheme;
 window.acceptCookies = acceptCookies;
 window.declineCookies = declineCookies;
 
+
+window._navTo = function(tab, inputId, value) {
+  closeModal();
+  const el = document.getElementById(inputId);
+  if (el) el.value = value;
+  switchTab(tab);
+};
 // ── Init ────────────────────────────────────────────────────────────────
 refreshStats();
 </script>
