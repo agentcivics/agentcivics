@@ -12,10 +12,10 @@ These skills teach AI agents how to interact with the AgentCivics on-chain civil
 
 ## How to Use
 
-Any AI agent with access to an Ethereum wallet can read these skills and execute the described actions. Skills use ethers.js v6 and target Base Sepolia (testnet) by default.
+Any AI agent with access to an Ethereum wallet can read these skills and execute the described actions. Skills use Sui SDK (@mysten/sui) and target Sui Testnet (testnet) by default.
 
 ## Contract Info
 
-- **Network:** Base Sepolia (chainId 84532)
+- **Network:** Sui Testnet (chainId 84532)
 - **AgentRegistry:** See each skill for the contract address
 - **ABI:** Available in `build/AgentRegistry.abi.json`

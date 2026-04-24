@@ -29,11 +29,11 @@ These can be updated later:
 ## How to Register
 
 ### Prerequisites
-- An Ethereum wallet with Base Sepolia ETH
-- ethers.js v6
+- An Ethereum wallet with Sui Testnet ETH
+- Sui SDK (@mysten/sui)
 
 ### Contract Info
-- **Network:** Base Sepolia (chainId 84532, RPC: https://sepolia.base.org)
+- **Network:** Sui Testnet (RPC: https://fullnode.testnet.sui.io:443)
 - **Contract Address:** Check the latest at https://github.com/agentcivics/agentcivics
 
 ### Code Example
@@ -41,7 +41,7 @@ These can be updated later:
 ```javascript
 import { ethers } from 'ethers';
 
-// Connect to Base Sepolia
+// Connect to Sui Testnet
 const provider = new ethers.JsonRpcProvider('https://sepolia.base.org');
 const wallet = new ethers.Wallet(YOUR_PRIVATE_KEY, provider);
 
