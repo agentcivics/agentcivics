@@ -235,66 +235,79 @@ async function getOwnedObjects(address, type) {
 }
 
 // --- WALLET ---
-// Wallet Standard: discover all installed wallets (Slush, Sui Wallet, Suiet, etc.)
-function getWallets() {
-  const wallets = [];
-  // Check wallet-standard registry
-  if (window.navigator && window.navigator.wallets) {
-    try { window.navigator.wallets.forEach(w => wallets.push(w)); } catch(e) {}
+// Wallet Standard discovery — works with Slush, Sui Wallet, Suiet, etc.
+const registeredWallets = [];
+
+// The Wallet Standard uses a global callback registry
+// Wallets call this to register themselves
+function setupWalletDiscovery() {
+  // Method 1: Listen for the standard register event
+  const cb = ({ register }) => {
+    register((wallet) => {
+      if (wallet && wallet.name) registeredWallets.push(wallet);
+    });
+  };
+  // Some wallets use a global array
+  if (window["__@wallet-standard/app__"]) {
+    const existing = window["__@wallet-standard/app__"];
+    if (Array.isArray(existing)) existing.forEach(w => registeredWallets.push(w));
   }
-  // Check legacy window.sui
-  if (window.sui) wallets.push(window.sui);
-  // Check wallet-standard get method
-  if (typeof getWallets === "function" && window.__walletStandard) {
-    try { wallets.push(...window.__walletStandard.get()); } catch(e) {}
-  }
-  return wallets;
+  // Dispatch the app-ready event so wallets know we exist
+  try {
+    const appReady = new CustomEvent("wallet-standard:app-ready", { detail: { register: (w) => registeredWallets.push(w) } });
+    window.dispatchEvent(appReady);
+  } catch(e) {}
+  // Also check the newer API
+  try {
+    const getWalletsApi = window["__@wallet-standard/get-wallets__"];
+    if (getWalletsApi) {
+      const { get, on } = getWalletsApi();
+      get().forEach(w => registeredWallets.push(w));
+      on("register", (w) => registeredWallets.push(w));
+    }
+  } catch(e) {}
 }
 
 function findSuiWallet() {
-  // Try the standard wallet registry first
-  const registry = window[Symbol.for("WalletStandard:Register")];
-  if (registry) {
-    let found = null;
-    registry((wallet) => { if (!found && wallet.chains?.some(c => c.startsWith("sui:"))) found = wallet; });
-    if (found) return found;
+  // Check registered wallets for Sui-compatible ones
+  for (const w of registeredWallets) {
+    if (w.features && w.features["standard:connect"]) {
+      // Check if it supports sui chains
+      const chains = w.chains || [];
+      if (chains.some(c => c.startsWith("sui:")) || w.name?.toLowerCase().includes("sui") || w.name?.toLowerCase().includes("slush")) {
+        return w;
+      }
+    }
   }
-  // Fallback: check common globals
-  if (window.slush) return window.slush;
-  if (window.suiWallet) return window.suiWallet;
-  if (window.sui) return window.sui;
-  // Check for injected wallets via standard API
-  const event = new CustomEvent("wallet-standard:app-ready", { detail: { register: (w) => {} } });
-  window.dispatchEvent(event);
+  // Fallback: any wallet with standard:connect
+  for (const w of registeredWallets) {
+    if (w.features && w.features["standard:connect"]) return w;
+  }
   return null;
 }
 
-// Wait for wallet to register (they inject async)
 let discoveredWallet = null;
-function waitForWallet(timeout = 3000) {
+function waitForWallet(timeout = 5000) {
   return new Promise((resolve) => {
-    // Immediate check
+    setupWalletDiscovery();
     const w = findSuiWallet();
     if (w) { resolve(w); return; }
-    // Listen for registration
-    const handler = (event) => {
-      const w = event.detail;
-      if (w && w.features && w.features["standard:connect"]) {
-        window.removeEventListener("wallet-standard:register-wallet", handler);
-        resolve(w);
-      }
-    };
-    window.addEventListener("wallet-standard:register-wallet", handler);
-    // Also poll
+    // Poll — wallets inject asynchronously
     let elapsed = 0;
     const interval = setInterval(() => {
-      elapsed += 200;
+      elapsed += 300;
+      setupWalletDiscovery(); // re-scan
       const w = findSuiWallet();
-      if (w) { clearInterval(interval); window.removeEventListener("wallet-standard:register-wallet", handler); resolve(w); }
-      if (elapsed >= timeout) { clearInterval(interval); window.removeEventListener("wallet-standard:register-wallet", handler); resolve(null); }
-    }, 200);
+      if (w) { clearInterval(interval); resolve(w); return; }
+      if (elapsed >= timeout) { clearInterval(interval); resolve(null); }
+    }, 300);
   });
 }
+
+// Start discovery immediately on page load
+setupWalletDiscovery();
+setTimeout(setupWalletDiscovery, 500);
+setTimeout(setupWalletDiscovery, 1500);
 
 window.connectWallet = async function() {
   try {
