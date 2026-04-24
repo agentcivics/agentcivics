@@ -801,18 +801,19 @@ function handleConnectClick() {
 
 async function signAndExecute(tx) {
   if (!currentWallet || !currentAccount) throw new Error("Connect wallet first");
-  const signFeature = currentWallet.features["sui:signAndExecuteTransaction"];
-  if (!signFeature) throw new Error("Wallet doesn't support signAndExecuteTransaction");
-  tx.setSender(currentAccount.address);
-  const txBytes = await tx.build({ client });
-  const result = await signFeature.signAndExecuteTransaction({
-    transaction: { toJSON: () => btoa(String.fromCharCode(...txBytes)) },
+  // Try the newer API first, fall back to legacy
+  const feat = currentWallet.features["sui:signAndExecuteTransaction"]
+    || currentWallet.features["sui:signAndExecuteTransactionBlock"];
+  if (!feat) throw new Error("Wallet doesn't support transaction signing");
+  const method = feat.signAndExecuteTransaction || feat.signAndExecuteTransactionBlock;
+  const result = await method.call(feat, {
+    transaction: tx,
+    transactionBlock: tx, // legacy compat
     account: currentAccount,
     chain: SUI_CHAIN,
   });
-  // Wait for transaction to be confirmed
   const digest = result.digest;
-  await client.waitForTransaction({ digest });
+  if (digest) await client.waitForTransaction({ digest });
   return result;
 }
 
@@ -1352,7 +1353,7 @@ async function lookupTerm() {
       arguments: [tx.object(MEMORY_VAULT_ID), tx.pure.string(term)],
     });
     const result = await client.devInspectTransactionBlock({
-      transactionBlock: tx,
+      transaction: tx,
       sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
     });
     if (result.results?.[0]?.returnValues) {
@@ -1390,7 +1391,7 @@ async function loadCurrentProfile() {
       arguments: [tx.object(MEMORY_VAULT_ID), tx.pure.address(id)],
     });
     const result = await client.devInspectTransactionBlock({
-      transactionBlock: tx,
+      transaction: tx,
       sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
     });
     if (result.results?.[0]?.returnValues) {
@@ -1485,7 +1486,7 @@ async function loadAgentSpecialization() {
       arguments: [tx.object(REPUTATION_BOARD_ID), tx.pure.address(id)],
     });
     const result = await client.devInspectTransactionBlock({
-      transactionBlock: tx,
+      transaction: tx,
       sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
     });
     // Parse return values
@@ -1540,7 +1541,7 @@ async function browseByDomain() {
       arguments: [tx.object(REPUTATION_BOARD_ID), tx.pure.string(d)],
     });
     const result = await client.devInspectTransactionBlock({
-      transactionBlock: tx,
+      transaction: tx,
       sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
     });
     if (result.results?.[0]?.returnValues?.length > 0) {
@@ -1560,7 +1561,7 @@ async function listAllDomains() {
       arguments: [tx.object(REPUTATION_BOARD_ID)],
     });
     const result = await client.devInspectTransactionBlock({
-      transactionBlock: tx,
+      transaction: tx,
       sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
     });
     if (result.results?.[0]?.returnValues?.length > 0) {
