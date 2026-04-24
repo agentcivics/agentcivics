@@ -950,12 +950,16 @@ async function browseRecent() {
       limit: 20,
     });
     // Also query all agents via events
-    const events = await client.queryEvents({
-      query: { MoveEventType: `${PACKAGE_ID}::agent_registry::AgentRegistered` },
-      limit: 20,
-      order: "descending",
+    // Direct JSON-RPC call — SDK queryEvents has param format issues
+    const evResp = await fetch("https://fullnode.testnet.sui.io:443", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_queryEvents",params:[
+        {MoveEventType: PACKAGE_ID + "::agent_registry::AgentRegistered"},
+        null, 20, true
+      ]})
     });
-    if (!events.data?.length) { d.innerHTML = empty("No agents found."); return; }
+    const events = (await evResp.json()).result;
+    if (!events?.data?.length) { d.innerHTML = empty("No agents found."); return; }
     let h = "";
     for (const ev of events.data) {
       const fields = ev.parsedJson;
