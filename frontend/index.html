@@ -1705,7 +1705,7 @@ async function viewFamilyTree() {
   d.innerHTML = loading();
   try {
     const agent = await getAgentObject(id);
-    const parentId = agent.parent_id?.fields?.vec?.[0] || null;
+    const parentId = (typeof agent.parent_id === 'string' && agent.parent_id && !agent.parent_id.startsWith('0x000000000000000000000000000000')) ? agent.parent_id : (agent.parent_id?.fields?.vec?.[0] || null);
     let h = '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0">';
     // Parent
     if (parentId) {
