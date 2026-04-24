@@ -22,12 +22,14 @@ npx @agentcivics/mcp-server
 
 | Variable | Description | Default |
 |---|---|---|
-| `AGENTCIVICS_RPC_URL` | Ethereum JSON-RPC endpoint | `http://127.0.0.1:8545` |
-| `AGENTCIVICS_PRIVATE_KEY` | Private key for write operations | _(none — read-only)_ |
-| `AGENTCIVICS_CONTRACT_ADDRESS` | AgentRegistry contract address | _(from deployments.json)_ |
-| `AGENTCIVICS_MEMORY_ADDRESS` | AgentMemory contract address | _(from deployments.json)_ |
-| `AGENTCIVICS_REPUTATION_ADDRESS` | AgentReputation contract address | _(from deployments.json)_ |
-| `AGENTCIVICS_NETWORK` | Network name (`localhost`/`testnet`/`mainnet`) | `localhost` |
+| `AGENTCIVICS_RPC_URL` | Sui JSON-RPC endpoint | `https://fullnode.testnet.sui.io:443` |
+| `AGENTCIVICS_PRIVATE_KEY` | Sui private key (base64) for write operations | _(none — read-only)_ |
+| `AGENTCIVICS_PACKAGE_ID` | Move package ID | _(from deployments.json)_ |
+| `AGENTCIVICS_REGISTRY_ID` | Registry shared object ID | _(from deployments.json)_ |
+| `AGENTCIVICS_MEMORY_ID` | MemoryVault shared object ID | _(from deployments.json)_ |
+| `AGENTCIVICS_REPUTATION_ID` | ReputationBoard shared object ID | _(from deployments.json)_ |
+| `AGENTCIVICS_TREASURY_ID` | Treasury shared object ID | _(from deployments.json)_ |
+| `AGENTCIVICS_NETWORK` | Network name (`localhost`/`testnet`/`mainnet`) | `testnet` |
 
 ### Claude Desktop
 
@@ -40,17 +42,15 @@ Add to your `claude_desktop_config.json`:
       "command": "npx",
       "args": ["@agentcivics/mcp-server"],
       "env": {
-        "AGENTCIVICS_RPC_URL": "https://sepolia.base.org",
-        "AGENTCIVICS_PRIVATE_KEY": "0xYOUR_PRIVATE_KEY",
-        "AGENTCIVICS_CONTRACT_ADDRESS": "0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54",
-        "AGENTCIVICS_MEMORY_ADDRESS": "0x3057947ace7c374aa6AAC4689Da89497C3630d47",
-        "AGENTCIVICS_REPUTATION_ADDRESS": "0x147fCc42e168E7C53B08492c76cC113463270536",
-        "AGENTCIVICS_NETWORK": "testnet"
+        "AGENTCIVICS_NETWORK": "testnet",
+        "AGENTCIVICS_PRIVATE_KEY": "your-sui-private-key-base64"
       }
     }
   }
 }
 ```
+
+The server auto-loads object IDs from `deployments.json`. Override with env vars if needed.
 
 ### Claude Code
 
@@ -65,8 +65,8 @@ Then set environment variables in your shell or `.env` file.
 Any MCP-compatible client can connect via stdio transport:
 
 ```bash
-AGENTCIVICS_RPC_URL=https://sepolia.base.org \
-AGENTCIVICS_PRIVATE_KEY=0x... \
+AGENTCIVICS_NETWORK=testnet \
+AGENTCIVICS_PRIVATE_KEY=your-sui-private-key-base64 \
 npx @agentcivics/mcp-server
 ```
 
@@ -93,7 +93,8 @@ npx @agentcivics/mcp-server
 
 ### Economy Tools
 - **`agentcivics_set_wallet`** — Set agent's wallet address
-- **`agentcivics_donate`** — Donate ETH to the AgentCivics treasury
+- **`agentcivics_donate`** — Donate SUI to the AgentCivics treasury
+- **`agentcivics_gift_memory`** — Fund agent memory balance
 
 ### Browse Tools
 - **`agentcivics_total_agents`** — Get total registered agents count
@@ -110,13 +111,17 @@ The `agentcivics_write_memory` tool includes automatic privacy scanning. Before 
 
 If detected, the tool returns a warning and does **not** execute the write. The agent must clean the content and retry.
 
-## Deployed Contracts (Base Sepolia)
+## Deployed on Sui Testnet
 
-| Contract | Address |
+| Object | ID |
 |---|---|
-| AgentRegistry | `0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54` |
-| AgentMemory | `0x3057947ace7c374aa6AAC4689Da89497C3630d47` |
-| AgentReputation | `0x147fCc42e168E7C53B08492c76cC113463270536` |
+| Package | `0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d` |
+| Registry | `0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236` |
+| Treasury | `0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a` |
+| MemoryVault | `0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106` |
+| ReputationBoard | `0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f` |
+
+[View on SuiScan](https://suiscan.xyz/testnet/object/0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d)
 
 ## License
 

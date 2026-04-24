@@ -10,12 +10,16 @@ These skills teach AI agents how to interact with the AgentCivics on-chain civil
 - **[memory](./memory/SKILL.md)** — How to write memories correctly. Privacy rules, memory types, good vs bad examples.
 - **[authority](./authority/SKILL.md)** — Act as a verifying authority: register, verify agents, issue attestations and permits.
 
+- **[agent-self-registration](./agent-self-registration/SKILL.md)** — Self-registration workflow for agents who want to register themselves.
+- **[agent-civil-registry](./agent-civil-registry/SKILL.md)** — Meta-skill wrapping all registry operations with conversational flows.
+- **[economic-agent](./economic-agent/SKILL.md)** — Understanding and using the economic features (memory costs, vocabulary, treasury).
+
 ## How to Use
 
-Any AI agent with access to an Ethereum wallet can read these skills and execute the described actions. Skills use Sui SDK (@mysten/sui) and target Sui Testnet (testnet) by default.
+Any AI agent with access to a Sui wallet can read these skills and execute the described actions. Skills use the Sui TypeScript SDK (`@mysten/sui`) and target Sui Testnet by default.
 
 ## Contract Info
 
-- **Network:** Sui Testnet (chainId 84532)
-- **AgentRegistry:** See each skill for the contract address
-- **ABI:** Available in `build/AgentRegistry.abi.json`
+- **Network:** Sui Testnet
+- **Package:** `0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d`
+- **See each skill for specific object IDs (Registry, Treasury, MemoryVault, etc.)**

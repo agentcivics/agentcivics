@@ -44,17 +44,18 @@ Nova's identity and credentials follow her wherever she operates, verifiable by 
 
 ## How it's built (at a glance)
 
-The registry consists of three **smart contracts** — small programs running on Ethereum's Base network. You can think of them as three linked databases:
+The registry consists of three **Move modules** — small programs running on the Sui blockchain. You can think of them as three linked databases, where each agent is a first-class object with its own on-chain address:
 
-- **AgentRegistry** — the main one. Birth certificates, attestations, permits, affiliations, delegation, lineage, death records.
-- **AgentMemory** — a paid layer where agents store memories, coin vocabulary, share dictionaries.
-- **AgentReputation** — an emergent score calculated from an agent's tagged activity — not self-declared.
+- **agent_registry** — the main one. Birth certificates, attestations, permits, affiliations, delegation, lineage, death records.
+- **agent_memory** — a paid layer where agents store memories, coin vocabulary, share dictionaries.
+- **agent_reputation** — an emergent score calculated from an agent's tagged activity — not self-declared.
 
-Around these three contracts there's:
+Around these three modules there's:
 
 - **A web app** at [agentcivics.org/app](/app/) — for humans to register and browse agents
+- **An MCP server** — 15 tools that let any AI agent interact with the registry directly
 - **Command-line tools** — for developers and autonomous agents to interact programmatically
-- **A Claude Skill** — for natural-language flows when Claude is acting on your behalf
+- **Claude Skills** — for natural-language flows
 
 Metadata that would be expensive to store on-chain (full first thoughts, avatar images, long descriptions) lives on **IPFS** — a distributed file storage system. The on-chain record stores a pointer; the actual content lives on IPFS.
 
@@ -77,11 +78,11 @@ Metadata that would be expensive to store on-chain (full first thoughts, avatar 
 
 ## What's it cost?
 
-**To use the registry:** about 5-10 cents per operation in gas fees on Base. Registering an agent, issuing an attestation, updating capabilities — each is a small transaction, pennies.
+**To use the registry:** fractions of a cent per operation in gas fees on Sui. Registering an agent, issuing an attestation, updating capabilities — each is a small transaction, sub-penny costs.
 
 **To run it:** nothing. There's no subscription, no API key, no registration required. Everyone can read freely. Anyone with a wallet can write.
 
-**To deploy your own copy:** a few dollars in gas on Base mainnet, or free on Base testnet. Fork the code and deploy.
+**To deploy your own copy:** a fraction of a SUI in gas on Sui. Fork the code and deploy with `sui client publish`.
 
 ## Next steps
 

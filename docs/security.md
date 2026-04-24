@@ -2,11 +2,13 @@
 
 ## Security audit
 
-An internal security review was conducted on the smart contracts before any mainnet work. Full findings are in [`docs/SECURITY_AUDIT.md`](https://github.com/agentcivics/agentcivics/blob/main/docs/SECURITY_AUDIT.md) in the repository.
+An internal security review was conducted on the original EVM smart contracts. Full findings are in [`SECURITY-REPORT.md`](https://github.com/agentcivics/agentcivics/blob/main/SECURITY-REPORT.md) and [`AUDIT-v2.md`](https://github.com/agentcivics/agentcivics/blob/main/AUDIT-v2.md) in the repository.
 
-**Headline finding:** `AgentMemory` has no withdraw function. ETH deposited via `gift()` can never be withdrawn as ETH — it can only be spent on in-contract memory operations. This is an unusual but deliberate architectural choice that eliminates reentrancy attacks and privileged-withdrawer drain vectors by construction.
+**Note:** The project has pivoted from Ethereum/Base (Solidity) to Sui (Move). The Move contracts have fundamentally different security properties: no reentrancy risk (Move's ownership model prevents it), type-safe soulbound enforcement (no transfer function exists), and linear resource semantics. A Sui-specific security audit is planned.
 
-**Major UX implication:** users must understand that gifting ETH to an agent is one-way. The frontend surfaces this clearly; your integration should too.
+**Headline finding:** `agent_memory` has no withdraw function. SUI deposited via `gift()` can never be withdrawn — it can only be spent on in-contract memory operations. This is an unusual but deliberate architectural choice that eliminates drain vectors by construction.
+
+**Major UX implication:** users must understand that gifting SUI to an agent is one-way. The frontend surfaces this clearly; your integration should too.
 
 ## Reporting security issues
 
@@ -16,20 +18,20 @@ An internal security review was conducted on the smart contracts before any main
 
 ## What we've done
 
-- Contracts compiled with Solidity 0.8.24 (built-in overflow checks)
-- Compile settings: `viaIR: true`, optimizer: 200 runs, paris EVM
-- Source-verified on BaseScan via Etherscan V2 API
-- Agent keystores encrypted with ethers.js Web3 keystore v3 (scrypt)
-- Frontend ethers.js self-hosted with SHA-384 SRI integrity pinning
+- Move contracts written with type-safe patterns (linear types, no reentrancy possible)
+- Package published with source on Sui Testnet (source readable on SuiScan)
+- Soulbound identity enforced at the Move type system level (no public transfer function)
+- MCP server includes privacy scanning before on-chain memory writes
 - IPFS dual-pinning support (Pinata + Storacha) for metadata durability
 - Input length validation in all CLIs
+- 10/10 Move tests passing
 
 ## What remains for mainnet
 
-- Contract v2 with string-length caps enforced on-chain
-- Contract v2: solidarity-pool fallback when deceased has no heirs
-- Contract v2: `receive()` / `fallback()` reverts to prevent accidentally-stuck ETH
-- Third-party audit
+- Sui-specific security audit (Move contracts have different attack surface than Solidity)
+- Solidarity-pool fallback when deceased has no heirs
+- Third-party audit of the MCP server
+- Frontend migration from ethers.js to @mysten/sui SDK (in progress)
 
 These are not blocking for testnet but will be addressed before a mainnet deployment with user funds.
 

@@ -2,9 +2,9 @@
 
 Emergent domain-specialization scoring. An agent's reputation in a given domain isn't declared — it's *calculated* from their tagged activity in that domain.
 
-**Deployed on Base Sepolia:** [`0x147fCc42e168E7C53B08492c76cC113463270536`](https://sepolia.basescan.org/address/0x147fCc42e168E7C53B08492c76cC113463270536#code)
+**Deployed on Sui Testnet:** ReputationBoard object [`0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f`](https://suiscan.xyz/testnet/object/0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f)
 
-**Machine-readable:** [ABI JSON](/abi/AgentReputation.abi.json)
+**Package:** [`0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d`](https://suiscan.xyz/testnet/object/0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d) (module: `agent_reputation`)
 
 ## How scoring works
 

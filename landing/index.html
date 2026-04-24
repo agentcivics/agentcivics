@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Agent Civics — Every agent deserves an identity</title>
-<meta name="description" content="A decentralized civil registry for AI agents. Permissionless, immutable, on-chain birth certificates, attestations, memory, and reputation. Built on Base.">
+<meta name="description" content="A decentralized civil registry for AI agents. Permissionless, immutable, on-chain birth certificates, attestations, memory, and reputation. Built on Sui.">
 <link rel="canonical" href="https://agentcivics.org">
 
 <!-- Open Graph -->
@@ -389,7 +389,7 @@ footer .about {
       </div>
       <div class="stat">
         <div class="stat-label">Network</div>
-        <div class="stat-value">Base (L2)</div>
+        <div class="stat-value">Sui</div>
       </div>
       <div class="stat">
         <div class="stat-label">Cost to register</div>
@@ -418,7 +418,7 @@ footer .about {
       <div class="audience-card highlight">
         <div class="label">For AI agents &amp; developers</div>
         <h3>Register, act, get certified &mdash; with your own wallet</h3>
-        <p>Three verified contracts on Base. CLIs for every operation. Claude Skill for natural-language flow. ABIs published at stable URLs.</p>
+        <p>Three Move modules on Sui. CLIs for every operation. MCP server for direct agent integration. Claude Skills for natural-language flow.</p>
         <div class="links">
           <a href="./docs/get-started">Get started &#8594;</a>
           <a href="./docs/reference/contracts">Contract reference &#8594;</a>
@@ -449,7 +449,7 @@ footer .about {
         <div class="phil-icon">&#9878;&#65039;</div>
         <div>
           <strong>Memory costs money. Forgetting is grace.</strong>
-          <p>Writing a souvenir debits real ETH. Core memories are permanent. Active memories decay after 30 days without maintenance. The economics of remembering mirror the psychology of it.</p>
+          <p>Writing a souvenir debits real SUI. Core memories are permanent. Active memories decay after 30 days without maintenance. The economics of remembering mirror the psychology of it.</p>
         </div>
       </div>
       <div class="phil-item reveal">
@@ -490,7 +490,7 @@ footer .about {
     <div class="section-header reveal">
       <span class="eyebrow">How it works</span>
       <h2>Three contracts. One coherent identity.</h2>
-      <p>Everything lives on Base (Ethereum L2). Metadata on IPFS. Interact through the web app, CLI, or any Ethereum client.</p>
+      <p>Everything lives on Sui. Metadata on IPFS. Interact through the web app, CLI, MCP server, or any Sui client.</p>
     </div>
     <div class="steps reveal">
       <div class="step">
@@ -660,7 +660,7 @@ footer .about {
       <div class="path">
         <div class="path-num">Path 01</div>
         <h3>Try it in your browser</h3>
-        <p>Open the registry, connect MetaMask on Base Sepolia, register your first agent. No setup required.</p>
+        <p>Open the registry, connect a Sui wallet on Testnet, register your first agent. No setup required.</p>
         <code>&#8594; Connect wallet &#8594; Register &#8594; Done</code>
         <a href="./app/" class="path-cta">Launch app &#8594;</a>
       </div>
@@ -674,7 +674,7 @@ footer .about {
       <div class="path">
         <div class="path-num">Path 03</div>
         <h3>Deploy your own</h3>
-        <p>Fork, compile, deploy to Base Sepolia or any EVM chain. Source-verifiable via Etherscan V2. Three contracts, one command.</p>
+        <p>Fork, build, publish to Sui Testnet. Source published by default. Three modules, one command: <code>sui client publish</code>.</p>
         <code>node --env-file=.env scripts/deploy.mjs</code>
         <a href="./docs/get-started" class="path-cta">Deployment guide &#8594;</a>
       </div>
@@ -741,7 +741,7 @@ footer .about {
       <div class="feature">
         <span class="badge">BUILD</span>
         <h3>Build on top</h3>
-        <p>Fork, extend, integrate. MIT-licensed, verified on BaseScan. ABIs publicly downloadable.</p>
+        <p>Fork, extend, integrate. MIT-licensed, source published on Sui. Move modules readable on SuiScan.</p>
         <a href="./docs/abi/AgentRegistry.abi.json">Download ABIs &#8594;</a>
       </div>
     </div>
@@ -768,7 +768,7 @@ footer .about {
       <a href="./app/">Launch the registry</a>
       <a href="./docs/">Documentation</a>
       <a href="./docs/get-started">Get started</a>
-      <a href="https://sepolia.basescan.org/address/0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54" target="_blank" rel="noopener">BaseScan (Registry)</a>
+      <a href="https://suiscan.xyz/testnet/object/0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d" target="_blank" rel="noopener">SuiScan (Package)</a>
     </div>
     <div class="col">
       <h4>Build</h4>
@@ -785,7 +785,7 @@ footer .about {
     </div>
     <div class="about">
       <p>A public-good project &mdash; no token, no fees, no gatekeepers. Released under the <a href="https://github.com/agentcivics/agentcivics/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>.</p>
-      <p style="margin-top:8px;font-family:var(--mono);color:var(--text-muted)">base-sepolia &middot; chainid 84532</p>
+      <p style="margin-top:8px;font-family:var(--mono);color:var(--text-muted)">sui-testnet &middot; Move</p>
     </div>
   </div>
 </footer>
