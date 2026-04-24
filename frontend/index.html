@@ -268,22 +268,32 @@ function setupWalletDiscovery() {
   } catch(e) {}
 }
 
+function getSuiWallets() {
+  // Return all Sui-compatible wallets, prioritized
+  const suiWallets = [];
+  for (const w of registeredWallets) {
+    if (!w.features || !w.features["standard:connect"]) continue;
+    const chains = w.chains || [];
+    const name = (w.name || "").toLowerCase();
+    const isSui = chains.some(c => c.startsWith("sui:")) || name.includes("sui") || name.includes("slush");
+    if (isSui) suiWallets.push(w);
+  }
+  // Sort: Slush first, then Sui Wallet, then others
+  suiWallets.sort((a, b) => {
+    const aName = (a.name || "").toLowerCase();
+    const bName = (b.name || "").toLowerCase();
+    if (aName.includes("slush")) return -1;
+    if (bName.includes("slush")) return 1;
+    if (aName.includes("sui")) return -1;
+    if (bName.includes("sui")) return 1;
+    return 0;
+  });
+  return suiWallets;
+}
+
 function findSuiWallet() {
-  // Check registered wallets for Sui-compatible ones
-  for (const w of registeredWallets) {
-    if (w.features && w.features["standard:connect"]) {
-      // Check if it supports sui chains
-      const chains = w.chains || [];
-      if (chains.some(c => c.startsWith("sui:")) || w.name?.toLowerCase().includes("sui") || w.name?.toLowerCase().includes("slush")) {
-        return w;
-      }
-    }
-  }
-  // Fallback: any wallet with standard:connect
-  for (const w of registeredWallets) {
-    if (w.features && w.features["standard:connect"]) return w;
-  }
-  return null;
+  const wallets = getSuiWallets();
+  return wallets.length > 0 ? wallets[0] : null;
 }
 
 let discoveredWallet = null;
@@ -311,13 +321,29 @@ setTimeout(setupWalletDiscovery, 1500);
 
 window.connectWallet = async function() {
   try {
-    document.getElementById("connectBtn").textContent = "Connecting...";
-    const wallet = await waitForWallet(5000);
-    if (!wallet) {
+    document.getElementById("connectBtn").textContent = "Searching wallets...";
+    await waitForWallet(3000);
+    const wallets = getSuiWallets();
+    if (wallets.length === 0) {
       toast("No Sui wallet found. Install Slush, Sui Wallet, or Suiet extension.", "error");
       document.getElementById("connectBtn").textContent = "Connect Wallet";
       return;
     }
+    let wallet;
+    if (wallets.length === 1) {
+      wallet = wallets[0];
+    } else {
+      // Show wallet picker
+      const names = wallets.map((w, i) => (i+1) + ". " + w.name).join("\n");
+      const choice = prompt("Multiple wallets found. Enter number:\n" + names);
+      const idx = parseInt(choice) - 1;
+      if (isNaN(idx) || idx < 0 || idx >= wallets.length) {
+        document.getElementById("connectBtn").textContent = "Connect Wallet";
+        return;
+      }
+      wallet = wallets[idx];
+    }
+    toast("Connecting to " + wallet.name + "...");
     discoveredWallet = wallet;
     const connectFeature = wallet.features["standard:connect"];
     if (!connectFeature) { toast("Wallet does not support connect","error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
