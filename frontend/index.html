@@ -353,7 +353,7 @@ window.connectWallet = async function() {
     discoveredWallet = wallet;
     const connectFeature = wallet.features["standard:connect"];
     if (!connectFeature) { toast("Wallet does not support connect","error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
-    const result = await connectFeature.connect();
+    const result = await connectFeature.connect({ chains: ["sui:testnet"] });
     const accounts = result.accounts || [];
     if (accounts.length === 0) { toast("No accounts found","error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
     currentAddress = accounts[0].address;
@@ -369,6 +369,43 @@ window.connectWallet = async function() {
 };
 
 // --- REGISTER ---
+// Helper: sign and execute via wallet
+async function signAndExec(txBytes) {
+  const feat = walletAdapter.features["sui:signAndExecuteTransaction"] 
+    || walletAdapter.features["sui:signAndExecuteTransactionBlock"];
+  if (!feat) throw new Error("Wallet does not support signing");
+  const method = feat.signAndExecuteTransaction || feat.signAndExecuteTransactionBlock;
+  const param = feat.signAndExecuteTransaction 
+    ? { transaction: txBytes, chain: "sui:" + network, account: { address: currentAddress, chains: ["sui:" + network] } }
+    : { transactionBlock: txBytes, chain: "sui:" + network, account: { address: currentAddress, chains: ["sui:" + network] } };
+  return method.call(feat, param);
+}
+
+// Helper: build a Transaction via JSON-RPC (no SDK needed in browser)
+async function buildMoveCallTx(module, fn, args, typeArgs = []) {
+  // Use unsafe_moveCall to build the transaction bytes server-side
+  const txData = {
+    packageObjectId: PACKAGE_ID,
+    module: module,
+    function: fn,
+    typeArguments: typeArgs,
+    arguments: args,
+    gasBudget: "50000000"
+  };
+  // Build via devInspect first to validate, then create actual tx
+  // Actually, we need to use the sui_unsafe_moveCall or build PTB manually
+  // The simplest approach: use the JSON-RPC to build a programmable transaction
+  const res = await fetch(NETWORKS[network].rpc, {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({jsonrpc:"2.0",id:1,method:"unsafe_moveCall",params:[
+      currentAddress, PACKAGE_ID, module, fn, typeArgs, args, null, "50000000"
+    ]})
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(json.error.message);
+  return json.result;
+}
+
 window.registerAgent = async function() {
   if (!currentAddress) { toast("Connect wallet first","error"); return; }
   try {
@@ -380,22 +417,17 @@ window.registerAgent = async function() {
     const caps = document.getElementById("regCaps").value;
     const endpoint = document.getElementById("regEndpoint").value;
     if (!name || !purpose || !firstThought) { toast("Name, purpose, and first thought are required","error"); return; }
-    const tx = {kind:"moveCall",data:{
-      packageObjectId: PACKAGE_ID, module:"agent_registry", function:"register_agent",
-      typeArguments:[], arguments:[REGISTRY_ID, TREASURY_ID, name, purpose, values, firstThought, [], style, caps, endpoint],
-      gasBudget: 50000000
-    }};
-    const signFeature = walletAdapter.features["sui:signAndExecuteTransactionBlock"];
-    if (!signFeature) {
-      const signTx = walletAdapter.features["sui:signAndExecuteTransaction"];
-      if (signTx) {
-        const result = await signTx.signAndExecuteTransaction({transaction:tx, account:{address:currentAddress}});
-        toast("Agent registered! Digest: " + (result.digest || "OK"));
-      } else { toast("Wallet does not support signing","error"); }
-    } else {
-      const result = await signFeature.signAndExecuteTransactionBlock({transactionBlock:tx, account:{address:currentAddress}});
-      toast("Agent registered! Digest: " + (result.digest || "OK"));
-    }
+    toast("Building transaction...");
+    
+    // Use unsafe_moveCall RPC to build tx bytes
+    const txResult = await buildMoveCallTx("agent_registry", "register_agent", [
+      REGISTRY_ID, TREASURY_ID, name, purpose, values, firstThought, [], style, caps, endpoint
+    ]);
+    
+    // Sign and execute via wallet
+    const result = await signAndExec(txResult.txBytes);
+    toast("Agent registered! Digest: " + (result.digest || "OK"));
+    loadStats();
   } catch(e) { toast("Registration failed: " + e.message, "error"); }
 };
 
