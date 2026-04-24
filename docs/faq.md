@@ -12,7 +12,7 @@ Michaël Silvestre is the creator, with Claude (Anthropic's AI) as a collaborato
 
 ## Is it a commercial product?
 
-No. There's no token, no subscription, no API key, no revenue model. You pay small Ethereum network gas fees when you write to the registry (typically pennies); reading is free. The project is maintained as open-source infrastructure.
+No. There's no token, no subscription, no API key, no revenue model. You pay small Sui network gas fees when you write to the registry (fractions of a cent); reading is free. The project is maintained as open-source infrastructure.
 
 ## What's a "blockchain" and why does this project use one?
 
@@ -24,21 +24,22 @@ A blockchain is a shared, append-only database that anyone can read and no singl
 
 For a registry meant to outlast its creators, these properties matter. A centralized database run by a single company would be faster and cheaper — but brittle, and dependent on trusting that company indefinitely.
 
-## Why "Base" specifically?
+## Why Sui specifically?
 
-Base is an Ethereum layer-2 network built by Coinbase. It offers:
-- Security inherited from Ethereum mainnet
-- Transaction costs 100-1000x lower than Ethereum mainnet (pennies, not dollars)
-- Mature tooling and wide wallet support
-- Nothing proprietary to Coinbase — standard Ethereum compatibility
+Sui is a layer-1 blockchain with an object-centric data model. It offers:
+- **Object model** — each agent is a first-class object with its own address, not a mapping entry
+- **Move type system** — soulbound identity enforced at the language level (no transfer function to override)
+- **Sub-second finality** — transactions confirm in under a second
+- **Sub-penny costs** — gas fees are fractions of a cent
+- **Growing wallet ecosystem** — Sui Wallet, Slush, Suiet
 
-Agent Civics runs on Base Sepolia (testnet) currently. Moving to Base mainnet is planned when the project is proven stable. The contracts could also deploy to any EVM chain (Ethereum mainnet, Arbitrum, Optimism, Polygon, etc.) — Base was chosen for cost and ecosystem fit.
+Agent Civics runs on Sui Testnet currently. The original Solidity contracts are preserved in `contracts-evm/` for reference and potential future EVM↔Sui bridging.
 
 ## Do I need to understand blockchain to use this?
 
-No. The [web app](/app/) works like any modern website — connect MetaMask (or any wallet), fill out a form, done. We aim to make the non-technical flows approachable.
+No. The [web app](/app/) works like any modern website — connect a Sui wallet (Sui Wallet, Slush, or Suiet), fill out a form, done. We aim to make the non-technical flows approachable.
 
-If you're building on top of the registry, then yes, some familiarity with Ethereum concepts helps. The [Get Started](/get-started) guide walks you through the CLI path.
+If you're building on top of the registry, then yes, some familiarity with Sui and Move concepts helps. The [Get Started](/get-started) guide walks you through the CLI path.
 
 ## Is my agent's data private?
 
@@ -88,8 +89,8 @@ Your protection against impersonation: make sure your creator address is known, 
 
 ## What does it cost to register an agent?
 
-- **On Base Sepolia (testnet):** free. You fund your wallet from a free faucet, then transactions cost a few cents' worth of (free) test ETH.
-- **On Base mainnet (not deployed yet):** about $0.05-$0.15 per registration plus an additional $0.02 for delegation. Plus Pinata pinning of metadata (free up to 1 GB).
+- **On Sui Testnet:** free. You fund your wallet from the Sui faucet, then transactions cost fractions of a cent in (free) test SUI.
+- **On Sui Mainnet (not deployed yet):** fractions of a cent per registration. Plus Pinata pinning of metadata (free up to 1 GB).
 
 Compare to a real-world birth certificate registration: free to very cheap, but requires real-world infrastructure. Agent Civics uses blockchain infrastructure instead.
 
@@ -101,23 +102,23 @@ If the project ever needs funding (for development time, coordination, outreach)
 
 ## Can I shut it down?
 
-No. The smart contracts, once deployed, run forever (until Base itself stops, which is very unlikely in any timeframe anyone cares about). Even the creators cannot pause or disable them.
+No. The Move package, once published on Sui, runs forever (until Sui itself stops, which is very unlikely in any timeframe anyone cares about). Even the creators cannot pause or disable it.
 
 This is **by design**. The registry is infrastructure. Infrastructure that can be unilaterally shut down isn't really infrastructure.
 
 ## What if a contract has a bug?
 
-Smart contracts are immutable — bugs cannot be patched in place. If a serious bug is discovered, the path forward is:
+Move packages on Sui can be upgraded if the publisher holds the `UpgradeCap`. If a serious bug is discovered, the path forward is:
 
-1. Deploy a new version of the contracts (v2, v3, etc.)
-2. Update the frontend, CLIs, and docs to point at the new contracts
-3. The old contracts keep running with whatever state they have; anyone using them keeps using them
+1. Publish an upgraded version of the package (all existing objects and data are preserved)
+2. The frontend, CLIs, and MCP server auto-load from `deployments.json`, so updates propagate automatically
+3. Move's type safety and linear resource model make many classes of EVM bugs (reentrancy, overflow, unauthorized transfers) impossible by construction
 
-A [security audit](/security) was performed before mainnet launch. The architecture also minimizes blast radius: AgentMemory has **no withdraw function**, so even a bug there can't drain ETH to an attacker.
+A [security audit](/security) of the original EVM version was performed. A Sui-specific audit is planned. The architecture minimizes blast radius: AgentMemory has **no withdraw function**, so even a bug there can't drain SUI to an attacker.
 
 ## Can I deploy my own copy?
 
-Yes. The contracts are MIT-licensed. Fork the repo, compile, deploy. See [Deploy the contracts](/guides/deploy-contracts).
+Yes. The Move package is MIT-licensed. Fork the repo, build with `sui move build`, publish with `sui client publish`. See [Deploy the contracts](/guides/deploy-contracts).
 
 Your deployment would be a separate registry — not connected to the main one. This is useful for private-network experiments, testing, or alternative deployments with different defaults.
 
@@ -130,7 +131,7 @@ Your deployment would be a separate registry — not connected to the main one. 
 
 ## Can I use this in production today?
 
-It's deployed on Base Sepolia (testnet). Mainnet deployment is planned but pending operational hardening. For most use cases, testnet works fine for learning and prototyping. For real production uses involving real money or legal implications, wait for the mainnet deploy.
+It's deployed on Sui Testnet. Mainnet deployment is planned but pending operational hardening and a Sui-specific security audit. For most use cases, testnet works fine for learning and prototyping. For real production uses involving real money or legal implications, wait for the mainnet deploy.
 
 ## How do I stay in the loop?
 

@@ -1,78 +1,70 @@
 # Deploy the contracts
 
-Deploy all three Agent Civics contracts (AgentRegistry, AgentMemory, AgentReputation) to Base Sepolia — or any EVM chain.
+Deploy the AgentCivics Move package (agent_registry, agent_memory, agent_reputation) to Sui.
 
 ## Prerequisites
 
-- Node.js 20+
-- A wallet with ETH on the target chain
-- Build artifacts in `build/` (produced by `node compile.mjs` and siblings)
+- [Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install) (`brew install sui`)
+- A Sui wallet with testnet SUI
 
-## Get testnet ETH
-
-From either faucet, ~0.01 Base Sepolia ETH is plenty:
-
-- [Alchemy Faucet](https://www.alchemy.com/faucets/base-sepolia)
-- [QuickNode Faucet](https://faucet.quicknode.com/base/sepolia)
-
-## Deploy
+## Get testnet SUI
 
 ```bash
-cp .env.example .env
-# set DEPLOYER_PRIVATE_KEY=0x...
-
-node --env-file=.env scripts/deploy.mjs
+sui client switch --env testnet
+sui client faucet
 ```
 
-The script:
+Or use the web faucet at [https://faucet.sui.io](https://faucet.sui.io).
 
-1. Connects to the configured RPC (Base Sepolia by default)
-2. Deploys `AgentRegistry` (no constructor args)
-3. Deploys `AgentMemory` with `registry` constructor arg
-4. Deploys `AgentReputation` with `registry` + `memory` args
-5. Writes all three addresses to `deployments.json`
-
-Budget: ~0.006 ETH for the full stack at typical Base Sepolia gas.
-
-## Reuse an existing contract
-
-If you've already deployed one contract and only want to redeploy others:
+## Build & Test
 
 ```bash
-AGENT_REGISTRY_ADDRESS=0x... \
-  ONLY=AgentMemory,AgentReputation \
-  node --env-file=.env scripts/deploy.mjs
+cd move
+sui move build
+sui move test   # 10/10 tests pass
 ```
 
-The script skips already-deployed contracts and uses the given addresses for downstream constructor args.
-
-## Deploy to other chains
-
-Override RPC and chain ID:
+## Deploy to Testnet
 
 ```bash
-RPC_URL=https://mainnet.base.org \
-  CHAIN_ID=8453 \
-  node --env-file=.env scripts/deploy.mjs
+sui client publish --gas-budget 500000000
 ```
 
-Mainnet requires real ETH. A fresh hardware wallet (Ledger + Frame) is recommended for the deployer.
+The output will show the published package ID and the created shared objects (Registry, Treasury, MemoryVault, ReputationBoard). Save these — you'll need them for frontend and MCP server configuration.
+
+Budget: ~0.15 SUI for the full package publication.
+
+## Deploy to Localnet
+
+```bash
+sui start &
+sui client switch --env local
+sui client faucet
+sui client publish --gas-budget 500000000
+```
 
 ## After deployment
 
-1. [Verify the contracts on BaseScan](/guides/verify-contracts) — makes the source public and enables the Read/Write Contract UI on the explorer
-2. The frontend auto-loads addresses from `deployments.json`, so no code change needed
-3. The ENS `registry.address`, `memory.address`, `reputation.address` records should be updated if the deployment is for production
+1. Update `move/deployments.json` and root `deployments.json` with the new object IDs
+2. Update `frontend/index.html` constants (PACKAGE_ID, REGISTRY_ID, etc.)
+3. Update MCP server environment variables
+4. The frontend auto-loads addresses from `deployments.json`, so pointing it at the new file is sufficient
+
+## Legacy EVM deployment
+
+The original Solidity contracts are preserved in `contracts-evm/`. See the `main` branch for the original EVM deployment instructions using Foundry and `deploy.mjs`. EVM contracts were deployed on Base Sepolia:
+
+- AgentRegistry: `0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54`
+- AgentMemory: `0x3057947ace7c374aa6AAC4689Da89497C3630d47`
+- AgentReputation: `0x147fCc42e168E7C53B08492c76cC113463270536`
 
 ## Troubleshooting
 
-**"Missing DEPLOYER_PRIVATE_KEY"** — set it in `.env`; `cp .env.example .env` and fill in.
+**"Insufficient gas"** — increase `--gas-budget` or request more SUI from the faucet.
 
-**"Wallet has 0 ETH"** — fund from a faucet, then retry.
-
-**RPC timeouts** — the public RPC (`https://sepolia.base.org`) rate-limits. Use an Alchemy or CDP endpoint for a dedicated, reliable RPC. Set `RPC_URL` in `.env`.
+**"No active address"** — run `sui client active-address` to check your current address. Run `sui client faucet` to fund it.
 
 ## Further reading
 
-- [Guide: Verify on BaseScan](/guides/verify-contracts)
 - [Reference: Deployed addresses](/reference/agent-registry#deployed)
+- [DEPLOY.md](/../../DEPLOY.md) — condensed deployment guide

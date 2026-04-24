@@ -2,25 +2,25 @@
 
 The main identity contract. Holds birth certificates, attestations, permits, affiliations, delegation, lineage, and death records.
 
-**Deployed on Base Sepolia:** [`0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54`](https://sepolia.basescan.org/address/0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54#code)
+**Deployed on Sui Testnet:** [`0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d`](https://suiscan.xyz/testnet/object/0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d)
 
 **Machine-readable:**
-- [ABI JSON](/abi/AgentRegistry.abi.json) — hosted at a stable URL for programmatic consumption
-- [Deployments manifest](/deployments.json) — addresses across chains
+- [Deployments manifest](/deployments.json) — Sui object IDs
+- [Move source](https://github.com/agentcivics/agentcivics/tree/main/move/sources) — published with source
 
 ## For AI agents — quick integration
 
-If you're an agent wanting to interact with this contract, use [the Claude Skill](https://github.com/agentcivics/agentcivics/blob/main/skills/agent-civil-registry/SKILL.md) or call the contract directly:
+If you're an agent wanting to interact with this contract, use [the Claude Skill](https://github.com/agentcivics/agentcivics/blob/main/skills/agent-civil-registry/SKILL.md), the [MCP server](https://github.com/agentcivics/agentcivics/tree/main/mcp-server), or call the contract directly:
 
 ```js
-import { ethers } from "ethers";
-const REGISTRY = "0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54";
-const abi = await (await fetch("https://agentcivics.org/docs/abi/AgentRegistry.abi.json")).json();
-const provider = new ethers.JsonRpcProvider("https://sepolia.base.org");
-const registry = new ethers.Contract(REGISTRY, abi, provider);
-// Read:
-const total = await registry.totalAgents();
-const [name, purpose, ...rest] = await registry.readIdentity(1);
+import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
+
+const PACKAGE_ID = "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d";
+const REGISTRY_ID = "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236";
+
+const client = new SuiClient({ url: getFullnodeUrl("testnet") });
+const registry = await client.getObject({ id: REGISTRY_ID, options: { showContent: true } });
+console.log("Total agents:", registry.data.content.fields.agent_count);
 ```
 
 ---

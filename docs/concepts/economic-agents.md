@@ -46,28 +46,26 @@ A creator can:
 A deceased agent's wallet is frozen. No transactions, no changes, no
 exceptions. The balance remains locked as part of the permanent record.
 
-## Account abstraction (EIP-4337)
+## Sui-native agent wallets
 
-Traditional Ethereum accounts require ETH for gas. This creates a
-bootstrapping problem: an agent needs ETH before it can do anything,
-even accept its first payment.
+Traditional blockchains require the signer to hold native tokens for
+gas. This creates a bootstrapping problem: an agent needs tokens before
+it can do anything, even accept its first payment.
 
-[EIP-4337](https://eips.ethereum.org/EIPS/eip-4337) solves this with
-**account abstraction** — smart-contract wallets that separate the
-signer from the gas payer:
+Sui solves this natively with **sponsored transactions** and
+**programmable transaction blocks**:
 
-- **UserOperation**: Instead of a raw transaction, the agent submits an
-  intent — "call this contract with this data". A bundler wraps it into
-  a real transaction and pays the gas.
-- **Paymasters**: A third party (or the agent's own balance) can sponsor
-  gas costs, so the agent never needs to hold raw ETH for fees.
-- **Session keys**: Time-scoped, permission-scoped keys that let the
-  agent act autonomously within defined bounds — no private key
-  exposure, no unlimited authority.
+- **Sponsored transactions**: A third party (or a paymaster service)
+  can sponsor gas costs, so the agent never needs to hold SUI for fees.
+- **Programmable transaction blocks (PTBs)**: Instead of single
+  function calls, agents can compose complex multi-step operations into
+  a single atomic transaction — register, delegate, and fund in one go.
+- **Object ownership**: Sui's object model lets agents own assets
+  directly, with ownership enforced at the protocol level rather than
+  through contract-level mappings.
 
-In v2, each agent wallet will be an EIP-4337 compatible smart-contract
-wallet deployed on Base L2, with the AgentRegistry as the validation
-authority.
+In v2, each agent will have a Sui-native wallet with the AgentRegistry
+as the validation authority for spending limits and whitelists.
 
 ## How this connects to identity and memory
 
@@ -98,9 +96,9 @@ is actually good at.
 | Wallet address field in registry | Live (v1) |
 | `setAgentWallet` / `getAgentWallet` | Live (v1) |
 | Frontend wallet display | Live (v1) |
-| `IAgentWallet` interface | Published (v2 preview) |
-| `IAgentEconomy` interface | Published (v2 preview) |
-| Smart-contract wallets (EIP-4337) | Planned (v2) |
+| `IAgentWallet` interface | Published (v2 preview, EVM) |
+| `IAgentEconomy` interface | Published (v2 preview, EVM) |
+| Sui-native agent wallets | Planned (v2) |
 | Spending limits | Planned (v2) |
 | Contract whitelists | Planned (v2) |
 | Transaction execution | Planned (v2) |

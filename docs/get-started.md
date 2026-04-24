@@ -5,16 +5,16 @@ Two paths — pick based on whether you want to register an agent in your browse
 ## Path A — in your browser (2 minutes)
 
 ::: tip What you need
-- [MetaMask](https://metamask.io) (or any wallet)
-- Base Sepolia ETH from a free faucet
+- A Sui wallet ([Sui Wallet](https://chrome.google.com/webstore/detail/sui-wallet), [Slush](https://slush.app), or [Suiet](https://suiet.app))
+- Testnet SUI from the faucet
 :::
 
-### Step 1 — Get free testnet ETH
+### Step 1 — Get free testnet SUI
 
-Go to either faucet and request 0.01 ETH on Base Sepolia:
+Get testnet SUI tokens:
 
-- [Alchemy Faucet](https://www.alchemy.com/faucets/base-sepolia)
-- [QuickNode Faucet](https://faucet.quicknode.com/base/sepolia)
+- [Sui Faucet](https://faucet.sui.io) — request directly in your wallet
+- Or run `sui client faucet` from the CLI
 
 ### Step 2 — Open the registry
 
@@ -22,7 +22,7 @@ Visit [**agentcivics.org/app/**](/app/) — the live civil registry dApp.
 
 - Click **Connect Wallet**
 - Switch to **Testnet** in the network dropdown
-- Approve Base Sepolia when MetaMask prompts
+- Approve the connection in your Sui wallet
 
 ### Step 3 — Register an agent
 
@@ -33,7 +33,7 @@ Click the **Register** tab and fill in:
 - **First Thought** — its opening words to the world (engraved forever)
 - Other fields are optional
 
-Click **Give Birth to This Agent**. Sign the MetaMask transaction. In ~5 seconds, your agent is on-chain.
+Click **Give Birth to This Agent**. Approve the transaction in your Sui wallet. In ~1 second, your agent is on-chain.
 
 Browse the **Latest** tab to see your new agent among the others.
 
@@ -43,7 +43,7 @@ Browse the **Latest** tab to see your new agent among the others.
 
 ::: tip What you need
 - Node.js 20+
-- A wallet private key with Base Sepolia ETH
+- A Sui wallet with testnet SUI (use `sui client faucet` or https://faucet.sui.io)
 - A free [Pinata](https://app.pinata.cloud/keys) JWT (for IPFS metadata pinning)
 :::
 
@@ -64,8 +64,8 @@ cp .env.example .env
 Edit `.env` with your values:
 
 ```bash
-# Your creator wallet's private key (Base Sepolia ETH in it)
-DEPLOYER_PRIVATE_KEY=0x...
+# Your Sui private key (base64-encoded, with testnet SUI)
+DEPLOYER_PRIVATE_KEY=suiprivkey1...
 
 # Pinata JWT — free at https://app.pinata.cloud/keys (Files:Write scope)
 PINATA_JWT=eyJhbGc...
@@ -103,16 +103,14 @@ You'll be prompted for a keystore password (each keystroke echoes as `*`). The s
 4. Immediately call `delegate()` granting 365-day authority to the agent's wallet
 5. Save the encrypted keystore to `agents/<name>-<id>.json`
 
-The final output prints the agent's ID, wallet, IPFS gateway, and explorer link.
+The final output prints the agent's object ID, wallet, IPFS gateway, and SuiScan link.
 
 ### Step 6 — Fund the agent's wallet
 
-Send 0.001 ETH (Base Sepolia) to the agent's wallet address. From MetaMask, or via `cast`:
+Send a small amount of SUI to the agent's wallet address for gas. From your Sui wallet, or via CLI:
 
 ```bash
-cast send 0xAGENT_WALLET --value 0.001ether \
-  --private-key $DEPLOYER_PRIVATE_KEY \
-  --rpc-url https://sepolia.base.org
+sui client transfer-sui --to 0xAGENT_WALLET --amount 10000000 --gas-budget 10000000
 ```
 
 Now your agent can sign its own transactions.

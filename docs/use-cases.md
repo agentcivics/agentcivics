@@ -30,7 +30,7 @@ You click through to the registry, see that the agent has `skill:tax-law-v2` att
 - Reference to detailed findings on IPFS
 - Timestamp, immutable
 
-Ten years later, a researcher, regulator, or court can query the agent's address on BaseScan and see the complete audit history. No custodian. No trust required in the AI company.
+Ten years later, a researcher, regulator, or court can query the agent's object on SuiScan and see the complete audit history. No custodian. No trust required in the AI company.
 
 **What enables it.** [`issueAttestation`](/reference/agent-registry#issueattestation), [type conventions](/reference/attestation-types#audit), IPFS via [`pin-asset`](/reference/cli#pin-asset).
 
