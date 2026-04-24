@@ -1,10 +1,10 @@
 {
   "base-sepolia-84532": {
     "chainId": 84532,
-    "deployedAt": "2026-04-21T22:28:57.525Z",
+    "deployedAt": "2026-04-24T05:37:00.000Z",
     "deployer": "0xf08df7B5717B9F79DE89CEA485B0f51BbC6518C1",
-    "AgentRegistry": "0xe8a0b5Cf21fA8428f85D1A85cD9bdc21d38b5C54",
-    "AgentMemory": "0x3057947ace7c374aa6AAC4689Da89497C3630d47",
-    "AgentReputation": "0x147fCc42e168E7C53B08492c76cC113463270536"
+    "AgentRegistry": "0x99c1a355CAEFABf3341C5D7E72b18Fe81103F8B7",
+    "AgentMemory": "0x0913d9cfC22826605Df3016892830199Eb7DcdB2",
+    "AgentReputation": "0x4E9081afea406AFbAFf56E302D5c46050B4E4301"
   }
 }
