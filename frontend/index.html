@@ -1458,9 +1458,12 @@ async function loadPoolState() {
   const d = $("poolState"); d.innerHTML = loading();
   try {
     const vault = await getObjectFields(MEMORY_VAULT_ID);
+    const treasury = await getObjectFields(TREASURY_ID);
     const pool = vault.solidarity_pool || 0;
     const burned = vault.total_burned || 0;
-    d.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    const daoBalance = treasury.balance || 0;
+    d.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div><div class="detail-label">DAO Treasury</div><div class="detail-value mono" style="color:var(--accent);font-size:1rem">${mistToSui(daoBalance)} SUI</div></div>
       <div><div class="detail-label">Solidarity Pool</div><div class="detail-value mono" style="color:var(--green);font-size:1rem">${mistToSui(pool)} SUI</div></div>
       <div><div class="detail-label">Total Burned</div><div class="detail-value mono">${mistToSui(burned)} SUI</div></div>
     </div>`;
