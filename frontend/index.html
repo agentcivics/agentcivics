@@ -1308,7 +1308,23 @@ async function loadAgentMemory() {
     });
     const agentSouvs = souvenirs.data?.filter(s => s.data?.content?.fields?.agent_id === id) || [];
     $("memCount").textContent = agentSouvs.length.toString();
-    $("memBalance").textContent = "—"; // Needs dynamic field lookup
+    // Read agent balance via dynamic field on the balances table
+    try {
+      const balTableId = vault.balances?.fields?.id?.id;
+      if (balTableId) {
+        const balResp = await fetch("https://fullnode.testnet.sui.io:443", {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
+            balTableId, {type:"0x2::object::ID", value: id}
+          ]})
+        });
+        const balData = (await balResp.json()).result;
+        const agentBal = balData?.data?.content?.fields?.value || 0;
+        $("memBalance").textContent = mistToSui(agentBal) + " SUI";
+      } else {
+        $("memBalance").textContent = "0 SUI";
+      }
+    } catch { $("memBalance").textContent = "0 SUI"; }
     renderSouvenirs(agentSouvs);
   } catch (e) { toast("Error: " + (e.message || e), "error"); }
 }
