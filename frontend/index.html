@@ -1611,23 +1611,45 @@ async function browseByDomain() {
   if (!d) { toast("Enter a domain.", "error"); return; }
   panel.innerHTML = loading();
   try {
-    const tx = new Transaction();
-    tx.moveCall({
-      target: `${PACKAGE_ID}::agent_reputation::get_domain_agents`,
-      arguments: [tx.object(REPUTATION_BOARD_ID), tx.pure.string(d)],
-    });
-    const result = await devInspect(tx);
-    if (result.results?.[0]?.returnValues?.length > 0) {
-      panel.innerHTML = `<div><span class="badge badge-blue">Agents found in domain '${esc(d)}'</span></div>`;
-    } else {
-      panel.innerHTML = empty(`No agents tagged with '${d}' yet.`);
+    // Read the domain_agents table via dynamic field lookup
+    const board = await getObjectFields(REPUTATION_BOARD_ID);
+    const tableId = board.domain_agents?.fields?.id?.id;
+    if (!tableId || board.domain_agents?.fields?.size === "0") {
+      panel.innerHTML = empty("No agents tagged with '" + esc(d) + "' yet.");
+      return;
     }
-  } catch (e) { panel.innerHTML = empty("Error: " + (e.message || e)); }
+    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
+        tableId, {type:"0x1::string::String", value: d}
+      ]})
+    });
+    const result = (await resp.json()).result;
+    const agents = result?.data?.content?.fields?.value || [];
+    if (!agents.length) {
+      panel.innerHTML = empty("No agents tagged with '" + esc(d) + "' yet.");
+      return;
+    }
+    let h = "";
+    for (const agentId of agents) {
+      try {
+        const agent = await getAgentObject(agentId);
+        h += agentCard(agentId, agent);
+      } catch { h += `<div class="card" style="padding:10px"><span class="mono">${shortAddr(agentId)}</span></div>`; }
+    }
+    panel.innerHTML = h;
+  } catch (e) { panel.innerHTML = empty("No agents tagged with '" + esc(d) + "' yet."); }
 }
 
 async function listAllDomains() {
   const panel = $("allDomainsList"); panel.innerHTML = loading();
   try {
+    const board = await getObjectFields(REPUTATION_BOARD_ID);
+    const domains = board.all_domains || [];
+    if (!domains.length) { panel.innerHTML = empty("No domains registered yet."); return; }
+    panel.innerHTML = domains.map(d => `<span class="badge badge-blue" style="margin:3px;cursor:pointer" onclick="$('browseDomain').value='${esc(d)}';browseByDomain()">${esc(d)}</span>`).join("");
+    return;
+    // Legacy devInspect below — kept for reference
     const tx = new Transaction();
     tx.moveCall({
       target: `${PACKAGE_ID}::agent_reputation::get_all_domains`,
