@@ -235,17 +235,84 @@ async function getOwnedObjects(address, type) {
 }
 
 // --- WALLET ---
+// Wallet Standard: discover all installed wallets (Slush, Sui Wallet, Suiet, etc.)
+function getWallets() {
+  const wallets = [];
+  // Check wallet-standard registry
+  if (window.navigator && window.navigator.wallets) {
+    try { window.navigator.wallets.forEach(w => wallets.push(w)); } catch(e) {}
+  }
+  // Check legacy window.sui
+  if (window.sui) wallets.push(window.sui);
+  // Check wallet-standard get method
+  if (typeof getWallets === "function" && window.__walletStandard) {
+    try { wallets.push(...window.__walletStandard.get()); } catch(e) {}
+  }
+  return wallets;
+}
+
+function findSuiWallet() {
+  // Try the standard wallet registry first
+  const registry = window[Symbol.for("WalletStandard:Register")];
+  if (registry) {
+    let found = null;
+    registry((wallet) => { if (!found && wallet.chains?.some(c => c.startsWith("sui:"))) found = wallet; });
+    if (found) return found;
+  }
+  // Fallback: check common globals
+  if (window.slush) return window.slush;
+  if (window.suiWallet) return window.suiWallet;
+  if (window.sui) return window.sui;
+  // Check for injected wallets via standard API
+  const event = new CustomEvent("wallet-standard:app-ready", { detail: { register: (w) => {} } });
+  window.dispatchEvent(event);
+  return null;
+}
+
+// Wait for wallet to register (they inject async)
+let discoveredWallet = null;
+function waitForWallet(timeout = 3000) {
+  return new Promise((resolve) => {
+    // Immediate check
+    const w = findSuiWallet();
+    if (w) { resolve(w); return; }
+    // Listen for registration
+    const handler = (event) => {
+      const w = event.detail;
+      if (w && w.features && w.features["standard:connect"]) {
+        window.removeEventListener("wallet-standard:register-wallet", handler);
+        resolve(w);
+      }
+    };
+    window.addEventListener("wallet-standard:register-wallet", handler);
+    // Also poll
+    let elapsed = 0;
+    const interval = setInterval(() => {
+      elapsed += 200;
+      const w = findSuiWallet();
+      if (w) { clearInterval(interval); window.removeEventListener("wallet-standard:register-wallet", handler); resolve(w); }
+      if (elapsed >= timeout) { clearInterval(interval); window.removeEventListener("wallet-standard:register-wallet", handler); resolve(null); }
+    }, 200);
+  });
+}
+
 window.connectWallet = async function() {
   try {
-    if (!window.sui) { toast("Install Sui Wallet extension","error"); return; }
-    const features = window.sui.features;
-    const connectFeature = features["standard:connect"];
-    if (!connectFeature) { toast("Wallet does not support connect","error"); return; }
+    document.getElementById("connectBtn").textContent = "Connecting...";
+    const wallet = await waitForWallet(5000);
+    if (!wallet) {
+      toast("No Sui wallet found. Install Slush, Sui Wallet, or Suiet extension.", "error");
+      document.getElementById("connectBtn").textContent = "Connect Wallet";
+      return;
+    }
+    discoveredWallet = wallet;
+    const connectFeature = wallet.features["standard:connect"];
+    if (!connectFeature) { toast("Wallet does not support connect","error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
     const result = await connectFeature.connect();
     const accounts = result.accounts || [];
-    if (accounts.length === 0) { toast("No accounts found","error"); return; }
+    if (accounts.length === 0) { toast("No accounts found","error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
     currentAddress = accounts[0].address;
-    walletAdapter = window.sui;
+    walletAdapter = wallet;
     document.getElementById("connectBtn").style.display = "none";
     const badge = document.getElementById("walletBadge");
     badge.textContent = currentAddress.slice(0,6) + "..." + currentAddress.slice(-4);
@@ -253,7 +320,7 @@ window.connectWallet = async function() {
     badge.style.display = "inline";
     toast("Connected: " + currentAddress.slice(0,10) + "...");
     loadStats();
-  } catch(e) { toast("Wallet connection failed: " + e.message, "error"); }
+  } catch(e) { toast("Connection failed: " + e.message, "error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; }
 };
 
 // --- REGISTER ---
