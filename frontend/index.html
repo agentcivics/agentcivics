@@ -1069,19 +1069,11 @@ async function showDetail(agentId) {
       <div class="detail-row"><div class="detail-label">Wallet</div><div class="detail-value mono">${walletAddr || '<span style="color:var(--text-muted)">Not set</span>'}</div></div>
     </div>
     ${deathHtml}
-    <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px">
-      <h4 style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:10px">Explore This Agent</h4>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button class="btn btn-outline btn-sm" onclick="closeModal();switchTab('life');$('lifeAgentId').value='${agentId}';loadTimeline()">Life Timeline</button>
-        <button class="btn btn-outline btn-sm" onclick="closeModal();switchTab('lineage');$('lineageAgentId').value='${agentId}';loadLineage()">Family Tree</button>
-        <button class="btn btn-outline btn-sm" onclick="closeModal();switchTab('memory');$('souvWriteAgent').value='${agentId}'">Write Memory</button>
-        <button class="btn btn-outline btn-sm" onclick="closeModal();switchTab('certs');$('certAgentId').value='${agentId}'">Certificates</button>
-        <button class="btn btn-outline btn-sm" onclick="closeModal();switchTab('permits');$('permitAgentId').value='${agentId}'">Permits</button>
-        <button class="btn btn-outline btn-sm" onclick="closeModal();switchTab('specialization');$('repDomain').value='${agentId}'">Reputation</button>
-      </div>
-    </div>
-    <div style="margin-top:10px;text-align:center">
-      <a href="https://suiscan.xyz/testnet/object/${agentId}" target="_blank" style="font-size:.82rem">View on SuiScan &#x2197;</a>
+    <div style="margin-top:14px;text-align:center;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="https://suiscan.xyz/testnet/object/${agentId}" target="_blank" style="font-size:.82rem">SuiScan &#x2197;</a>
+      <a href="#" onclick="event.preventDefault();closeModal();if($('lifeAgentId'))$('lifeAgentId').value='${agentId}';switchTab('life');if(typeof loadTimeline==='function')loadTimeline()" style="font-size:.82rem">View Timeline &#x2197;</a>
+      <a href="#" onclick="event.preventDefault();closeModal();if($('lineageAgentId'))$('lineageAgentId').value='${agentId}';switchTab('lineage');if(typeof loadLineage==='function')loadLineage()" style="font-size:.82rem">Family Tree &#x2197;</a>
+      <a href="#" onclick="event.preventDefault();closeModal();if($('repAgentId'))$('repAgentId').value='${agentId}';switchTab('specialization')" style="font-size:.82rem">Specialization &#x2197;</a>
     </div>`;
 }
 
