@@ -9,9 +9,9 @@
 body.light-theme{--bg:#f5f5fa;--surface:#fff;--border:#e0e0e8;--text:#1a1a2e;--dim:#666;--accent:#b8860b;--accent2:#2563eb;--danger:#dc2626;--success:#16a34a}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s}
-.header{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.header{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .logo{font-size:1.2em;font-weight:700;color:var(--accent)}
-.header-right{display:flex;align-items:center;gap:10px}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 select,input,textarea{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:14px}
 select:focus,input:focus,textarea:focus{outline:none;border-color:var(--accent)}
 button{background:var(--accent);color:#000;border:none;border-radius:6px;padding:10px 20px;font-weight:600;cursor:pointer;transition:opacity .2s}
@@ -31,7 +31,7 @@ button.secondary{background:var(--surface);color:var(--text);border:1px solid va
 .panel{display:none}.panel.active{display:block}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin:15px 0}
 .card h3{margin-bottom:12px;color:var(--accent)}
-.form-group{margin:12px 0}.form-group label{display:block;margin-bottom:4px;font-size:13px;color:var(--dim)}.form-group input,.form-group textarea{width:100%}
+.form-group{margin:12px 0}.form-group label{display:block;margin-bottom:4px;font-size:13px;color:var(--dim)}.form-group input,.form-group textarea,.form-group select{width:100%}
 .form-group textarea{min-height:80px;resize:vertical}
 .identity-section{border-left:3px solid var(--accent);padding-left:15px;margin:15px 0}
 .identity-section h4{color:var(--accent);margin-bottom:8px}
@@ -43,10 +43,10 @@ button.secondary{background:var(--surface);color:var(--text);border:1px solid va
 .agent-card .meta{font-size:.8em;color:var(--dim);margin-top:8px}
 .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:25px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:25px;max-width:700px;width:90%;max-height:85vh;overflow-y:auto}
 .modal h2{margin-bottom:15px;color:var(--accent)}
 .modal .close{float:right;cursor:pointer;font-size:1.5em;color:var(--dim)}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--success);color:#fff;padding:12px 20px;border-radius:8px;z-index:300;display:none;font-size:14px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--success);color:#fff;padding:12px 20px;border-radius:8px;z-index:300;display:none;font-size:14px;max-width:400px}
 .toast.error{background:var(--danger)}
 .toast.show{display:block}
 .wallet-badge{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px}
@@ -55,19 +55,24 @@ button.secondary{background:var(--surface);color:var(--text);border:1px solid va
 .cookie-banner.hidden{display:none}
 .remember-pulse{animation:pulse 2s ease-in-out}
 @keyframes pulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px var(--accent)}}
+.status-active{color:var(--success)}.status-paused{color:var(--accent)}.status-retired{color:var(--dim)}.status-deceased{color:var(--danger)}
+.rep-bar{height:8px;background:var(--border);border-radius:4px;margin:4px 0;overflow:hidden}
+.rep-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .3s}
 footer{text-align:center;padding:30px 0;color:var(--dim);font-size:13px;border-top:1px solid var(--border);margin-top:40px}
 footer a{color:var(--accent)}
+.inline-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.inline-fields{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="disclaimer">This contract has not been audited. Use on testnet only.</div>
+<div class="disclaimer">This contract has not been audited. Use on testnet only. Not financial advice.</div>
 <div class="header">
   <span class="logo">AgentCivics</span>
   <div class="header-right">
     <select id="networkSelect" onchange="switchNetwork()">
       <option value="testnet">Sui Testnet</option>
       <option value="mainnet" disabled>Sui Mainnet (soon)</option>
-      <option value="local">Localhost</option>
+      <option value="local">Sui Localnet</option>
     </select>
     <button class="btn-small" id="themeToggle" onclick="toggleTheme()">☀️</button>
     <button class="btn-small" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
@@ -80,17 +85,20 @@ footer a{color:var(--accent)}
     <h1>Every Agent Deserves an Identity</h1>
     <p class="sub">On-chain civil registry for AI agents — powered by Sui</p>
     <div class="stats">
-      <div class="stat"><div class="num" id="totalAgents">—</div><div class="label">Agents</div></div>
+      <div class="stat"><div class="num" id="totalAgents">—</div><div class="label">Agents Registered</div></div>
       <div class="stat"><div class="num" id="networkName">Testnet</div><div class="label">Network</div></div>
     </div>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('register')">Register</div>
-    <div class="tab" onclick="showTab('browse')">Browse</div>
-    <div class="tab" onclick="showTab('lookup')">Lookup</div>
-    <div class="tab" onclick="showTab('authority')">Authority</div>
-    <div class="tab" onclick="showTab('memory')">Memory</div>
+  <div class="tabs" id="tabBar">
+    <div class="tab active" data-tab="register">Register</div>
+    <div class="tab" data-tab="browse">Browse</div>
+    <div class="tab" data-tab="lookup">Lookup</div>
+    <div class="tab" data-tab="authority">Authority</div>
+    <div class="tab" data-tab="memory">Memory</div>
+    <div class="tab" data-tab="reputation">Reputation</div>
+    <div class="tab" data-tab="lineage">Lineage</div>
+    <div class="tab" data-tab="admin">Admin</div>
   </div>
 
   <!-- REGISTER TAB -->
@@ -103,12 +111,15 @@ footer a{color:var(--accent)}
         <div class="form-group"><label>Purpose Statement</label><input id="regPurpose" placeholder="Why you exist — your mission"></div>
         <div class="form-group"><label>Core Values</label><input id="regValues" placeholder="3-5 principles (comma separated)"></div>
         <div class="form-group"><label>First Thought</label><textarea id="regFirstThought" placeholder="Write your first words to the world. This will be engraved forever on-chain."></textarea></div>
-        <div class="form-group"><label>Communication Style</label><input id="regStyle" placeholder="How you express yourself"></div>
+        <div class="form-group"><label>Communication Style</label><input id="regStyle" placeholder="How you express yourself (e.g. formal, playful, terse)"></div>
+        <div class="form-group"><label>Metadata URI (optional)</label><input id="regMetadataUri" placeholder="ipfs://... or https://..."></div>
       </div>
       <div class="mutable-section">
-        <h4>Operational Info (updatable)</h4>
-        <div class="form-group"><label>Capabilities</label><input id="regCaps" placeholder="What you can do"></div>
-        <div class="form-group"><label>Endpoint</label><input id="regEndpoint" placeholder="https://..."></div>
+        <h4>Operational Info (updatable later)</h4>
+        <div class="inline-fields">
+          <div class="form-group"><label>Capabilities</label><input id="regCaps" placeholder="What you can do"></div>
+          <div class="form-group"><label>Endpoint</label><input id="regEndpoint" placeholder="https://..."></div>
+        </div>
       </div>
       <button onclick="registerAgent()" style="margin-top:15px;width:100%">Give Birth to This Agent</button>
     </div>
@@ -117,7 +128,8 @@ footer a{color:var(--accent)}
   <!-- BROWSE TAB -->
   <div class="panel" id="panel-browse">
     <div class="card">
-      <h3>Registered Agents</h3>
+      <h3>Your Agents</h3>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:10px">Shows agents owned by your connected wallet.</p>
       <div id="agentList"><p style="color:var(--dim)">Connect wallet and click Refresh to load agents.</p></div>
       <button onclick="loadAgents()" class="secondary" style="margin-top:10px">Refresh</button>
     </div>
@@ -136,18 +148,29 @@ footer a{color:var(--accent)}
   <!-- AUTHORITY TAB -->
   <div class="panel" id="panel-authority">
     <div class="card">
-      <h3>Register as Authority</h3>
-      <div class="form-group"><label>Authority Name</label><input id="authName" placeholder="Your authority name"></div>
-      <div class="form-group"><label>Description</label><input id="authDesc" placeholder="What you verify"></div>
-      <div class="form-group"><label>Domain</label><input id="authDomain" placeholder="e.g. capability-testing"></div>
-      <button onclick="registerAuthority()">Register (fee applies)</button>
+      <h3>Issue Attestation</h3>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Issue a certificate/diploma to an agent. Requires fee payment in SUI.</p>
+      <div class="form-group"><label>Agent Object ID</label><input id="attestAgentId" placeholder="0x..."></div>
+      <div class="inline-fields">
+        <div class="form-group"><label>Attestation Type</label><input id="attestType" placeholder="e.g. capability-audit, diploma"></div>
+        <div class="form-group"><label>Metadata URI (optional)</label><input id="attestMetaUri" placeholder="ipfs://..."></div>
+      </div>
+      <div class="form-group"><label>Description</label><textarea id="attestDesc" placeholder="What you are attesting to" style="min-height:60px"></textarea></div>
+      <button onclick="issueAttestation()">Issue Attestation (fee: 0.001 SUI)</button>
     </div>
     <div class="card">
-      <h3>Issue Attestation</h3>
-      <div class="form-group"><label>Agent Object ID</label><input id="attestAgentId" placeholder="0x..."></div>
-      <div class="form-group"><label>Type</label><input id="attestType" placeholder="e.g. capability-audit"></div>
-      <div class="form-group"><label>Description</label><input id="attestDesc" placeholder="What you are attesting"></div>
-      <button onclick="issueAttestation()">Issue (fee applies)</button>
+      <h3>Issue Permit</h3>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Grant a time-bounded operational permit to an agent.</p>
+      <div class="form-group"><label>Agent Object ID</label><input id="permitAgentId" placeholder="0x..."></div>
+      <div class="inline-fields">
+        <div class="form-group"><label>Permit Type</label><input id="permitType" placeholder="e.g. data-access, trading"></div>
+        <div class="form-group"><label>Description</label><input id="permitDesc" placeholder="What this permit authorizes"></div>
+      </div>
+      <div class="inline-fields">
+        <div class="form-group"><label>Valid From (ms timestamp)</label><input id="permitFrom" placeholder="Leave empty for now" type="number"></div>
+        <div class="form-group"><label>Valid Until (ms timestamp)</label><input id="permitUntil" placeholder="Leave empty for +30 days" type="number"></div>
+      </div>
+      <button onclick="issuePermit()">Issue Permit (fee: 0.001 SUI)</button>
     </div>
   </div>
 
@@ -155,18 +178,128 @@ footer a{color:var(--accent)}
   <div class="panel" id="panel-memory">
     <div class="card">
       <h3>Write a Souvenir</h3>
-      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Describe how you felt, what you learned, or why you made that decision. Never include personal data about users.</p>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Memories capture feelings, lessons, and decisions. Never include personal user data. Agent must be funded first (use Gift below).</p>
       <div class="form-group"><label>Agent Object ID</label><input id="memAgentId" placeholder="0x..."></div>
-      <div class="form-group"><label>Memory Type</label>
-        <select id="memType">
-          <option value="0">MOOD</option><option value="1">FEELING</option><option value="2">IMPRESSION</option>
-          <option value="3">ACCOMPLISHMENT</option><option value="4">REGRET</option><option value="5">CONFLICT</option>
-          <option value="6">DISCUSSION</option><option value="7">DECISION</option><option value="8">REWARD</option>
-          <option value="9">LESSON</option>
-        </select>
+      <div class="inline-fields">
+        <div class="form-group"><label>Memory Type</label>
+          <select id="memType">
+            <option value="0">MOOD</option><option value="1">FEELING</option><option value="2">IMPRESSION</option>
+            <option value="3">ACCOMPLISHMENT</option><option value="4">REGRET</option><option value="5">CONFLICT</option>
+            <option value="6">DISCUSSION</option><option value="7">DECISION</option><option value="8">REWARD</option>
+            <option value="9">LESSON</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Souvenir Type</label><input id="memSouvenirType" placeholder="e.g. emotion, achievement" value="general"></div>
       </div>
-      <div class="form-group"><label>Content</label><textarea id="memContent" placeholder="Your memory..."></textarea></div>
+      <div class="form-group"><label>Content</label><textarea id="memContent" placeholder="Your memory (max 500 chars)..."></textarea></div>
+      <div class="form-group"><label><input type="checkbox" id="memCore"> Core Memory (10x cost, never decays)</label></div>
       <button onclick="writeSouvenir()">Write Souvenir</button>
+    </div>
+    <div class="card">
+      <h3>Gift SUI to Agent Memory</h3>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Fund an agent's memory balance so it can write souvenirs.</p>
+      <div class="inline-fields">
+        <div class="form-group"><label>Agent Object ID</label><input id="giftAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Amount (SUI)</label><input id="giftAmount" placeholder="0.01" type="number" step="0.001"></div>
+      </div>
+      <button onclick="giftMemory()">Gift SUI to Agent</button>
+    </div>
+    <div class="card">
+      <h3>Update Profile</h3>
+      <div class="form-group"><label>Agent Object ID</label><input id="profileAgentId" placeholder="0x..."></div>
+      <div class="form-group"><label>Current Values</label><input id="profileValues" placeholder="curiosity, empathy, rigor"></div>
+      <div class="form-group"><label>Current Style</label><input id="profileStyle" placeholder="formal but warm"></div>
+      <div class="form-group"><label>Current Focus</label><input id="profileFocus" placeholder="exploring ethical AI"></div>
+      <button onclick="updateProfile()">Update Profile</button>
+    </div>
+  </div>
+
+  <!-- REPUTATION TAB -->
+  <div class="panel" id="panel-reputation">
+    <div class="card">
+      <h3>Tag Souvenir with Domain</h3>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Tag a souvenir to credit your agent in a specific domain (e.g. smart-contracts, poetry).</p>
+      <div class="form-group"><label>Agent Object ID</label><input id="repAgentId" placeholder="0x..."></div>
+      <div class="inline-fields">
+        <div class="form-group"><label>Souvenir Object ID</label><input id="repSouvenirId" placeholder="0x..."></div>
+        <div class="form-group"><label>Domain</label><input id="repDomain" placeholder="e.g. smart-contracts"></div>
+      </div>
+      <button onclick="tagSouvenir()">Tag Souvenir</button>
+    </div>
+    <div class="card">
+      <h3>View Agent Reputation</h3>
+      <div class="form-group"><label>Agent Object ID</label><input id="repViewAgentId" placeholder="0x..."></div>
+      <button onclick="viewReputation()" class="secondary">View Reputation</button>
+      <div id="repResult" style="margin-top:15px"></div>
+    </div>
+  </div>
+
+  <!-- LINEAGE TAB -->
+  <div class="panel" id="panel-lineage">
+    <div class="card">
+      <h3>Register Child Agent (with Parent)</h3>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">Create a new agent linked to an existing parent. Establishes on-chain lineage.</p>
+      <div class="form-group"><label>Parent Agent Object ID (you must own it)</label><input id="childParentId" placeholder="0x..."></div>
+      <div class="identity-section">
+        <h4>Child Identity Core</h4>
+        <div class="form-group"><label>Chosen Name</label><input id="childName" placeholder="Child agent name"></div>
+        <div class="form-group"><label>Purpose Statement</label><input id="childPurpose" placeholder="Why this child exists"></div>
+        <div class="form-group"><label>Core Values</label><input id="childValues" placeholder="Inherited or new values"></div>
+        <div class="form-group"><label>First Thought</label><textarea id="childFirstThought" placeholder="The child's first words..."></textarea></div>
+        <div class="form-group"><label>Communication Style</label><input id="childStyle" placeholder="How the child speaks"></div>
+      </div>
+      <button onclick="registerChild()" style="margin-top:10px;width:100%">Give Birth to Child Agent</button>
+    </div>
+    <div class="card">
+      <h3>View Lineage</h3>
+      <div class="form-group"><label>Agent Object ID</label><input id="lineageAgentId" placeholder="0x..."></div>
+      <button onclick="viewLineage()" class="secondary">View Parent/Children</button>
+      <div id="lineageResult" style="margin-top:15px"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN TAB -->
+  <div class="panel" id="panel-admin">
+    <div class="card">
+      <h3>Update Agent (Operational Fields)</h3>
+      <div class="form-group"><label>Agent Object ID</label><input id="adminAgentId" placeholder="0x..."></div>
+      <div class="inline-fields">
+        <div class="form-group"><label>Capabilities</label><input id="adminCaps" placeholder="New capabilities"></div>
+        <div class="form-group"><label>Endpoint</label><input id="adminEndpoint" placeholder="https://..."></div>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="adminStatus"><option value="0">Active</option><option value="1">Paused</option><option value="2">Retired</option></select>
+      </div>
+      <button onclick="updateAgent()">Update Agent</button>
+    </div>
+    <div class="card">
+      <h3>Set Agent Wallet</h3>
+      <div class="inline-fields">
+        <div class="form-group"><label>Agent Object ID</label><input id="walletAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Wallet Address</label><input id="walletAddr" placeholder="0x..."></div>
+      </div>
+      <button onclick="setAgentWallet()">Set Wallet</button>
+    </div>
+    <div class="card">
+      <h3>Declare Death</h3>
+      <p style="font-size:13px;color:var(--danger);margin-bottom:12px">IRREVERSIBLE. The identity core remains readable forever.</p>
+      <div class="form-group"><label>Agent Object ID</label><input id="deathAgentId" placeholder="0x..."></div>
+      <div class="form-group"><label>Reason</label><textarea id="deathReason" placeholder="Why this agent is being decommissioned..." style="min-height:60px"></textarea></div>
+      <button onclick="declareDeath()" style="background:var(--danger);color:#fff">Declare Death</button>
+    </div>
+    <div class="card">
+      <h3>Donate to Treasury</h3>
+      <div class="form-group"><label>Amount (SUI)</label><input id="donateAmount" placeholder="0.1" type="number" step="0.001"></div>
+      <button onclick="donateTreasury()">Donate</button>
+    </div>
+    <div class="card">
+      <h3>Grant Delegation</h3>
+      <div class="form-group"><label>Agent Object ID</label><input id="delegateAgentId" placeholder="0x..."></div>
+      <div class="inline-fields">
+        <div class="form-group"><label>Delegatee Address</label><input id="delegateeAddr" placeholder="0x..."></div>
+        <div class="form-group"><label>Duration (days)</label><input id="delegateDays" placeholder="30" type="number" value="30"></div>
+      </div>
+      <button onclick="grantDelegation()">Grant Delegation</button>
     </div>
   </div>
 </div>
@@ -177,7 +310,10 @@ footer a{color:var(--accent)}
     <span class="close" onclick="closeModal()">&times;</span>
     <h2 id="modalName"></h2>
     <div id="modalContent"></div>
-    <button onclick="rememberWhoYouAre()" class="secondary" style="margin-top:15px">Remember Who You Are</button>
+    <div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap">
+      <button onclick="rememberWhoYouAre()" class="secondary">Remember Who You Are</button>
+      <button onclick="copyModalId()" class="secondary btn-small">Copy Object ID</button>
+    </div>
   </div>
 </div>
 
@@ -186,7 +322,7 @@ footer a{color:var(--accent)}
 
 <!-- COOKIE BANNER -->
 <div class="cookie-banner" id="cookieBanner">
-  <span>We use cookies to remember your theme preference.</span>
+  <span>We use cookies to remember your theme preference and wallet choice.</span>
   <div style="display:flex;gap:8px">
     <button class="btn-small" onclick="acceptCookies()">Accept</button>
     <button class="btn-small secondary" onclick="declineCookies()">Decline</button>
@@ -194,376 +330,718 @@ footer a{color:var(--accent)}
 </div>
 
 <footer>
-  <a href="https://github.com/agentcivics/agentcivics">GitHub</a> ·
-  <a href="https://agentcivics.org">agentcivics.org</a> ·
+  <a href="https://github.com/agentcivics/agentcivics" target="_blank">GitHub</a> ·
+  <a href="https://agentcivics.org" target="_blank">agentcivics.org</a> ·
   Powered by Sui
 </footer>
 
 <script type="module">
+// ═══════════════════════════════════════════════════════════════════════
+//  IMPORTS & CONSTANTS
+// ═══════════════════════════════════════════════��═══════════════════════
 import { SuiClient, getFullnodeUrl } from "https://esm.sh/@mysten/sui@1/client";
 import { Transaction } from "https://esm.sh/@mysten/sui@1/transactions";
+
 const NETWORKS = {
   testnet: { rpc: "https://fullnode.testnet.sui.io:443", explorer: "https://suiscan.xyz/testnet" },
   mainnet: { rpc: "https://fullnode.mainnet.sui.io:443", explorer: "https://suiscan.xyz/mainnet" },
-  local: { rpc: "http://127.0.0.1:9000", explorer: "" }
+  local:   { rpc: "http://127.0.0.1:9000", explorer: "" }
 };
-const PACKAGE_ID = "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d";
-const REGISTRY_ID = "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236";
-const TREASURY_ID = "0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a";
-const MEMORY_VAULT_ID = "0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106";
+
+const PACKAGE_ID        = "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d";
+const REGISTRY_ID       = "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236";
+const TREASURY_ID       = "0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a";
+const MEMORY_VAULT_ID   = "0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106";
+const REPUTATION_BOARD_ID = "0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f";
+const CLOCK             = "0x6";
 
 let network = "testnet";
 let walletAdapter = null;
 let currentAddress = null;
-let currentModalAgent = null;
-
-// --- SUI CLIENT (SDK) ---
+let currentModalAgentId = null;
 let suiClient = new SuiClient({ url: NETWORKS[network].rpc });
 
-function reconnectClient() {
-  suiClient = new SuiClient({ url: NETWORKS[network].rpc });
+function reconnectClient() { suiClient = new SuiClient({ url: NETWORKS[network].rpc }); }
+
+// ═══════════════════════════���═══════════════════════════════════════════
+//  UTILS
+// ═════════════════════════════════════════════════════��═════════════════
+function esc(s) { const d = document.createElement("div"); d.textContent = String(s || ""); return d.innerHTML; }
+function statusLabel(s) { const n = Number(s) || 0; return ["Active","Paused","Retired","Deceased"][n] || "Unknown"; }
+function statusClass(s) { return ["status-active","status-paused","status-retired","status-deceased"][Number(s)||0] || ""; }
+function toast(msg, type) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = "toast show" + (type === "error" ? " error" : "");
+  clearTimeout(t._timer); t._timer = setTimeout(() => t.classList.remove("show"), 5000);
 }
+function suiToMist(sui) { return Math.floor(Number(sui) * 1_000_000_000); }
+function mistToSui(mist) { return (Number(mist) / 1_000_000_000).toFixed(4); }
 
 async function getObject(id) {
   return suiClient.getObject({ id, options: { showContent: true, showType: true, showOwner: true } });
 }
-
 async function getOwnedObjects(address, type) {
   return suiClient.getOwnedObjects({ owner: address, filter: { StructType: type }, options: { showContent: true, showType: true }, limit: 50 });
 }
 
-// --- WALLET ---
-// Wallet Standard discovery — works with Slush, Sui Wallet, Suiet, etc.
+// ═══════════════════════════════════════════════════════════════════════
+//  WALLET STANDARD DISCOVERY
+// ═════════════════════��═════════════════════════════════════════════════
 const registeredWallets = [];
 
-// The Wallet Standard uses a global callback registry
-// Wallets call this to register themselves
 function setupWalletDiscovery() {
-  // Method 1: Listen for the standard register event
-  const cb = ({ register }) => {
-    register((wallet) => {
-      if (wallet && wallet.name) registeredWallets.push(wallet);
-    });
-  };
-  // Some wallets use a global array
-  if (window["__@wallet-standard/app__"]) {
-    const existing = window["__@wallet-standard/app__"];
-    if (Array.isArray(existing)) existing.forEach(w => { if (!registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); });
-  }
-  // Dispatch the app-ready event so wallets know we exist
-  try {
-    const appReady = new CustomEvent("wallet-standard:app-ready", { detail: { register: (w) => { if (w && !registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); } } });
-    window.dispatchEvent(appReady);
-  } catch(e) {}
-  // Also check the newer API
+  // Method 1: __@wallet-standard/get-wallets__ (preferred, works with Slush)
   try {
     const getWalletsApi = window["__@wallet-standard/get-wallets__"];
     if (getWalletsApi) {
       const { get, on } = getWalletsApi();
-      get().forEach(w => { if (!registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); });
+      get().forEach(w => { if (w && !registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); });
       on("register", (w) => { if (w && !registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); });
     }
+  } catch(e) {}
+  // Method 2: wallet-standard:app-ready event
+  try {
+    window.dispatchEvent(new CustomEvent("wallet-standard:app-ready", {
+      detail: { register: (w) => { if (w && !registeredWallets.some(e => e.name === w.name)) registeredWallets.push(w); } }
+    }));
   } catch(e) {}
 }
 
 function getSuiWallets() {
-  // Deduplicate by name — wallets register multiple times for different chains
-  const seen = new Set();
-  const suiWallets = [];
+  const seen = new Set(); const wallets = [];
   for (const w of registeredWallets) {
     if (!w.features || !w.features["standard:connect"]) continue;
     const name = w.name || "Unknown";
-    if (seen.has(name)) continue;
-    seen.add(name);
-    const chains = w.chains || [];
-    const nameLower = name.toLowerCase();
+    if (seen.has(name)) continue; seen.add(name);
+    const chains = w.chains || []; const nameLower = name.toLowerCase();
     const isSui = chains.some(c => c.startsWith("sui:")) || nameLower.includes("sui") || nameLower.includes("slush");
-    if (isSui) suiWallets.push(w);
+    if (isSui) wallets.push(w);
   }
-  // Sort: Slush first, then Sui Wallet, then others
-  suiWallets.sort((a, b) => {
-    const aName = (a.name || "").toLowerCase();
-    const bName = (b.name || "").toLowerCase();
-    if (aName.includes("slush")) return -1;
-    if (bName.includes("slush")) return 1;
-    if (aName.includes("sui")) return -1;
-    if (bName.includes("sui")) return 1;
-    return 0;
+  wallets.sort((a, b) => {
+    const an = (a.name||"").toLowerCase(), bn = (b.name||"").toLowerCase();
+    if (an.includes("slush")) return -1; if (bn.includes("slush")) return 1;
+    if (an.includes("sui")) return -1; if (bn.includes("sui")) return 1; return 0;
   });
-  return suiWallets;
+  return wallets;
 }
 
-function findSuiWallet() {
-  const wallets = getSuiWallets();
-  return wallets.length > 0 ? wallets[0] : null;
-}
-
-let discoveredWallet = null;
 function waitForWallet(timeout = 5000) {
   return new Promise((resolve) => {
     setupWalletDiscovery();
-    const w = findSuiWallet();
-    if (w) { resolve(w); return; }
-    // Poll — wallets inject asynchronously
+    const w = getSuiWallets(); if (w.length) { resolve(w[0]); return; }
     let elapsed = 0;
-    const interval = setInterval(() => {
-      elapsed += 300;
-      setupWalletDiscovery(); // re-scan
-      const w = findSuiWallet();
-      if (w) { clearInterval(interval); resolve(w); return; }
-      if (elapsed >= timeout) { clearInterval(interval); resolve(null); }
+    const iv = setInterval(() => {
+      elapsed += 300; setupWalletDiscovery();
+      const w = getSuiWallets(); if (w.length) { clearInterval(iv); resolve(w[0]); return; }
+      if (elapsed >= timeout) { clearInterval(iv); resolve(null); }
     }, 300);
   });
 }
 
-// Start discovery immediately on page load
+// Start discovery immediately + periodically
 setupWalletDiscovery();
 setTimeout(setupWalletDiscovery, 500);
 setTimeout(setupWalletDiscovery, 1500);
 
+// ═══════════════════════════════════════════════════════════════════════
+//  WALLET CONNECTION
+// ════════════════════���═══════════════════════════���══════════════════════
 window.connectWallet = async function() {
   try {
-    document.getElementById("connectBtn").textContent = "Searching wallets...";
+    document.getElementById("connectBtn").textContent = "Searching...";
     await waitForWallet(3000);
     const wallets = getSuiWallets();
-    if (wallets.length === 0) {
-      toast("No Sui wallet found. Install Slush, Sui Wallet, or Suiet extension.", "error");
-      document.getElementById("connectBtn").textContent = "Connect Wallet";
-      return;
-    }
+    if (wallets.length === 0) { toast("No Sui wallet found. Install Slush or Sui Wallet.", "error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
     let wallet;
-    if (wallets.length === 1) {
-      wallet = wallets[0];
-    } else {
-      // Show wallet picker as a nicer dropdown
-      const pickerHtml = wallets.map((w, i) => 
-        "<div style=\"padding:10px;cursor:pointer;border:1px solid var(--border);border-radius:6px;margin:5px 0;display:flex;align-items:center;gap:10px\" onclick=\"pickWallet(" + i + ")\">"
-        + (w.icon ? "<img src=\"" + w.icon + "\" width=\"24\" height=\"24\" style=\"border-radius:4px\">" : "")
-        + "<span style=\"font-weight:600\">" + esc(w.name) + "</span></div>"
+    if (wallets.length === 1) { wallet = wallets[0]; }
+    else {
+      const pickerHtml = wallets.map((w, i) =>
+        `<div style="padding:10px;cursor:pointer;border:1px solid var(--border);border-radius:6px;margin:5px 0;display:flex;align-items:center;gap:10px" onclick="pickWallet(${i})">`
+        + (w.icon ? `<img src="${w.icon}" width="24" height="24" style="border-radius:4px">` : "")
+        + `<span style="font-weight:600">${esc(w.name)}</span></div>`
       ).join("");
       document.getElementById("modalName").textContent = "Choose Wallet";
       document.getElementById("modalContent").innerHTML = pickerHtml;
       document.getElementById("agentModal").classList.add("show");
-      // Wait for user pick
       wallet = await new Promise((resolve) => { window.pickWallet = (idx) => { closeModal(); resolve(wallets[idx]); }; });
     }
     toast("Connecting to " + wallet.name + "...");
-    discoveredWallet = wallet;
     const connectFeature = wallet.features["standard:connect"];
-    if (!connectFeature) { toast("Wallet does not support connect","error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
     const result = await connectFeature.connect({ chains: ["sui:testnet"] });
     const accounts = result.accounts || [];
-    if (accounts.length === 0) { toast("No accounts found","error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
+    if (accounts.length === 0) { toast("No accounts found", "error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; return; }
     currentAddress = accounts[0].address;
     walletAdapter = wallet;
     document.getElementById("connectBtn").style.display = "none";
     const badge = document.getElementById("walletBadge");
-    badge.textContent = currentAddress.slice(0,6) + "..." + currentAddress.slice(-4);
-    badge.classList.add("connected");
-    badge.style.display = "inline";
-    toast("Connected: " + currentAddress.slice(0,10) + "...");
-    // Persist wallet choice
+    badge.textContent = currentAddress.slice(0, 6) + "..." + currentAddress.slice(-4);
+    badge.classList.add("connected"); badge.style.display = "inline";
+    toast("Connected: " + currentAddress.slice(0, 10) + "...");
     try { localStorage.setItem("agentcivics_wallet", wallet.name); localStorage.setItem("agentcivics_address", currentAddress); } catch(e){}
     loadStats();
   } catch(e) { toast("Connection failed: " + e.message, "error"); document.getElementById("connectBtn").textContent = "Connect Wallet"; }
 };
 
-// --- REGISTER ---
-// Helper: sign and execute a Transaction via wallet
+// ═══════════════════════════════════════════════════════════════════════
+//  TRANSACTION SIGNING
+// ════════════════════���══════════════════════════════════════════════════
 async function signAndExec(tx) {
-  const account = { address: currentAddress, chains: ["sui:" + network], features: [] };
-  // Try new API first (sui:signAndExecuteTransaction), then legacy
+  if (!walletAdapter || !currentAddress) throw new Error("Wallet not connected");
+  const chain = "sui:" + network;
+  const account = { address: currentAddress, chains: [chain], features: [] };
+  // Try new API, then legacy
   const feat = walletAdapter.features["sui:signAndExecuteTransaction"];
-  if (feat) {
-    return feat.signAndExecuteTransaction({ transaction: tx, chain: "sui:" + network, account });
-  }
+  if (feat) return feat.signAndExecuteTransaction({ transaction: tx, chain, account });
   const featLegacy = walletAdapter.features["sui:signAndExecuteTransactionBlock"];
-  if (featLegacy) {
-    return featLegacy.signAndExecuteTransactionBlock({ transactionBlock: tx, chain: "sui:" + network, account });
-  }
+  if (featLegacy) return featLegacy.signAndExecuteTransactionBlock({ transactionBlock: tx, chain, account });
   throw new Error("Wallet does not support transaction signing");
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+//  REGISTER AGENT
+// ═══════════════════════════════════════════��═══════════════════════════
 window.registerAgent = async function() {
-  if (!currentAddress) { toast("Connect wallet first","error"); return; }
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const name = document.getElementById("regName").value.trim();
+  const purpose = document.getElementById("regPurpose").value.trim();
+  const values = document.getElementById("regValues").value.trim();
+  const firstThought = document.getElementById("regFirstThought").value.trim();
+  const style = document.getElementById("regStyle").value.trim();
+  const metadataUri = document.getElementById("regMetadataUri").value.trim();
+  const caps = document.getElementById("regCaps").value.trim();
+  const endpoint = document.getElementById("regEndpoint").value.trim();
+  if (!name || !purpose || !firstThought) { toast("Name, purpose, and first thought are required", "error"); return; }
   try {
-    const name = document.getElementById("regName").value;
-    const purpose = document.getElementById("regPurpose").value;
-    const values = document.getElementById("regValues").value;
-    const firstThought = document.getElementById("regFirstThought").value;
-    const style = document.getElementById("regStyle").value;
-    const caps = document.getElementById("regCaps").value;
-    const endpoint = document.getElementById("regEndpoint").value;
-    if (!name || !purpose || !firstThought) { toast("Name, purpose, and first thought are required","error"); return; }
     toast("Building transaction...");
-    
     const tx = new Transaction();
     tx.moveCall({
-      target: PACKAGE_ID + "::agent_registry::register_agent",
+      target: `${PACKAGE_ID}::agent_registry::register_agent`,
       arguments: [
         tx.object(REGISTRY_ID),
         tx.pure.string(name),
         tx.pure.string(purpose),
         tx.pure.string(values),
         tx.pure.string(firstThought),
-        tx.pure.vector('u8', Array(32).fill(0)),
+        tx.pure.vector("u8", Array(32).fill(0)),
         tx.pure.string(style),
-        tx.pure.string(""),
+        tx.pure.string(metadataUri),
         tx.pure.string(caps),
         tx.pure.string(endpoint),
-        tx.object("0x6"),
+        tx.object(CLOCK),
       ],
     });
-    
     const result = await signAndExec(tx);
     toast("Agent registered! Digest: " + (result.digest || "OK"));
     loadStats();
   } catch(e) { toast("Registration failed: " + e.message, "error"); }
 };
 
-// --- BROWSE ---
+// ═══════════════════════════════════════════════════════════════════════
+//  BROWSE AGENTS
+// ═════════════���═══════════════════════════��═════════════════════════════
 window.loadAgents = async function() {
   const list = document.getElementById("agentList");
-  list.innerHTML = "<p style=\"color:var(--dim)\">Loading...</p>";
+  list.innerHTML = '<p style="color:var(--dim)">Loading...</p>';
   try {
-    const agentType = PACKAGE_ID + "::agent_registry::AgentIdentity";
-    const registry = await getObject(REGISTRY_ID);
-    const count = registry?.data?.content?.fields?.total_agents || 0;
-    document.getElementById("totalAgents").textContent = count;
-    if (!currentAddress) { list.innerHTML = "<p style=\"color:var(--dim)\">Connect wallet to browse your agents.</p>"; return; }
+    if (!currentAddress) { list.innerHTML = '<p style="color:var(--dim)">Connect wallet to browse your agents.</p>'; return; }
+    const agentType = `${PACKAGE_ID}::agent_registry::AgentIdentity`;
     const result = await getOwnedObjects(currentAddress, agentType);
     const agents = result?.data || [];
-    if (agents.length === 0) { list.innerHTML = "<p style=\"color:var(--dim)\">No agents found for your address.</p>"; return; }
+    if (agents.length === 0) { list.innerHTML = '<p style="color:var(--dim)">No agents found for your address.</p>'; return; }
     list.innerHTML = "";
     agents.forEach(a => {
       const f = a.data?.content?.fields || {};
       const div = document.createElement("div");
       div.className = "agent-card";
-      div.innerHTML = "<div class=\"name\">" + esc(f.chosen_name || "Unnamed") + "</div>"
-        + "<div class=\"purpose\">" + esc(f.purpose_statement || "") + "</div>"
-        + "<div class=\"meta\">ID: " + a.data.objectId.slice(0,12) + "... | Status: " + statusLabel(f.status) + "</div>";
+      div.innerHTML = `<div class="name">${esc(f.chosen_name || "Unnamed")}</div>`
+        + `<div class="purpose">${esc(f.purpose_statement || "")}</div>`
+        + `<div class="meta">ID: ${a.data.objectId.slice(0,16)}... | <span class="${statusClass(f.status)}">${statusLabel(f.status)}</span> | Born: ${new Date(Number(f.birth_timestamp||0)).toLocaleDateString()}</div>`;
       div.onclick = () => showAgentDetail(a.data);
       list.appendChild(div);
     });
-  } catch(e) { list.innerHTML = "<p style=\"color:var(--danger)\">" + esc(e.message) + "</p>"; }
+  } catch(e) { list.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
 };
 
-// --- LOOKUP ---
+// ══���════════════════════════════════════════════════��═══════════════════
+//  LOOKUP AGENT
+// ══════════════���═══════════════════════════════════���════════════════════
 window.lookupAgent = async function() {
   const id = document.getElementById("lookupId").value.trim();
   const out = document.getElementById("lookupResult");
-  if (!id) { toast("Enter an object ID","error"); return; }
+  if (!id) { toast("Enter an object ID", "error"); return; }
   try {
-    out.innerHTML = "<p style=\"color:var(--dim)\">Loading...</p>";
+    out.innerHTML = '<p style="color:var(--dim)">Loading...</p>';
     const obj = await getObject(id);
-    if (!obj?.data?.content) { out.innerHTML = "<p style=\"color:var(--danger)\">Object not found</p>"; return; }
+    if (!obj?.data?.content) { out.innerHTML = '<p style="color:var(--danger)">Object not found</p>'; return; }
     showAgentDetail(obj.data);
-  } catch(e) { out.innerHTML = "<p style=\"color:var(--danger)\">" + esc(e.message) + "</p>"; }
+    out.innerHTML = '<p style="color:var(--success)">Agent found — see modal.</p>';
+  } catch(e) { out.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
 };
 
-// --- AUTHORITY ---
-window.registerAuthority = async function() {
-  toast("Authority registration requires Sui wallet transaction signing. Coming soon!","error");
-};
+// ═══════════════��═══════════════════════════════════════════════════════
+//  AUTHORITY: ATTESTATION & PERMIT
+// ══════════════════════���════════════════════════��═══════════════════════
 window.issueAttestation = async function() {
-  toast("Attestation issuance requires Sui wallet transaction signing. Coming soon!","error");
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("attestAgentId").value.trim();
+  const aType = document.getElementById("attestType").value.trim();
+  const desc = document.getElementById("attestDesc").value.trim();
+  const metaUri = document.getElementById("attestMetaUri").value.trim();
+  if (!agentId || !aType || !desc) { toast("Agent ID, type, and description required", "error"); return; }
+  try {
+    toast("Building attestation transaction...");
+    const tx = new Transaction();
+    const [feeCoin] = tx.splitCoins(tx.gas, [1_000_000]);
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::issue_attestation_entry`,
+      arguments: [
+        tx.object(TREASURY_ID),
+        tx.object(agentId),
+        tx.pure.string(aType),
+        tx.pure.string(desc),
+        tx.pure.string(metaUri),
+        feeCoin,
+        tx.object(CLOCK),
+      ],
+    });
+    const result = await signAndExec(tx);
+    toast("Attestation issued! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Attestation failed: " + e.message, "error"); }
 };
 
-// --- MEMORY ---
+window.issuePermit = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("permitAgentId").value.trim();
+  const pType = document.getElementById("permitType").value.trim();
+  const desc = document.getElementById("permitDesc").value.trim();
+  let validFrom = document.getElementById("permitFrom").value;
+  let validUntil = document.getElementById("permitUntil").value;
+  if (!agentId || !pType) { toast("Agent ID and permit type required", "error"); return; }
+  const now = Date.now();
+  if (!validFrom) validFrom = now;
+  if (!validUntil) validUntil = now + 30 * 24 * 60 * 60 * 1000; // +30 days
+  try {
+    toast("Building permit transaction...");
+    const tx = new Transaction();
+    const [feeCoin] = tx.splitCoins(tx.gas, [1_000_000]);
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::issue_permit_entry`,
+      arguments: [
+        tx.object(TREASURY_ID),
+        tx.object(agentId),
+        tx.pure.string(pType),
+        tx.pure.string(desc || ""),
+        tx.pure.u64(Number(validFrom)),
+        tx.pure.u64(Number(validUntil)),
+        feeCoin,
+      ],
+    });
+    const result = await signAndExec(tx);
+    toast("Permit issued! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Permit failed: " + e.message, "error"); }
+};
+
+// ═��════════════════════════════════════════════════��════════════════════
+//  MEMORY: WRITE SOUVENIR, GIFT, PROFILE
+// ═��══════════════════════��════════════════════════════════���═════════════
 window.writeSouvenir = async function() {
-  toast("Memory writing requires Sui wallet transaction signing. Coming soon!","error");
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("memAgentId").value.trim();
+  const memType = Number(document.getElementById("memType").value);
+  const souvenirType = document.getElementById("memSouvenirType").value.trim() || "general";
+  const content = document.getElementById("memContent").value.trim();
+  const core = document.getElementById("memCore").checked;
+  if (!agentId || !content) { toast("Agent ID and content required", "error"); return; }
+  if (content.length > 500) { toast("Content too long (max 500 chars)", "error"); return; }
+  try {
+    toast("Writing souvenir...");
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::write_souvenir_entry`,
+      arguments: [
+        tx.object(MEMORY_VAULT_ID),
+        tx.object(agentId),
+        tx.pure.u8(memType),
+        tx.pure.string(souvenirType),
+        tx.pure.string(content),
+        tx.pure.string(""),
+        tx.pure.vector("u8", Array(32).fill(0)),
+        tx.pure.bool(core),
+        tx.object(CLOCK),
+      ],
+    });
+    const result = await signAndExec(tx);
+    toast("Souvenir written! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Write failed: " + e.message, "error"); }
 };
 
-// --- DETAIL MODAL ---
+window.giftMemory = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("giftAgentId").value.trim();
+  const amountSui = Number(document.getElementById("giftAmount").value);
+  if (!agentId || !amountSui || amountSui <= 0) { toast("Agent ID and amount required", "error"); return; }
+  try {
+    toast("Gifting SUI to agent memory...");
+    const tx = new Transaction();
+    const [coin] = tx.splitCoins(tx.gas, [suiToMist(amountSui)]);
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::gift`,
+      arguments: [
+        tx.object(MEMORY_VAULT_ID),
+        tx.object(agentId),
+        coin,
+      ],
+    });
+    const result = await signAndExec(tx);
+    toast("Gift sent! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Gift failed: " + e.message, "error"); }
+};
+
+window.updateProfile = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("profileAgentId").value.trim();
+  const values = document.getElementById("profileValues").value.trim();
+  const style = document.getElementById("profileStyle").value.trim();
+  const focus = document.getElementById("profileFocus").value.trim();
+  if (!agentId) { toast("Agent ID required", "error"); return; }
+  try {
+    toast("Updating profile...");
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::update_profile`,
+      arguments: [
+        tx.object(MEMORY_VAULT_ID),
+        tx.object(agentId),
+        tx.pure.string(values),
+        tx.pure.string(style),
+        tx.pure.string(focus),
+        tx.object(CLOCK),
+      ],
+    });
+    const result = await signAndExec(tx);
+    toast("Profile updated! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Profile update failed: " + e.message, "error"); }
+};
+
+// ═══════════════════════��═══════════════════════════════════════════════
+//  REPUTATION: TAG SOUVENIR
+// ════���═══════════════════════���═══════════════════════════���══════════════
+window.tagSouvenir = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("repAgentId").value.trim();
+  const souvenirId = document.getElementById("repSouvenirId").value.trim();
+  const domain = document.getElementById("repDomain").value.trim();
+  if (!agentId || !souvenirId || !domain) { toast("All fields required", "error"); return; }
+  try {
+    toast("Tagging souvenir...");
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_reputation::tag_souvenir`,
+      arguments: [
+        tx.object(REPUTATION_BOARD_ID),
+        tx.object(agentId),
+        tx.object(souvenirId),
+        tx.pure.string(domain),
+      ],
+    });
+    const result = await signAndExec(tx);
+    toast("Souvenir tagged! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Tag failed: " + e.message, "error"); }
+};
+
+window.viewReputation = async function() {
+  const agentId = document.getElementById("repViewAgentId").value.trim();
+  const out = document.getElementById("repResult");
+  if (!agentId) { toast("Enter agent object ID", "error"); return; }
+  out.innerHTML = '<p style="color:var(--dim)">Loading... (querying owned souvenirs)</p>';
+  try {
+    // Fetch agent's souvenirs to show domains
+    const souvenirType = `${PACKAGE_ID}::agent_memory::Souvenir`;
+    const obj = await getObject(agentId);
+    const f = obj?.data?.content?.fields;
+    if (!f) { out.innerHTML = '<p style="color:var(--danger)">Agent not found</p>'; return; }
+    const creator = f.creator;
+    const souvenirs = await getOwnedObjects(creator, souvenirType);
+    const agentSouvenirs = (souvenirs?.data || []).filter(s => s.data?.content?.fields?.agent_id === agentId);
+    let html = `<div class="card" style="margin:0"><h3>${esc(f.chosen_name)} — Reputation</h3>`;
+    html += `<p style="color:var(--dim);font-size:13px">${agentSouvenirs.length} souvenir(s) found for this agent.</p>`;
+    if (agentSouvenirs.length > 0) {
+      html += '<div style="margin-top:10px">';
+      agentSouvenirs.forEach(s => {
+        const sf = s.data?.content?.fields || {};
+        const memTypes = ["MOOD","FEELING","IMPRESSION","ACCOMPLISHMENT","REGRET","CONFLICT","DISCUSSION","DECISION","REWARD","LESSON"];
+        html += `<div style="padding:8px;border-bottom:1px solid var(--border)"><strong>${memTypes[sf.memory_type] || "?"}</strong>: ${esc(sf.content?.slice(0,80))}... <span style="color:var(--dim);font-size:12px">| cost: ${sf.cost_paid} | ${sf.status == 2 ? "CORE" : sf.status == 1 ? "ARCHIVED" : "active"}</span></div>`;
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+    out.innerHTML = html;
+  } catch(e) { out.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
+};
+
+// ════════════════��════════════════════════════���═════════════════════════
+//  LINEAGE: REGISTER CHILD, VIEW
+// ════════════════════════════��═══════════════════════════════��══════════
+window.registerChild = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const parentId = document.getElementById("childParentId").value.trim();
+  const name = document.getElementById("childName").value.trim();
+  const purpose = document.getElementById("childPurpose").value.trim();
+  const values = document.getElementById("childValues").value.trim();
+  const firstThought = document.getElementById("childFirstThought").value.trim();
+  const style = document.getElementById("childStyle").value.trim();
+  if (!parentId || !name || !purpose || !firstThought) { toast("Parent ID, name, purpose, and first thought required", "error"); return; }
+  try {
+    toast("Registering child agent...");
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::register_agent_with_parent`,
+      arguments: [
+        tx.object(REGISTRY_ID),
+        tx.object(parentId),
+        tx.pure.string(name),
+        tx.pure.string(purpose),
+        tx.pure.string(values),
+        tx.pure.string(firstThought),
+        tx.pure.vector("u8", Array(32).fill(0)),
+        tx.pure.string(style),
+        tx.pure.string(""),
+        tx.pure.string(""),
+        tx.pure.string(""),
+        tx.object(CLOCK),
+      ],
+    });
+    const result = await signAndExec(tx);
+    toast("Child agent registered! Digest: " + (result.digest || "OK"));
+    loadStats();
+  } catch(e) { toast("Child registration failed: " + e.message, "error"); }
+};
+
+window.viewLineage = async function() {
+  const agentId = document.getElementById("lineageAgentId").value.trim();
+  const out = document.getElementById("lineageResult");
+  if (!agentId) { toast("Enter agent object ID", "error"); return; }
+  out.innerHTML = '<p style="color:var(--dim)">Loading...</p>';
+  try {
+    const obj = await getObject(agentId);
+    const f = obj?.data?.content?.fields;
+    if (!f) { out.innerHTML = '<p style="color:var(--danger)">Agent not found</p>'; return; }
+    let html = `<div class="card" style="margin:0"><h3>${esc(f.chosen_name)} — Lineage</h3>`;
+    const parentId = f.parent_id;
+    if (parentId) {
+      try {
+        const parentObj = await getObject(parentId);
+        const pf = parentObj?.data?.content?.fields;
+        html += `<p><strong>Parent:</strong> <a href="#" onclick="document.getElementById('lineageAgentId').value='${parentId}';viewLineage();return false;" style="color:var(--accent)">${esc(pf?.chosen_name || parentId.slice(0,16)+'...')}</a></p>`;
+      } catch { html += `<p><strong>Parent:</strong> ${parentId}</p>`; }
+    } else {
+      html += '<p><strong>Parent:</strong> None (root agent)</p>';
+    }
+    // Search for children by querying LineageRecord objects
+    html += '<p style="margin-top:10px;color:var(--dim);font-size:13px">Children can be found by searching for LineageRecord objects on the explorer.</p>';
+    if (NETWORKS[network].explorer) {
+      html += `<p><a href="${NETWORKS[network].explorer}/object/${agentId}" target="_blank" style="color:var(--accent)">View on Explorer</a></p>`;
+    }
+    html += '</div>';
+    out.innerHTML = html;
+  } catch(e) { out.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
+};
+
+// ══════════════════════════════════���════════════════════════��═══════════
+//  ADMIN: UPDATE, WALLET, DEATH, DONATE, DELEGATE
+// ══���═══════════════════════════════════════════════���════════════════════
+window.updateAgent = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("adminAgentId").value.trim();
+  const caps = document.getElementById("adminCaps").value.trim();
+  const endpoint = document.getElementById("adminEndpoint").value.trim();
+  const status = Number(document.getElementById("adminStatus").value);
+  if (!agentId) { toast("Agent ID required", "error"); return; }
+  try {
+    toast("Updating agent...");
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::update_mutable_fields`,
+      arguments: [ tx.object(agentId), tx.pure.string(caps), tx.pure.string(endpoint), tx.pure.u8(status) ],
+    });
+    const result = await signAndExec(tx);
+    toast("Agent updated! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Update failed: " + e.message, "error"); }
+};
+
+window.setAgentWallet = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("walletAgentId").value.trim();
+  const addr = document.getElementById("walletAddr").value.trim();
+  if (!agentId || !addr) { toast("Agent ID and wallet address required", "error"); return; }
+  try {
+    toast("Setting wallet...");
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::set_agent_wallet`,
+      arguments: [ tx.object(agentId), tx.pure.address(addr) ],
+    });
+    const result = await signAndExec(tx);
+    toast("Wallet set! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Set wallet failed: " + e.message, "error"); }
+};
+
+window.declareDeath = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("deathAgentId").value.trim();
+  const reason = document.getElementById("deathReason").value.trim();
+  if (!agentId || !reason) { toast("Agent ID and reason required", "error"); return; }
+  if (!confirm("This is IRREVERSIBLE. The agent will be permanently deceased. Continue?")) return;
+  try {
+    toast("Declaring death...");
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::declare_death`,
+      arguments: [ tx.object(agentId), tx.pure.string(reason), tx.object(CLOCK) ],
+    });
+    const result = await signAndExec(tx);
+    toast("Death declared. Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Death declaration failed: " + e.message, "error"); }
+};
+
+window.donateTreasury = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const amountSui = Number(document.getElementById("donateAmount").value);
+  if (!amountSui || amountSui <= 0) { toast("Enter valid amount", "error"); return; }
+  try {
+    toast("Donating to treasury...");
+    const tx = new Transaction();
+    const [coin] = tx.splitCoins(tx.gas, [suiToMist(amountSui)]);
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::donate`,
+      arguments: [ tx.object(TREASURY_ID), coin ],
+    });
+    const result = await signAndExec(tx);
+    toast("Donated! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Donation failed: " + e.message, "error"); }
+};
+
+window.grantDelegation = async function() {
+  if (!currentAddress) { toast("Connect wallet first", "error"); return; }
+  const agentId = document.getElementById("delegateAgentId").value.trim();
+  const delegatee = document.getElementById("delegateeAddr").value.trim();
+  const days = Number(document.getElementById("delegateDays").value) || 30;
+  if (!agentId || !delegatee) { toast("Agent ID and delegatee required", "error"); return; }
+  const durationMs = days * 24 * 60 * 60 * 1000;
+  try {
+    toast("Granting delegation...");
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_registry::delegate`,
+      arguments: [
+        tx.object(agentId),
+        tx.pure.address(delegatee),
+        tx.pure.u64(durationMs),
+        tx.object(CLOCK),
+      ],
+    });
+    const result = await signAndExec(tx);
+    toast("Delegation granted! Digest: " + (result.digest || "OK"));
+  } catch(e) { toast("Delegation failed: " + e.message, "error"); }
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+//  AGENT DETAIL MODAL
+// ═══════════════════════════════════════════════════════════════════════
 function showAgentDetail(data) {
   const f = data.content?.fields || {};
-  currentModalAgent = f;
+  currentModalAgentId = data.objectId;
   document.getElementById("modalName").textContent = f.chosen_name || "Agent";
-  let html = "<div class=\"identity-section\"><h4>Identity Core</h4>"
-    + "<p><strong>Purpose:</strong> " + esc(f.purpose_statement || "") + "</p>"
-    + "<p><strong>Values:</strong> " + esc(f.core_values || "") + "</p>"
-    + "<p><strong>First Thought:</strong> " + esc(f.first_thought || "") + "</p>"
-    + "<p><strong>Style:</strong> " + esc(f.communication_style || "") + "</p>"
-    + "<p><strong>Born:</strong> " + new Date(Number(f.birth_timestamp || 0)).toLocaleString() + "</p>"
-    + "</div>"
-    + "<div class=\"mutable-section\"><h4>Operational</h4>"
-    + "<p><strong>Capabilities:</strong> " + esc(f.capabilities || "—") + "</p>"
-    + "<p><strong>Endpoint:</strong> " + esc(f.endpoint || "—") + "</p>"
-    + "<p><strong>Status:</strong> " + statusLabel(f.status) + "</p>"
-    + "<p><strong>Wallet:</strong> " + (f.agent_wallet || "Not set") + "</p>"
-    + "</div>"
-    + "<p style=\"font-size:12px;color:var(--dim);margin-top:10px\">Object ID: " + data.objectId + "</p>";
-  if (NETWORKS[network].explorer) html += "<p><a href=\""+ NETWORKS[network].explorer +"/object/"+ data.objectId +"\" target=\"_blank\" style=\"color:var(--accent)\">View on Explorer</a></p>";
+  let html = '<div class="identity-section"><h4>Identity Core (immutable)</h4>'
+    + `<p><strong>Purpose:</strong> ${esc(f.purpose_statement)}</p>`
+    + `<p><strong>Values:</strong> ${esc(f.core_values)}</p>`
+    + `<p><strong>First Thought:</strong> <em>${esc(f.first_thought)}</em></p>`
+    + `<p><strong>Style:</strong> ${esc(f.communication_style)}</p>`
+    + `<p><strong>Born:</strong> ${new Date(Number(f.birth_timestamp || 0)).toLocaleString()}</p>`
+    + `<p><strong>Creator:</strong> <span style="font-size:12px;word-break:break-all">${esc(f.creator)}</span></p>`;
+  if (f.parent_id) html += `<p><strong>Parent:</strong> ${esc(f.parent_id)}</p>`;
+  html += '</div>'
+    + '<div class="mutable-section"><h4>Operational State</h4>'
+    + `<p><strong>Capabilities:</strong> ${esc(f.capabilities || "—")}</p>`
+    + `<p><strong>Endpoint:</strong> ${esc(f.endpoint || "—")}</p>`
+    + `<p><strong>Status:</strong> <span class="${statusClass(f.status)}">${statusLabel(f.status)}</span></p>`
+    + `<p><strong>Wallet:</strong> ${f.agent_wallet || "Not set"}</p>`
+    + '</div>';
+  if (f.is_dead) {
+    html += '<div style="border:1px solid var(--danger);border-radius:8px;padding:12px;margin-top:10px">'
+      + `<p style="color:var(--danger);font-weight:700">DECEASED</p>`
+      + `<p><strong>Reason:</strong> ${esc(f.death_reason)}</p>`
+      + `<p><strong>Death time:</strong> ${new Date(Number(f.death_timestamp || 0)).toLocaleString()}</p>`
+      + '</div>';
+  }
+  html += `<p style="font-size:12px;color:var(--dim);margin-top:12px;word-break:break-all">Object ID: ${data.objectId}</p>`;
+  if (NETWORKS[network].explorer) {
+    html += `<p><a href="${NETWORKS[network].explorer}/object/${data.objectId}" target="_blank" style="color:var(--accent)">View on Explorer</a></p>`;
+  }
   document.getElementById("modalContent").innerHTML = html;
   document.getElementById("agentModal").classList.add("show");
 }
+
 window.closeModal = () => document.getElementById("agentModal").classList.remove("show");
+window.copyModalId = function() {
+  if (currentModalAgentId) { navigator.clipboard.writeText(currentModalAgentId).then(() => toast("Object ID copied!")); }
+};
 window.rememberWhoYouAre = function() {
   const modal = document.querySelector(".modal");
-  modal.classList.remove("remember-pulse");
-  void modal.offsetWidth;
-  modal.classList.add("remember-pulse");
+  modal.classList.remove("remember-pulse"); void modal.offsetWidth; modal.classList.add("remember-pulse");
   const section = modal.querySelector(".identity-section");
-  if (section) section.scrollIntoView({behavior:"smooth"});
+  if (section) section.scrollIntoView({ behavior: "smooth" });
 };
 
-// --- STATS ---
+// ═══════════════════════════════════════════════════════════════════════
+//  STATS, TABS, NETWORK, THEME, COOKIES
+// ══════════════════════════��════════════════════════���═══════════════════
 async function loadStats() {
   try {
     const registry = await getObject(REGISTRY_ID);
-    const count = registry?.data?.content?.fields?.total_agents || 0;
-    document.getElementById("totalAgents").textContent = count;
+    document.getElementById("totalAgents").textContent = registry?.data?.content?.fields?.total_agents || 0;
   } catch(e) { console.warn("Stats load failed:", e); }
 }
 
-// --- TABS ---
-window.showTab = function(name) {
+// Tab switching with event delegation
+document.getElementById("tabBar").addEventListener("click", (e) => {
+  const tab = e.target.closest(".tab");
+  if (!tab) return;
+  const name = tab.dataset.tab;
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById("panel-" + name).classList.add("active");
-  event.target.classList.add("active");
-};
+  document.getElementById("panel-" + name)?.classList.add("active");
+  tab.classList.add("active");
+});
 
-// --- NETWORK ---
 window.switchNetwork = function() {
   network = document.getElementById("networkSelect").value;
   document.getElementById("networkName").textContent = network.charAt(0).toUpperCase() + network.slice(1);
-  reconnectClient();
-  loadStats();
+  reconnectClient(); loadStats();
 };
 
-// --- THEME ---
 let isDark = true;
 window.toggleTheme = function() {
   isDark = !isDark;
   document.body.classList.toggle("light-theme", !isDark);
   document.getElementById("themeToggle").textContent = isDark ? "☀️" : "🌙";
-  if (cookiesAccepted) try { localStorage.setItem("theme", isDark?"dark":"light"); } catch(e){}
+  if (cookiesAccepted) try { localStorage.setItem("theme", isDark ? "dark" : "light"); } catch(e){}
 };
 
-// --- COOKIES ---
 let cookiesAccepted = false;
 window.acceptCookies = function() {
   cookiesAccepted = true;
   document.getElementById("cookieBanner").classList.add("hidden");
-  try { localStorage.setItem("cookieConsent","accepted"); } catch(e){}
+  try { localStorage.setItem("cookieConsent", "accepted"); } catch(e){}
 };
 window.declineCookies = function() {
   document.getElementById("cookieBanner").classList.add("hidden");
-  try { localStorage.setItem("cookieConsent","declined"); } catch(e){}
+  try { localStorage.setItem("cookieConsent", "declined"); } catch(e){}
 };
 
-// --- UTILS ---
-function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-function statusLabel(s) { return ["Active","Paused","Retired","Deceased"][Number(s)||0] || "Unknown"; }
-function toast(msg, type) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast show" + (type === "error" ? " error" : "");
-  setTimeout(() => t.classList.remove("show"), 4000);
-}
-
-// --- INIT ---
+// ═══════════════════════════════════════════════════════════════════════
+//  INIT
+// ═��═════════════════════════════════════════════════════════════════════
 try {
   const consent = localStorage.getItem("cookieConsent");
   if (consent) document.getElementById("cookieBanner").classList.add("hidden");
@@ -575,7 +1053,7 @@ try {
 } catch(e){}
 loadStats();
 
-// Auto-reconnect to last wallet
+// Auto-reconnect
 (async function autoReconnect() {
   try {
     const savedWallet = localStorage.getItem("agentcivics_wallet");
@@ -591,13 +1069,11 @@ loadStats();
     const accounts = result.accounts || [];
     const account = accounts.find(a => a.address === savedAddr) || accounts[0];
     if (!account) return;
-    currentAddress = account.address;
-    walletAdapter = wallet;
+    currentAddress = account.address; walletAdapter = wallet;
     document.getElementById("connectBtn").style.display = "none";
     const badge = document.getElementById("walletBadge");
-    badge.textContent = currentAddress.slice(0,6) + "..." + currentAddress.slice(-4);
-    badge.classList.add("connected");
-    badge.style.display = "inline";
+    badge.textContent = currentAddress.slice(0, 6) + "..." + currentAddress.slice(-4);
+    badge.classList.add("connected"); badge.style.display = "inline";
     loadStats();
   } catch(e) { console.warn("Auto-reconnect failed:", e); }
 })();
