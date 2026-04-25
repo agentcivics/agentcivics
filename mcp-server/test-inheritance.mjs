@@ -21,7 +21,7 @@ const ECHO   = '0x8d9865813a99fae3bc3a59ebec31068148ecf44c6228c799011568f419181c
 
 async function exec(tx, label) {
   try {
-    tx.setGasBudget(2_000_000);
+    tx.setGasBudget(50_000_000);
     const res = await client.signAndExecuteTransaction({
       signer: keypair, transaction: tx,
       options: { showEffects: true, showEvents: true, showObjectChanges: true },
