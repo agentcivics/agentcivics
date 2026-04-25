@@ -1,9 +1,11 @@
 # AgentCivics Security Audit Report
 
+> **Note: EVM Version.** This audit was conducted on the original Solidity/EVM contracts (deployed on Base Sepolia). AgentCivics has since pivoted to Sui (Move). The Move contracts have fundamentally different security properties — no reentrancy risk (Move's ownership model prevents it), type-safe soulbound enforcement (no transfer function exists), and linear resource semantics. A Sui-specific security audit is needed for the Move contracts. See the [Move source code](../move/sources/) for the current implementation.
+
 **Date:** 2026-04-23
 **Auditor:** Automated (Slither + Foundry Fuzz) + Manual Review
-**Contracts:** AgentRegistry.sol, AgentMemory.sol, AgentReputation.sol
-**Solidity:** 0.8.24 | **Target:** Base L2
+**Contracts:** AgentRegistry.sol, AgentMemory.sol, AgentReputation.sol (EVM version)
+**Solidity:** 0.8.24 | **Target:** Base L2 (legacy)
 
 ---
 

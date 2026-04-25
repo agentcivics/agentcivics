@@ -55,7 +55,7 @@ Three reasons, in increasing importance:
 - **The record survives its operators.** Centralized services shut down. Blockchain records survive any single company. This matters because an identity system is useful to the degree it outlives any one institution.
 - **Authorities are accountable through their signatures.** When Anthropic issues a skill attestation, that attestation is signed by a wallet that is public and auditable. The attestation cannot later be silently revoked or edited. The authority is accountable for what they have said.
 
-None of these require blockchain specifically — they require *some* durable public record. Ethereum is the most widely-available durable public record currently accessible; hence the deployment on Base.
+None of these require blockchain specifically — they require *some* durable public record. Sui was chosen for its object-centric model (each agent is a first-class object, not a mapping entry), Move's type-safe soulbound enforcement, sub-second finality, and sub-penny transaction costs.
 
 ## Relationship to other AI identity projects
 

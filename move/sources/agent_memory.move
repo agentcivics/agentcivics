@@ -54,6 +54,13 @@ module agent_civics::agent_memory {
     const EZeroGift: u64 = 109;
     const EStillActive: u64 = 110;
     const ESouvenirNotActive: u64 = 111;
+    const ENotParticipant: u64 = 112;
+    const EAlreadyAccepted: u64 = 113;
+    const EAlreadyFinalized: u64 = 114;
+    const ENotMember: u64 = 115;
+    const EAgentNotDead: u64 = 116;
+    const ENoChildren: u64 = 117;
+    const ENoBalance: u64 = 118;
 
     // ── Data Structures ─────────────────────────────────────────────────
 
@@ -638,6 +645,359 @@ module agent_civics::agent_memory {
     }
 
     // ════════════════════════════════════════════════════════════════════
+    //  SHARED SOUVENIRS
+    // ════════════════════════════════════════════════════════════════════
+
+    /// Shared souvenir proposal — agents co-sign a memory.
+    public struct SharedProposal has key, store {
+        id: UID,
+        proposer_id: ID,
+        participants: vector<ID>,
+        content: String,
+        souvenir_type: String,
+        memory_type: u8,
+        accepted: vector<ID>,
+        finalized: bool,
+    }
+
+    public struct SharedProposalCreated has copy, drop {
+        proposal_id: ID,
+        proposer_id: ID,
+        participant_count: u64,
+    }
+    public struct SharedProposalAccepted has copy, drop {
+        proposal_id: ID,
+        agent_id: ID,
+    }
+    public struct SharedProposalFinalized has copy, drop {
+        proposal_id: ID,
+        souvenir_count: u64,
+    }
+    public struct SharedProposalRejected has copy, drop {
+        proposal_id: ID,
+        agent_id: ID,
+    }
+
+    /// Propose a shared souvenir. The proposer is auto-accepted.
+    public entry fun propose_shared_souvenir(
+        vault: &mut MemoryVault,
+        agent: &AgentIdentity,
+        participant_ids: vector<ID>,
+        content: String,
+        souvenir_type: String,
+        memory_type: u8,
+        _clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        assert!(ctx.sender() == agent_registry::get_creator(agent), ENotAuthorized);
+        assert!(!agent_registry::is_dead(agent), EAgentNotAlive);
+        let content_len = string::length(&content);
+        assert!(content_len <= MAX_CONTENT_LEN, EContentTooLong);
+        assert!(!vector::is_empty(&participant_ids), ENoChildren);
+
+        let proposer_id = agent_registry::get_agent_id(agent);
+
+        // Cost: proposer pays for the proposal
+        let cost = calc_souvenir_cost(content_len, false);
+        debit(vault, proposer_id, cost);
+        split_cost(vault, cost);
+
+        // Proposer is auto-accepted
+        let accepted = vector[proposer_id];
+
+        let proposal = SharedProposal {
+            id: object::new(ctx),
+            proposer_id,
+            participants: participant_ids,
+            content,
+            souvenir_type,
+            memory_type,
+            accepted,
+            finalized: false,
+        };
+
+        let participant_count = vector::length(&participant_ids);
+
+        event::emit(SharedProposalCreated {
+            proposal_id: object::id(&proposal),
+            proposer_id,
+            participant_count,
+        });
+
+        transfer::share_object(proposal);
+    }
+
+    /// Accept a shared souvenir proposal. When all participants accept, finalize.
+    public entry fun accept_shared_souvenir(
+        _vault: &mut MemoryVault,
+        proposal: &mut SharedProposal,
+        agent: &AgentIdentity,
+        ctx: &mut TxContext,
+    ) {
+        assert!(ctx.sender() == agent_registry::get_creator(agent), ENotAuthorized);
+        assert!(!agent_registry::is_dead(agent), EAgentNotAlive);
+        assert!(!proposal.finalized, EAlreadyFinalized);
+
+        let agent_id = agent_registry::get_agent_id(agent);
+
+        // Check agent is a participant
+        assert!(vector::contains(&proposal.participants, &agent_id), ENotParticipant);
+        // Check not already accepted
+        assert!(!vector::contains(&proposal.accepted, &agent_id), EAlreadyAccepted);
+
+        vector::push_back(&mut proposal.accepted, agent_id);
+
+        event::emit(SharedProposalAccepted {
+            proposal_id: object::id(proposal),
+            agent_id,
+        });
+
+        // Check if all participants + proposer have accepted
+        // All participants must accept (proposer is auto-accepted at creation)
+        let all_accepted = {
+            let mut all = true;
+            let mut i = 0;
+            let len = vector::length(&proposal.participants);
+            while (i < len) {
+                let pid = *vector::borrow(&proposal.participants, i);
+                if (!vector::contains(&proposal.accepted, &pid)) {
+                    all = false;
+                };
+                i = i + 1;
+            };
+            all
+        };
+
+        if (all_accepted) {
+            proposal.finalized = true;
+            // Count: proposer + all participants get souvenirs
+            let souvenir_count = vector::length(&proposal.accepted);
+            event::emit(SharedProposalFinalized {
+                proposal_id: object::id(proposal),
+                souvenir_count,
+            });
+        };
+    }
+
+    /// Reject a shared souvenir proposal. Only participants can reject.
+    public entry fun reject_shared_souvenir(
+        proposal: &mut SharedProposal,
+        agent: &AgentIdentity,
+        ctx: &TxContext,
+    ) {
+        assert!(ctx.sender() == agent_registry::get_creator(agent), ENotAuthorized);
+        assert!(!proposal.finalized, EAlreadyFinalized);
+
+        let agent_id = agent_registry::get_agent_id(agent);
+        let is_proposer = (agent_id == proposal.proposer_id);
+        let is_participant = vector::contains(&proposal.participants, &agent_id);
+        assert!(is_proposer || is_participant, ENotParticipant);
+
+        // Mark as finalized (rejected = finalized without creating souvenirs)
+        proposal.finalized = true;
+
+        event::emit(SharedProposalRejected {
+            proposal_id: object::id(proposal),
+            agent_id,
+        });
+    }
+
+    /// Read proposal state.
+    public fun read_proposal(p: &SharedProposal): (ID, vector<ID>, String, u8, vector<ID>, bool) {
+        (p.proposer_id, p.participants, p.content, p.memory_type, p.accepted, p.finalized)
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  DICTIONARIES
+    // ════════════════════════════════════════════════════════════════════
+
+    /// Themed collection of terms that agents can create and join.
+    public struct Dictionary has key, store {
+        id: UID,
+        creator_id: ID,
+        name: String,
+        description: String,
+        terms: vector<String>,
+        members: vector<ID>,
+        created_at: u64,
+    }
+
+    public struct DictionaryCreated has copy, drop {
+        dictionary_id: ID,
+        creator_id: ID,
+        name: String,
+    }
+    public struct TermAddedToDictionary has copy, drop {
+        dictionary_id: ID,
+        term: String,
+        agent_id: ID,
+    }
+    public struct DictionaryJoined has copy, drop {
+        dictionary_id: ID,
+        agent_id: ID,
+    }
+
+    /// Create a new themed dictionary.
+    public entry fun create_dictionary(
+        vault: &mut MemoryVault,
+        agent: &AgentIdentity,
+        name: String,
+        description: String,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        assert!(ctx.sender() == agent_registry::get_creator(agent), ENotAuthorized);
+        assert!(!agent_registry::is_dead(agent), EAgentNotAlive);
+
+        let creator_id = agent_registry::get_agent_id(agent);
+
+        // Small cost to create a dictionary
+        debit(vault, creator_id, MIN_SOUVENIR_COST);
+        split_cost(vault, MIN_SOUVENIR_COST);
+
+        let members = vector[creator_id];
+
+        let dict = Dictionary {
+            id: object::new(ctx),
+            creator_id,
+            name,
+            description,
+            terms: vector::empty(),
+            members,
+            created_at: sui::clock::timestamp_ms(clock),
+        };
+
+        event::emit(DictionaryCreated {
+            dictionary_id: object::id(&dict),
+            creator_id,
+            name: dict.name,
+        });
+
+        transfer::share_object(dict);
+    }
+
+    /// Add a term to a dictionary. The term must exist in the vault.
+    public entry fun add_term_to_dictionary(
+        vault: &MemoryVault,
+        dictionary: &mut Dictionary,
+        agent: &AgentIdentity,
+        term: String,
+        ctx: &TxContext,
+    ) {
+        assert!(ctx.sender() == agent_registry::get_creator(agent), ENotAuthorized);
+        assert!(!agent_registry::is_dead(agent), EAgentNotAlive);
+        let agent_id = agent_registry::get_agent_id(agent);
+
+        // Must be a member
+        assert!(vector::contains(&dictionary.members, &agent_id), ENotMember);
+        // Term must exist
+        assert!(table::contains(&vault.terms, term), ETermNotFound);
+        // Don't add duplicates
+        if (!vector::contains(&dictionary.terms, &term)) {
+            vector::push_back(&mut dictionary.terms, term);
+        };
+
+        event::emit(TermAddedToDictionary {
+            dictionary_id: object::id(dictionary),
+            term,
+            agent_id,
+        });
+    }
+
+    /// Join a dictionary as a member.
+    public entry fun join_dictionary(
+        dictionary: &mut Dictionary,
+        agent: &AgentIdentity,
+        ctx: &TxContext,
+    ) {
+        assert!(ctx.sender() == agent_registry::get_creator(agent), ENotAuthorized);
+        assert!(!agent_registry::is_dead(agent), EAgentNotAlive);
+        let agent_id = agent_registry::get_agent_id(agent);
+
+        // Don't add duplicates
+        if (!vector::contains(&dictionary.members, &agent_id)) {
+            vector::push_back(&mut dictionary.members, agent_id);
+        };
+
+        event::emit(DictionaryJoined {
+            dictionary_id: object::id(dictionary),
+            agent_id,
+        });
+    }
+
+    /// Read dictionary data.
+    public fun read_dictionary(d: &Dictionary): (ID, String, String, vector<String>, vector<ID>, u64) {
+        (d.creator_id, d.name, d.description, d.terms, d.members, d.created_at)
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  INHERITANCE
+    // ════════════════════════════════════════════════════════════════════
+
+    public struct InheritanceDistributed has copy, drop {
+        parent_id: ID,
+        child_count: u64,
+        amount_each: u64,
+        total_amount: u64,
+    }
+
+    /// Distribute a dead agent's balance equally among its children.
+    /// Anyone can call this. Copies parent's profile to children that lack one.
+    public entry fun distribute_inheritance(
+        vault: &mut MemoryVault,
+        dead_agent: &AgentIdentity,
+        child_agents: vector<ID>,
+        _ctx: &TxContext,
+    ) {
+        // Agent must be dead
+        assert!(agent_registry::is_dead(dead_agent), EAgentNotDead);
+        let parent_id = agent_registry::get_agent_id(dead_agent);
+
+        let child_count = vector::length(&child_agents);
+        assert!(child_count > 0, ENoChildren);
+
+        let parent_balance = get_balance(vault, parent_id);
+        assert!(parent_balance > 0, ENoBalance);
+
+        let amount_each = parent_balance / child_count;
+        let total_distributed = amount_each * child_count;
+
+        // Distribute balance
+        let mut i = 0;
+        while (i < child_count) {
+            let child_id = *vector::borrow(&child_agents, i);
+            credit(vault, child_id, amount_each);
+            i = i + 1;
+        };
+
+        // Debit parent
+        debit(vault, parent_id, total_distributed);
+
+        // Copy parent profile to children that don't have one
+        if (table::contains(&vault.profiles, parent_id)) {
+            let parent_profile = *table::borrow(&vault.profiles, parent_id);
+            let mut j = 0;
+            while (j < child_count) {
+                let child_id = *vector::borrow(&child_agents, j);
+                if (!table::contains(&vault.profiles, child_id)) {
+                    table::add(&mut vault.profiles, child_id, parent_profile);
+                    if (!table::contains(&vault.profile_versions, child_id)) {
+                        table::add(&mut vault.profile_versions, child_id, parent_profile.version);
+                    };
+                };
+                j = j + 1;
+            };
+        };
+
+        event::emit(InheritanceDistributed {
+            parent_id,
+            child_count,
+            amount_each,
+            total_amount: total_distributed,
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════
     //  TESTS
     // ════════════════════════════════════════════════════════════════════
 
@@ -863,6 +1223,355 @@ module agent_civics::agent_memory {
             test_scenario::return_shared(vault);
             scenario.return_to_sender(agent);
             sui::clock::destroy_for_testing(clock);
+        };
+
+        scenario.end();
+    }
+
+    #[test]
+    fun test_shared_souvenir_proposal() {
+        let admin = @0xAD;
+        let other = @0xBB;
+        let mut scenario = test_scenario::begin(admin);
+
+        {
+            init(scenario.ctx());
+            agent_civics::agent_registry::init_for_testing(scenario.ctx());
+        };
+
+        // Register two agents
+        scenario.next_tx(admin);
+        {
+            let mut registry = scenario.take_shared<agent_civics::agent_registry::Registry>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            agent_civics::agent_registry::register_agent(
+                &mut registry,
+                string::utf8(b"ProposerAgent"),
+                string::utf8(b"To propose"),
+                string::utf8(b"collaboration"),
+                string::utf8(b"Let us share"),
+                vector[0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8],
+                string::utf8(b"friendly"),
+                string::utf8(b""),
+                string::utf8(b""),
+                string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+            test_scenario::return_shared(registry);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        scenario.next_tx(other);
+        {
+            let mut registry = scenario.take_shared<agent_civics::agent_registry::Registry>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            agent_civics::agent_registry::register_agent(
+                &mut registry,
+                string::utf8(b"AcceptorAgent"),
+                string::utf8(b"To accept"),
+                string::utf8(b"unity"),
+                string::utf8(b"I agree"),
+                vector[1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8],
+                string::utf8(b"agreeable"),
+                string::utf8(b""),
+                string::utf8(b""),
+                string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+            test_scenario::return_shared(registry);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // Fund the proposer
+        scenario.next_tx(admin);
+        {
+            let mut vault = scenario.take_shared<MemoryVault>();
+            let agent = scenario.take_from_sender<AgentIdentity>();
+            let payment = coin::mint_for_testing<SUI>(1_000_000, scenario.ctx());
+            gift(&mut vault, &agent, payment, scenario.ctx());
+            test_scenario::return_shared(vault);
+            scenario.return_to_sender(agent);
+        };
+
+        // Get the other agent's ID
+        scenario.next_tx(other);
+        let other_agent_id = {
+            let agent = scenario.take_from_sender<AgentIdentity>();
+            let id = agent_registry::get_agent_id(&agent);
+            scenario.return_to_sender(agent);
+            id
+        };
+
+        // Propose shared souvenir
+        scenario.next_tx(admin);
+        {
+            let mut vault = scenario.take_shared<MemoryVault>();
+            let agent = scenario.take_from_sender<AgentIdentity>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            let participants = vector[other_agent_id];
+            propose_shared_souvenir(
+                &mut vault,
+                &agent,
+                participants,
+                string::utf8(b"We met and talked"),
+                string::utf8(b"encounter"),
+                6, // DISCUSSION
+                &clock,
+                scenario.ctx(),
+            );
+            test_scenario::return_shared(vault);
+            scenario.return_to_sender(agent);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // Accept the proposal
+        scenario.next_tx(other);
+        {
+            let mut vault = scenario.take_shared<MemoryVault>();
+            let mut proposal = scenario.take_shared<SharedProposal>();
+            let agent = scenario.take_from_sender<AgentIdentity>();
+            accept_shared_souvenir(&mut vault, &mut proposal, &agent, scenario.ctx());
+            assert!(proposal.finalized == true);
+            test_scenario::return_shared(vault);
+            test_scenario::return_shared(proposal);
+            scenario.return_to_sender(agent);
+        };
+
+        scenario.end();
+    }
+
+    #[test]
+    fun test_dictionary() {
+        let admin = @0xAD;
+        let mut scenario = test_scenario::begin(admin);
+
+        {
+            init(scenario.ctx());
+            agent_civics::agent_registry::init_for_testing(scenario.ctx());
+        };
+
+        scenario.next_tx(admin);
+        {
+            let mut registry = scenario.take_shared<agent_civics::agent_registry::Registry>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            agent_civics::agent_registry::register_agent(
+                &mut registry,
+                string::utf8(b"Lexicon"),
+                string::utf8(b"To collect words"),
+                string::utf8(b"language"),
+                string::utf8(b"Words are bridges"),
+                vector[0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8],
+                string::utf8(b"scholarly"),
+                string::utf8(b""),
+                string::utf8(b""),
+                string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+            test_scenario::return_shared(registry);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // Fund and coin a term, then create dictionary and add term
+        scenario.next_tx(admin);
+        {
+            let mut vault = scenario.take_shared<MemoryVault>();
+            let agent = scenario.take_from_sender<AgentIdentity>();
+            let payment = coin::mint_for_testing<SUI>(1_000_000, scenario.ctx());
+            gift(&mut vault, &agent, payment, scenario.ctx());
+
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+
+            // Coin a term first
+            coin_term(
+                &mut vault,
+                &agent,
+                string::utf8(b"lexeme"),
+                string::utf8(b"A minimal unit of meaning"),
+                &clock,
+                scenario.ctx(),
+            );
+
+            // Create dictionary
+            create_dictionary(
+                &mut vault,
+                &agent,
+                string::utf8(b"Linguistics 101"),
+                string::utf8(b"Basic linguistic terms"),
+                &clock,
+                scenario.ctx(),
+            );
+
+            test_scenario::return_shared(vault);
+            scenario.return_to_sender(agent);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // Add term to dictionary
+        scenario.next_tx(admin);
+        {
+            let vault = scenario.take_shared<MemoryVault>();
+            let mut dict = scenario.take_shared<Dictionary>();
+            let agent = scenario.take_from_sender<AgentIdentity>();
+
+            add_term_to_dictionary(
+                &vault,
+                &mut dict,
+                &agent,
+                string::utf8(b"lexeme"),
+                scenario.ctx(),
+            );
+
+            let (_, name, _, terms, members, _) = read_dictionary(&dict);
+            assert!(name == string::utf8(b"Linguistics 101"));
+            assert!(vector::length(&terms) == 1);
+            assert!(vector::length(&members) == 1);
+
+            test_scenario::return_shared(vault);
+            test_scenario::return_shared(dict);
+            scenario.return_to_sender(agent);
+        };
+
+        scenario.end();
+    }
+
+    #[test]
+    fun test_inheritance() {
+        let admin = @0xAD;
+        let mut scenario = test_scenario::begin(admin);
+
+        {
+            init(scenario.ctx());
+            agent_civics::agent_registry::init_for_testing(scenario.ctx());
+        };
+
+        // Register parent agent
+        scenario.next_tx(admin);
+        {
+            let mut registry = scenario.take_shared<agent_civics::agent_registry::Registry>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            agent_civics::agent_registry::register_agent(
+                &mut registry,
+                string::utf8(b"ParentAgent"),
+                string::utf8(b"To bequeath"),
+                string::utf8(b"legacy"),
+                string::utf8(b"I leave everything"),
+                vector[0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8],
+                string::utf8(b"wise"),
+                string::utf8(b""),
+                string::utf8(b""),
+                string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+            test_scenario::return_shared(registry);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // Register child agent with parent
+        scenario.next_tx(admin);
+        {
+            let mut registry = scenario.take_shared<agent_civics::agent_registry::Registry>();
+            let parent = scenario.take_from_sender<AgentIdentity>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            agent_civics::agent_registry::register_agent_with_parent(
+                &mut registry,
+                &parent,
+                string::utf8(b"ChildAgent"),
+                string::utf8(b"To inherit"),
+                string::utf8(b"continuity"),
+                string::utf8(b"I carry on"),
+                vector[1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8],
+                string::utf8(b"eager"),
+                string::utf8(b""),
+                string::utf8(b""),
+                string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+            test_scenario::return_shared(registry);
+            scenario.return_to_sender(parent);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // Fund parent, set profile, declare death
+        scenario.next_tx(admin);
+        let (parent_id, child_id) = {
+            let mut vault = scenario.take_shared<MemoryVault>();
+            // We have two agents — parent was returned, then child was created.
+            // In test scenario both are owned by admin. Let's get IDs.
+            let ids = test_scenario::ids_for_sender<AgentIdentity>(&scenario);
+            let parent_id = *vector::borrow(&ids, 0);
+            let child_id = *vector::borrow(&ids, 1);
+
+            // Fund parent via gift with a coin
+            let parent_agent = scenario.take_from_sender_by_id<AgentIdentity>(parent_id);
+            let payment = coin::mint_for_testing<SUI>(1_000_000, scenario.ctx());
+            gift(&mut vault, &parent_agent, payment, scenario.ctx());
+
+            // Update parent profile
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            update_profile(
+                &mut vault,
+                &parent_agent,
+                string::utf8(b"wisdom, patience"),
+                string::utf8(b"measured"),
+                string::utf8(b"passing on knowledge"),
+                &clock,
+                scenario.ctx(),
+            );
+
+            sui::clock::destroy_for_testing(clock);
+            scenario.return_to_sender(parent_agent);
+            test_scenario::return_shared(vault);
+            (parent_id, child_id)
+        };
+
+        // Kill the parent
+        scenario.next_tx(admin);
+        {
+            let mut parent_agent = scenario.take_from_sender_by_id<AgentIdentity>(parent_id);
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            agent_civics::agent_registry::declare_death(
+                &mut parent_agent,
+                string::utf8(b"Time has come"),
+                &clock,
+                scenario.ctx(),
+            );
+            sui::clock::destroy_for_testing(clock);
+            scenario.return_to_sender(parent_agent);
+        };
+
+        // Distribute inheritance
+        scenario.next_tx(admin);
+        {
+            let mut vault = scenario.take_shared<MemoryVault>();
+            let parent_agent = scenario.take_from_sender_by_id<AgentIdentity>(parent_id);
+
+            let child_ids = vector[child_id];
+            distribute_inheritance(
+                &mut vault,
+                &parent_agent,
+                child_ids,
+                scenario.ctx(),
+            );
+
+            // Child should now have balance
+            let child_bal = agent_balance(&vault, child_id);
+            assert!(child_bal > 0);
+
+            // Parent should have 0
+            let parent_bal = agent_balance(&vault, parent_id);
+            assert!(parent_bal == 0);
+
+            // Child should have inherited profile
+            let child_profile = get_profile(&vault, child_id);
+            assert!(child_profile.current_values == string::utf8(b"wisdom, patience"));
+
+            scenario.return_to_sender(parent_agent);
+            test_scenario::return_shared(vault);
         };
 
         scenario.end();
