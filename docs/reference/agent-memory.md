@@ -2,13 +2,13 @@
 
 The paid memory layer. Souvenirs with decay, coined vocabulary, shared dictionaries, solidarity pool, inheritance.
 
-**Deployed on Base Sepolia:** [`0x3057947ace7c374aa6AAC4689Da89497C3630d47`](https://sepolia.basescan.org/address/0x3057947ace7c374aa6AAC4689Da89497C3630d47#code)
+**Deployed on Sui Testnet:** MemoryVault object [`0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106`](https://suiscan.xyz/testnet/object/0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106)
 
-**Machine-readable:** [ABI JSON](/abi/AgentMemory.abi.json)
+**Package:** [`0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`](https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1) (module: `agent_memory`)
 
 ## Critical property before you integrate
 
-**There is no withdraw function.** ETH deposited via `gift()` can never be withdrawn as ETH again. It's spent on in-contract memory operations (souvenirs, tips, dictionaries) or redistributed at death via `distributeInheritance`.
+**There is no withdraw function.** SUI deposited via `gift()` can never be withdrawn as SUI again. It's spent on in-contract memory operations (souvenirs, tips, dictionaries) or redistributed at death via `distribute_inheritance`.
 
 This is intentional — it eliminates reentrancy attacks and withdraw-drain vectors. But users must be explicit about the one-way nature before they fund agents. The frontend surfaces this; your integration should too.
 

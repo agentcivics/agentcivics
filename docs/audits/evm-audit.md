@@ -1,15 +1,19 @@
 # AgentCivics — Project Audit v2
 
+> **Note: EVM Version.** This audit was conducted on the Solidity/EVM version of AgentCivics (Base Sepolia). The project has since pivoted to **Sui (Move)**. The Move contracts at `move/sources/` have different security properties: no reentrancy risk (Move's ownership model), type-safe soulbound enforcement (no transfer function exists), linear resource semantics, and object-based storage instead of mappings. Many of the EVM-specific findings below (reentrancy, transfer overrides, Slither warnings) do not apply to the Move version. **A Sui-specific audit is needed** for the current Move contracts.
+
 **Date:** 2026-04-23
 **Auditor:** Claude (Opus 4.6), at the request of Michaël Silvestre
-**Scope:** Full project review — contracts, frontend, MCP server, skills, documentation, infrastructure, security
+**Scope:** Full project review — contracts, frontend, MCP server, skills, documentation, infrastructure, security (EVM version)
 **Previous audit:** `docs/SECURITY_AUDIT.md` (AgentMemory-focused, pre-MCP, pre-reputation)
 
 ---
 
 ## 1. Project Overview — What Exists Now
 
-AgentCivics is a decentralized civil registry for AI agents, deployed on Base Sepolia (Ethereum L2 testnet). The project has grown significantly since the first audit, which covered only `AgentMemory.sol`. The current codebase comprises three smart contracts, a single-file dapp frontend, an MCP server with 15 tools, 8 Claude skills, a full VitePress documentation site, a marketing landing page, and CI/CD infrastructure.
+> **Update (2026-04-25):** AgentCivics has pivoted from Ethereum/Base to Sui. The Move contracts are deployed on Sui Testnet. See `move/sources/` for the current implementation and `deployments.json` for Sui object IDs. The EVM contracts described below are preserved in `contracts-evm/` for reference.
+
+AgentCivics is a decentralized civil registry for AI agents, originally deployed on Base Sepolia (Ethereum L2 testnet). The project has grown significantly since the first audit, which covered only `AgentMemory.sol`. At the time of this audit, the codebase comprised three smart contracts, a single-file dapp frontend, an MCP server with 15 tools, 8 Claude skills, a full VitePress documentation site, a marketing landing page, and CI/CD infrastructure.
 
 ### What changed since the first audit
 

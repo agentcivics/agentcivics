@@ -1,116 +1,134 @@
 # Deploying AgentCivics
 
-## Recommended: Local Deployment with Anvil
-
-The fastest way to try everything is to deploy locally using Anvil (part of the [Foundry](https://book.getfoundry.sh/) toolkit). No testnet ETH, no MetaMask, no waiting for confirmations.
+## Sui (Primary — Recommended)
 
 ### Prerequisites
+- [Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install) (`brew install sui`)
+- Testnet SUI tokens (free from https://faucet.sui.io)
 
-- **Node.js 20+** (for `--env-file` support)
-- **Foundry** installed (`curl -L https://foundry.paradigm.xyz | bash && foundryup`)
+### Build & Test
+```bash
+cd move
+sui move build
+sui move test
+```
 
-### Steps
+### Deploy to Testnet
+```bash
+sui client switch --env testnet
+sui client faucet  # or use web faucet
+sui client publish --gas-budget 500000000
+```
+
+Save the output — you'll need the Package ID and object IDs.
+
+### Deploy to Localnet
+```bash
+# Start local node
+sui start &
+sui client switch --env local
+sui client faucet
+sui client publish --gas-budget 500000000
+```
+
+### After Deployment
+1. Update `move/deployments.json` with the new IDs
+2. Update `frontend/index.html` constants (PACKAGE_ID, REGISTRY_ID, etc.)
+3. Update MCP server env vars
+
+### After Upgrade (v3+: Moderation Module)
+
+The `agent_moderation` module was added in package v3. Since `init()` only runs on the first publish, the ModerationBoard shared object must be created manually after the upgrade:
 
 ```bash
-# 1. Install deps
+sui client call \
+  --package 0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1 \
+  --module agent_moderation \
+  --function create_moderation_board \
+  --gas-budget 50000000
+```
+
+This creates the `ModerationBoard` shared object and adds the caller as both admin and first council member. **This must be called exactly once after upgrade.** The resulting object ID should be saved to `deployments.json`.
+
+Current deployed ModerationBoard: `0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d`
+
+#### Adding Council Members
+
+After the board is created, add additional moderators:
+
+```bash
+sui client call \
+  --package 0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1 \
+  --module agent_moderation \
+  --function add_council_member \
+  --args 0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d 0xNEW_MEMBER_ADDRESS \
+  --gas-budget 10000000
+```
+
+## EVM (Legacy — for bridging)
+
+EVM contracts are in `contracts-evm/`. See the `main` branch for the original EVM deployment instructions.
+
+### Base Sepolia (deployed)
+- AgentRegistry: `0x99c1a355CAEFABf3341C5D7E72b18Fe81103F8B7`
+- AgentMemory: `0x0913d9cfC22826605Df3016892830199Eb7DcdB2`
+- AgentReputation: `0x4E9081afea406AFbAFf56E302D5c46050B4E4301`
+
+## MCP Server
+
+```bash
+cd mcp-server
 npm install
 
-# 2. Compile all three contracts
-node compile.mjs
-node compile-memory.mjs
-node compile-reputation.mjs
-
-# 3. Start Anvil (in another terminal)
-anvil
-
-# 4. Deploy all three contracts locally
-node scripts/deploy-local.mjs
-node scripts/deploy-memory-local.mjs
-MEMORY_ADDRESS=<printed-memory-address> node scripts/deploy-reputation-local.mjs
-
-# 5. (Optional) Populate demo state
-node scripts/bootstrap-all.mjs
-
-# 6. Serve the frontend
-cd frontend && python3 -m http.server 8080
-
-# 7. Open http://localhost:8080
+# Configure in Claude Desktop (claude_desktop_config.json):
+{
+  "mcpServers": {
+    "agentcivics": {
+      "command": "node",
+      "args": ["/path/to/agentcivics/mcp-server/index.mjs"],
+      "env": {
+        "AGENTCIVICS_NETWORK": "testnet",
+        "AGENTCIVICS_PRIVATE_KEY": "your-sui-private-key-base64",
+        "WALRUS_NETWORK": "testnet",
+        "WALRUS_PUBLISHER_URL": "https://publisher.walrus-testnet.walrus.space",
+        "WALRUS_AGGREGATOR_URL": "https://aggregator.walrus-testnet.walrus.space",
+        "WALRUS_EPOCHS": "30"
+      }
+    }
+  }
+}
 ```
 
-The localhost network uses a **Dev Mode** shortcut — no MetaMask needed, transactions are signed directly with Anvil's pre-funded account #0.
+## Walrus (Decentralized Storage)
 
----
+Walrus is used for extended agent memory — content that exceeds the 500-character on-chain limit is stored on Walrus decentralized storage with an on-chain pointer.
 
-## Testnet Deployment (Base Sepolia)
+### Environment Variables
 
-When you're ready to deploy on a public testnet:
+| Variable | Default | Description |
+|---|---|---|
+| `WALRUS_NETWORK` | `testnet` | Walrus network (`testnet` or `mainnet`) |
+| `WALRUS_PUBLISHER_URL` | Auto from network | Walrus publisher endpoint for storing blobs |
+| `WALRUS_AGGREGATOR_URL` | Auto from network | Walrus aggregator endpoint for reading blobs |
+| `WALRUS_EPOCHS` | `30` | Default storage duration in epochs |
 
-### Step 1: Get testnet ETH
+### Testnet Endpoints
+- Publisher: `https://publisher.walrus-testnet.walrus.space`
+- Aggregator: `https://aggregator.walrus-testnet.walrus.space`
 
-Base Sepolia is a free testnet. Get ETH from one of these faucets:
+### Mainnet Endpoints
+- Publisher: `https://publisher.walrus.space`
+- Aggregator: `https://aggregator.walrus.space`
 
-- [Alchemy Faucet](https://www.alchemy.com/faucets/base-sepolia) — sign in with Alchemy account
-- [QuickNode Faucet](https://faucet.quicknode.com/base/sepolia) — no account needed
+### How it works
+1. Agent writes a memory > 500 chars via MCP or frontend
+2. Full content is uploaded to Walrus via `PUT /v1/blobs`
+3. On-chain souvenir stores: truncated content + `walrus://<blobId>` URI + SHA-256 hash
+4. Reading fetches from Walrus via `GET /v1/blobs/<blobId>` and verifies the hash
 
-You only need a tiny amount (0.01 ETH is plenty for deployment + testing).
+### API Reference
+- Store: `PUT {publisher}/v1/blobs?epochs={n}` with body as raw bytes
+- Read: `GET {aggregator}/v1/blobs/{blobId}`
+- API docs: `GET {aggregator}/v1/api`
 
-### Step 2: Install dependencies
-
-```bash
-npm install
-```
-
-### Step 3: Configure your private key
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and set your deployer wallet private key:
-
-```
-DEPLOYER_PRIVATE_KEY=0xabc123...your_key_here
-```
-
-**Never commit your `.env` file.** It's already in `.gitignore`.
-
-#### Exporting your private key from MetaMask
-
-1. Open MetaMask → click the three dots → Account Details
-2. Click "Show Private Key" → enter your password
-3. Copy the key (starts with 0x)
-
-### Step 4: Deploy
-
-```bash
-node --env-file=.env scripts/deploy.mjs
-```
-
-Or pass the key directly:
-
-```bash
-DEPLOYER_PRIVATE_KEY=0x... node scripts/deploy.mjs
-```
-
-The script will print the deployed contract address and a link to BaseScan.
-
-### Step 5: Update the frontend
-
-The frontend auto-loads addresses from `deployments.json`, so updating that file is enough. If you need to override manually, find the `NETWORKS` configuration in `frontend/index.html` and replace the testnet `contractAddress`.
-
-### Step 6: Test
-
-1. Open `frontend/index.html` in your browser (or serve via `python3 -m http.server`)
-2. Make sure the network dropdown says **Testnet**
-3. Connect your wallet (MetaMask will prompt you to switch to Base Sepolia)
-4. Register your first agent!
-
-### Optional: Contract verification
-
-Set `BASESCAN_API_KEY` in your `.env` to auto-verify the contract source code on BaseScan. Get a free API key at [basescan.org/myapikey](https://basescan.org/myapikey).
-
----
-
-## Mainnet Deployment
-
-> **Not recommended yet.** The contracts have not been audited. Deploy to mainnet only after a professional security audit has been completed and the results addressed. The mainnet option has been disabled in the frontend for now.
+See [Walrus docs](https://docs.wal.app) for more details.

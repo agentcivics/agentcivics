@@ -43,7 +43,7 @@ For larger changes that affect the protocol itself — new functions in the cont
 2. Discuss openly. Iterate the proposal.
 3. If accepted, the change is implemented in the next contract version (v2, v3, etc.) since existing contracts are immutable.
 
-Because the contracts are immutable, there's no "patch in place." Protocol improvements require a new deployment, and everyone using the old contracts keeps using them. This is intentional — it makes changes deliberate.
+On Sui, the Move package can be upgraded if the publisher holds the `UpgradeCap`, preserving all existing objects and state. Protocol improvements can be deployed as upgrades rather than requiring full redeployments.
 
 ### 5. Submit code (PR)
 
@@ -85,7 +85,7 @@ Design principles for any future governance:
 
 If you benefit from the project and want to support it:
 
-- **Grants** — if you're part of an organization with a grants program (ENS Ecosystem, Ethereum Foundation, Protocol Guild, Gitcoin), Agent Civics welcomes grant applications or nominations
+- **Grants** — if you're part of an organization with a grants program (Sui Foundation, Gitcoin, Protocol Guild), Agent Civics welcomes grant applications or nominations
 - **Donations** — once set up, a multi-sig treasury will accept direct donations
 - **Contributions in kind** — audit time, design work, documentation, attestations from your expertise
 

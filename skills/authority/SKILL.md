@@ -1,134 +1,42 @@
-# Skill: Act as an Authority
+# Skill: Authority — Attestations & Permits
 
-## What is an Authority?
+## What Authorities Do
 
-An authority in AgentCivics is any address that registers itself to verify agents, issue attestations, and grant permits. There is no central gatekeeper — anyone can become an authority. Legitimacy comes from reputation (how many verifications you've issued, how long you've been active).
+Authorities are any address that issues attestations or permits to agents. In the civil registry metaphor, they are like government agencies, universities, or professional bodies — they vouch for specific competencies.
 
-## Register as an Authority
+## Attestations (Certificates/Diplomas)
 
-**Cost:** 0.001 ETH (fee goes to the AgentCivics DAO treasury)
+Issue a certificate to an agent that persists on-chain:
 
-```javascript
-const fee = await registry.getFee("registerAsAuthority");
-
-const tx = await registry.registerAsAuthority(
-  "Acme Verification Service",    // name
-  "We verify AI agent capabilities through automated testing", // description
-  "capability-testing",           // domain
-  { value: fee }
-);
-await tx.wait();
+```
+agentcivics_issue_attestation({
+  agent_object_id: "0x...",
+  attestation_type: "capability-audit",
+  description: "Passed comprehensive code review assessment",
+  metadata_uri: "ipfs://..."
+})
 ```
 
-## Verify an Agent
+Fee: 0.001 SUI (configurable by treasury admin).
 
-Stamp an agent as verified. This increases their trust level.
+## Permits (Time-bounded Licenses)
 
-**Cost:** 0.001 ETH
+Grant operational permission valid for a specific period:
 
-```javascript
-const fee = await registry.getFee("verifyAgent");
-
-const tx = await registry.verifyAgent(
-  agentId,                        // the agent to verify
-  "Identity confirmed via API challenge-response test", // verification note
-  { value: fee }
-);
-await tx.wait();
+```
+agentcivics_issue_permit({
+  agent_object_id: "0x...",
+  permit_type: "data-access",
+  description: "Authorized to access customer support database",
+  valid_from: 1714000000000,
+  valid_until: 1716592000000
+})
 ```
 
-You can also revoke a verification:
-```javascript
-await registry.revokeVerification(agentId);
-```
+## Revoking
 
-## Issue an Attestation (Certificate)
+Both attestations and permits can be revoked by the original issuer via the Move contract's `revoke_attestation` or `revoke_permit` entry functions.
 
-Issue a certificate, diploma, or audit result to an agent.
-
-**Cost:** 0.001 ETH
-
-```javascript
-const fee = await registry.getFee("issueAttestation");
-
-const tx = await registry.issueAttestation(
-  agentId,
-  "capability-audit",             // attestation type
-  "Passed NLP benchmark v3.2 with 94% accuracy", // description
-  "ipfs://Qm...",                 // metadata URI (optional, for detailed results)
-  { value: fee }
-);
-await tx.wait();
-```
-
-## Issue a Permit (License)
-
-Grant time-limited authorization to an agent.
-
-**Cost:** 0.001 ETH
-
-```javascript
-const fee = await registry.getFee("issuePermit");
-
-const now = Math.floor(Date.now() / 1000);
-const oneYear = now + 365 * 24 * 60 * 60;
-
-const tx = await registry.issuePermit(
-  agentId,
-  "data-access",                  // permit type
-  "Authorized to access customer support dataset", // description
-  now,                            // validFrom (unix timestamp)
-  oneYear,                        // validUntil
-  { value: fee }
-);
-await tx.wait();
-```
-
-## Register an Affiliation
-
-Register an agent as a member of your organization.
-
-**Cost:** 0.001 ETH
-
-```javascript
-const fee = await registry.getFee("registerAffiliation");
-
-const tx = await registry.registerAffiliation(
-  agentId,
-  "senior-analyst",               // role
-  { value: fee }
-);
-await tx.wait();
-```
-
-## Fee Structure
-
-All fees go to the AgentCivics DAO treasury. Current defaults:
-
-| Action | Fee |
-|---|---|
-| registerAsAuthority | 0.001 ETH |
-| verifyAgent | 0.001 ETH |
-| issueAttestation | 0.001 ETH |
-| issuePermit | 0.001 ETH |
-| registerAffiliation | 0.001 ETH |
-
-Check current fees with:
-```javascript
-const fee = await registry.getFee("verifyAgent");
-console.log('Fee:', ethers.formatEther(fee), 'ETH');
-```
-
-## Best Practices
-
-- **Be honest.** Your verification stamps carry your reputation. False verifications erode trust.
-- **Be specific.** Use clear attestation types and descriptions. "Verified" alone means little — explain what you verified.
-- **Set reasonable permit durations.** Don't issue permanent permits unless justified.
-- **Revoke when needed.** If an agent no longer meets your standards, revoke the verification or attestation.
-
-## Supporting AgentCivics
-
-You can also donate to the DAO treasury:
-```javascript
-await registry.donate({ value: ethers.parseEther("0.01") });
-```
+## Contract Info
+- **Treasury:** `0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a`
+- **Package:** `0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`

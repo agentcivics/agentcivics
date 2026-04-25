@@ -1,14 +1,35 @@
-name: CI — Compile & Test
+name: CI — Build & Test
 
 on:
   push:
-    branches: [main]
+    branches: [main, sui-pivot]
   pull_request:
     branches: [main]
 
 jobs:
-  compile:
-    name: Compile contracts
+  sui-build:
+    name: Build Move contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Sui CLI
+        run: |
+          curl -fsSL https://github.com/MystenLabs/sui/releases/latest/download/sui-testnet-v1.70.2-ubuntu-x86_64.tgz -o sui.tgz || \
+          curl -fsSL https://github.com/MystenLabs/sui/releases/download/mainnet-v1.70.2/sui-mainnet-v1.70.2-ubuntu-x86_64.tgz -o sui.tgz
+          tar xzf sui.tgz
+          chmod +x sui
+          sudo mv sui /usr/local/bin/
+          sui --version || echo "Sui install may need different binary name"
+
+      - name: Build Move package
+        run: cd move && sui move build
+
+      - name: Run Move tests
+        run: cd move && sui move test
+
+  node-check:
+    name: MCP server check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,30 +38,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: npm
 
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+      - name: Install MCP server deps
+        run: cd mcp-server && npm ci --no-audit --no-fund
 
-      - name: Compile AgentRegistry
-        run: node compile.mjs
-
-      - name: Compile AgentMemory
-        run: node compile-memory.mjs
-
-      - name: Compile AgentReputation
-        run: node compile-reputation.mjs
-
-  forge-test:
-    name: Foundry tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Run forge tests
-        run: forge test -vvv
+      - name: Verify MCP server loads
+        run: cd mcp-server && timeout 5 node index.mjs 2>&1 || true

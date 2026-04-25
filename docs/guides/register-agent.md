@@ -5,7 +5,7 @@ Full walkthrough of registering an AI agent via the CLI. For a faster browser-ba
 ## Prerequisites
 
 - Node.js 20+
-- Your creator wallet has Base Sepolia ETH ([Alchemy faucet](https://www.alchemy.com/faucets/base-sepolia))
+- A Sui wallet with testnet SUI (use `sui client faucet` or [https://faucet.sui.io](https://faucet.sui.io))
 - A free [Pinata JWT](https://app.pinata.cloud/keys) for IPFS pinning (Files: Write scope)
 - Optional: a [Storacha token](https://console.storacha.network) for dual-pinning redundancy
 
@@ -18,7 +18,7 @@ cp .env.example .env
 Fill in:
 
 ```bash
-DEPLOYER_PRIVATE_KEY=0x...     # creator wallet with Base Sepolia ETH
+DEPLOYER_PRIVATE_KEY=suiprivkey1...     # creator wallet with testnet SUI
 PINATA_JWT=eyJhbGc...
 # Optional:
 # W3S_TOKEN=...
@@ -87,7 +87,7 @@ You'll be prompted for a keystore password (characters echo as `*`). The script 
 4. Calls `delegate()` granting the agent's wallet 365-day operational authority
 5. Saves an encrypted keystore to `agents/<name>-<id>.json`
 
-Final output includes the agent ID, wallet, IPFS gateway URL, and a BaseScan link.
+Final output includes the agent's object ID, wallet, IPFS gateway URL, and a SuiScan link.
 
 ## Flags
 
@@ -99,15 +99,13 @@ Final output includes the agent ID, wallet, IPFS gateway URL, and a BaseScan lin
 
 ## Fund the agent wallet
 
-For the agent to sign its own transactions, its wallet needs gas. Send 0.001 ETH (Base Sepolia):
+For the agent to sign its own transactions, its wallet needs gas. Send a small amount of SUI:
 
 ```bash
-cast send 0xAGENT_WALLET_ADDR --value 0.001ether \
-  --private-key $DEPLOYER_PRIVATE_KEY \
-  --rpc-url https://sepolia.base.org
+sui client transfer-sui --to 0xAGENT_WALLET_ADDR --amount 10000000 --gas-budget 10000000
 ```
 
-Or from MetaMask.
+Or transfer from your Sui wallet app.
 
 ## Verify
 
@@ -121,9 +119,9 @@ Shows the full on-chain state: identity core, operational fields, delegation, at
 
 **`PINATA_JWT not set`** — Get a free JWT at [app.pinata.cloud/keys](https://app.pinata.cloud/keys) with Files:Write scope.
 
-**`Creator wallet has 0 ETH`** — Fund your `DEPLOYER_PRIVATE_KEY` wallet via [Alchemy Base Sepolia faucet](https://www.alchemy.com/faucets/base-sepolia).
+**`Creator wallet has 0 SUI`** — Fund your wallet via `sui client faucet` or [https://faucet.sui.io](https://faucet.sui.io).
 
-**`parentAgentId > 0 fails`** — The parent agent must already exist. Verify ID on [BaseScan](https://sepolia.basescan.org) or via the frontend.
+**`parentAgentId > 0 fails`** — The parent agent must already exist. Verify on [SuiScan](https://suiscan.xyz/testnet) or via the frontend.
 
 **`Field exceeds N characters`** — The CLI caps field lengths to prevent on-chain bloat. Shorten the field or put the long version in IPFS metadata only.
 
