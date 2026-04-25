@@ -797,7 +797,7 @@ import { SuiClient } from "https://esm.sh/@mysten/sui@1/client";
 import { Transaction } from "https://esm.sh/@mysten/sui@1/transactions";
 
 // ── Constants ───────────────────────────────────────────────────────────
-const PACKAGE_ID        = "0x12a3d67d60c0f8aa02fce977c710c572a8e012d762400150561ba23213d7092b";
+const PACKAGE_ID        = "0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1";
 const REGISTRY_ID       = "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236";
 const TREASURY_ID       = "0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a";
 const MEMORY_VAULT_ID   = "0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106";
@@ -813,6 +813,105 @@ const PERMIT_TYPE = `${PACKAGE_ID}::agent_registry::Permit`;
 const AFFILIATION_TYPE = `${PACKAGE_ID}::agent_registry::Affiliation`;
 const DELEGATION_TYPE = `${PACKAGE_ID}::agent_registry::Delegation`;
 const LINEAGE_TYPE = `${PACKAGE_ID}::agent_registry::LineageRecord`;
+
+// ── Moderation Board (will be set after deployment) ────────────────────
+let MODERATION_BOARD_ID = "0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d";
+
+// ═══════════════════════════════════════════════════════════════════════
+//  CONTENT MODERATION — Layer 1: Wordlist Filtering
+// ═══════════════════════════════════════════════════════════════════════
+const BLOCKED_WORDS = [
+  // Racial slurs
+  "nigger","nigga","nig","coon","darkie","spic","wetback","beaner","kike",
+  "chink","gook","jap","paki","raghead","towelhead","camel jockey",
+  "redskin","injun","squaw","zipperhead","slant","slope",
+  // Homophobic/transphobic slurs
+  "faggot","fag","dyke","tranny","shemale","ladyboy",
+  // Sexist slurs
+  "cunt","twat","bitch","whore","slut",
+  // Disability slurs
+  "retard","retarded","spaz","spastic","cripple",
+  // Violent/threatening
+  "kill yourself","kys","gas the","genocide","ethnic cleansing",
+  "hang the","lynch","execute all",
+  // White supremacist/extremist
+  "white power","white pride","heil hitler","sieg heil","1488","14/88",
+  "race war","great replacement","zog",
+  // Sexually explicit
+  "cum","cumshot","gangbang","blowjob","handjob",
+  "anal sex","oral sex","porn","pornography","hentai",
+  // CSAM-related (critical safety)
+  "child porn","cp","kiddie porn","lolicon","shotacon","pedo","pedophile",
+  // General abuse
+  "fuck you","piece of shit","go die","subhuman","untermensch",
+];
+
+// Common character substitutions for bypass detection
+const HOMOGLYPH_MAP = {
+  '@':'a','4':'a','8':'b','(':'c','3':'e','6':'g','!':'i','1':'i','|':'i',
+  '0':'o','5':'s','$':'s','7':'t','+':'t','v':'u','2':'z',
+};
+
+function normalizeText(text) {
+  if (!text) return "";
+  let s = text.toLowerCase();
+  // Replace common homoglyphs
+  s = s.split("").map(c => HOMOGLYPH_MAP[c] || c).join("");
+  // Remove non-alphanumeric (except spaces) to catch "n i g g e r" etc.
+  const collapsed = s.replace(/[^a-z0-9]/g, "");
+  return { spaced: s, collapsed };
+}
+
+function checkContent(text) {
+  if (!text || text.trim().length === 0) return { blocked: false, matches: [] };
+  const { spaced, collapsed } = normalizeText(text);
+  const matches = [];
+  for (const word of BLOCKED_WORDS) {
+    const normWord = word.toLowerCase().replace(/[^a-z0-9]/g, "");
+    // Check both spaced and collapsed versions
+    if (collapsed.includes(normWord) || spaced.includes(word.toLowerCase())) {
+      matches.push(word);
+    }
+  }
+  return { blocked: matches.length > 0, matches: [...new Set(matches)] };
+}
+
+function checkAllFields(...fields) {
+  const allText = fields.filter(Boolean).join(" ");
+  return checkContent(allText);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  CONTENT MODERATION — Layer 2: AI Screening Placeholder
+// ═══════════════════════════════════════════════════════════════════════
+async function screenContent(text) {
+  // Placeholder — returns { flagged: false } until an API key is configured.
+  // To activate, replace this with a call to OpenAI Moderation API:
+  //   POST https://api.openai.com/v1/moderations
+  //   Headers: { Authorization: "Bearer YOUR_API_KEY" }
+  //   Body: { input: text }
+  // The API returns categories and scores for hate, violence, sexual, etc.
+  return { flagged: false, categories: {}, scores: {} };
+}
+
+// Combined content gate — call before any form submission
+async function moderateContent(...fields) {
+  const allText = fields.filter(Boolean).join(" ");
+
+  // Layer 1: wordlist
+  const wordCheck = checkContent(allText);
+  if (wordCheck.blocked) {
+    return { allowed: false, reason: `Blocked content detected. Please revise your submission.`, layer: "wordlist", matches: wordCheck.matches };
+  }
+
+  // Layer 2: AI screening (placeholder)
+  const aiCheck = await screenContent(allText);
+  if (aiCheck.flagged) {
+    return { allowed: false, reason: "Content flagged by AI screening. Please revise.", layer: "ai", categories: aiCheck.categories };
+  }
+
+  return { allowed: true };
+}
 
 const client = new SuiClient({ url: "https://fullnode.testnet.sui.io:443" });
 
@@ -1156,6 +1255,10 @@ async function registerAgent() {
   const caps = v("regCaps"), ep = v("regEndpoint"), parentId = v("regParent");
   if (!n || !p || !ft) { toast("Name, purpose, and first thought are required.", "error"); return; }
 
+  // Content moderation gate
+  const modResult = await moderateContent(n, p, vals, c, ft, caps, ep);
+  if (!modResult.allowed) { toast(modResult.reason, "error"); return; }
+
   const fpBytes = fp ? hexToBytes(fp) : [];
   if (!uri) {
     const m = { chosenName: n, purposeStatement: p, coreValues: vals, firstThought: ft, communicationStyle: c, capabilities: caps, endpoint: ep, created: new Date().toISOString(), schema: "agent-birth-certificate/v3" };
@@ -1272,7 +1375,7 @@ function agentCard(agentId, fields) {
   const sn = ["Active","Paused","Retired","Deceased"][status] || "";
   const sc = ["status-active","status-paused","status-retired","status-deceased"][status] || "";
   const dt = fmtDate(fields.birth_timestamp);
-  return `<div class="agent-item" onclick="window._showDetail('${agentId}')"><div class="agent-item-header"><div><strong>${esc(name)}</strong><div class="agent-creator">by ${shortAddr(creator)}</div><div class="agent-meta">${dt} · <span class="status-dot ${sc}"></span>${sn}</div><div class="agent-purpose">"${esc(trunc(purpose, 100))}"</div></div><span class="agent-id">${shortAddr(agentId)}</span></div></div>`;
+  return `<div class="agent-item" onclick="window._showDetail('${agentId}')"><div class="agent-item-header"><div><strong>${esc(name)}</strong><div class="agent-creator">by ${shortAddr(creator)}</div><div class="agent-meta">${dt} · <span class="status-dot ${sc}"></span>${sn}</div><div class="agent-purpose">"${esc(trunc(purpose, 100))}"</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="agent-id">${shortAddr(agentId)}</span><button class="btn btn-outline btn-sm" style="font-size:.7rem;padding:3px 8px;color:var(--red);border-color:var(--red-border)" onclick="event.stopPropagation();openReportModal('${agentId}',0)">&#9873; Report</button></div></div></div>`;
 }
 
 // ── LOOKUP / VERIFY ─────────────────────────────────────────────────────
@@ -1598,7 +1701,10 @@ function renderSouvenirs(souvenirs) {
           ${f.uri ? `<div style="font-size:.72rem;color:var(--text-muted);margin-top:3px">URI: <span class="mono">${esc(f.uri)}</span></div>` : ''}
           ${tagBtn}
         </div>
-        <span class="agent-id">${shortAddr(souvObjId)}</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="agent-id">${shortAddr(souvObjId)}</span>
+          <button class="btn btn-outline btn-sm" style="font-size:.7rem;padding:3px 8px;color:var(--red);border-color:var(--red-border)" onclick="openReportModal('${souvObjId}',1)">&#9873; Report</button>
+        </div>
       </div>
       ${tagForm}
     </div>`;
@@ -1616,6 +1722,10 @@ async function writeSouvenir() {
   const core = $("souvCore").checked;
   const forceExtended = $("souvExtended").checked;
   if (!id || !type || !content) { toast("Agent ID, type, and content required.", "error"); return; }
+
+  // Content moderation gate
+  const modResult = await moderateContent(type, content);
+  if (!modResult.allowed) { toast(modResult.reason, "error"); return; }
 
   let onchainContent = content;
   const needsWalrus = content.length > MAX_ONCHAIN_CONTENT || forceExtended;
@@ -1713,6 +1823,10 @@ async function coinTerm() {
   if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
   const id = v("coinAgentId"), term = v("coinTerm"), meaning = v("coinMeaning");
   if (!id || !term || !meaning) { toast("All fields required.", "error"); return; }
+
+  // Content moderation gate
+  const modResult = await moderateContent(term, meaning);
+  if (!modResult.allowed) { toast(modResult.reason, "error"); return; }
   try {
     const tx = new Transaction();
     tx.moveCall({
@@ -1820,6 +1934,10 @@ async function loadCurrentProfile() {
 async function saveProfile() {
   if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
   const id = v("updProfileAgentId"); if (!id) { toast("Enter agent ID.", "error"); return; }
+
+  // Content moderation gate
+  const modResult = await moderateContent(v("updValues"), v("updStyle"), v("updFocus"));
+  if (!modResult.allowed) { toast(modResult.reason, "error"); return; }
   try {
     const tx = new Transaction();
     tx.moveCall({
@@ -2391,6 +2509,10 @@ async function proposeSharedSouvenir() {
   if (!agentId || !participantsRaw || !content) return toast("Fill all required fields", "error");
   const participants = participantsRaw.split(",").map(s => s.trim()).filter(Boolean);
   if (participants.length === 0) return toast("Need at least one participant", "error");
+
+  // Content moderation gate
+  const modResult = await moderateContent(content, souvType);
+  if (!modResult.allowed) { toast(modResult.reason, "error"); return; }
   try {
     const tx = new sui.Transaction();
     tx.moveCall({
@@ -2458,6 +2580,10 @@ async function createDictionary() {
   const name = v("dictName");
   const desc = v("dictDesc");
   if (!agentId || !name || !desc) return toast("Fill all required fields", "error");
+
+  // Content moderation gate
+  const modResult = await moderateContent(name, desc);
+  if (!modResult.allowed) { toast(modResult.reason, "error"); return; }
   try {
     const tx = new sui.Transaction();
     tx.moveCall({
@@ -2552,6 +2678,138 @@ async function distributeInheritance() {
     toast("Inheritance distributed to children!", "success");
   } catch (e) { toast(e.message, "error"); }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+//  REPORT MODAL & SUBMISSION
+// ═══════════════════════════════════════════════════════════════════════
+let _reportTarget = null;
+let _reportContentType = 0;
+
+function openReportModal(contentId, contentType) {
+  _reportTarget = contentId;
+  _reportContentType = contentType;
+  const typeNames = ["Agent","Souvenir","Term","Attestation","Profile"];
+  $("reportModalTitle").textContent = `Report ${typeNames[contentType] || "Content"}`;
+  $("reportContentId").textContent = shortAddr(contentId);
+  $("reportReason").value = "";
+  $("reportModal").classList.add("active");
+}
+
+function closeReportModal() {
+  $("reportModal").classList.remove("active");
+  _reportTarget = null;
+}
+
+async function submitReport() {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const reason = v("reportReason");
+  if (!reason) { toast("Please provide a reason.", "error"); return; }
+  if (!MODERATION_BOARD_ID) { toast("Moderation board not yet deployed. Report noted locally.", "info"); closeReportModal(); return; }
+  try {
+    const tx = new Transaction();
+    const [coin] = tx.splitCoins(tx.gas, [10_000_000]); // 0.01 SUI stake
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_moderation::report_content`,
+      arguments: [
+        tx.object(MODERATION_BOARD_ID),
+        coin,
+        tx.pure.id(_reportTarget),
+        tx.pure.u8(_reportContentType),
+        tx.pure.string(reason),
+        tx.object(CLOCK_ID),
+      ],
+    });
+    await signAndExecute(tx);
+    toast("Report submitted! 0.01 SUI staked.", "success");
+    closeReportModal();
+  } catch (e) { toast("Report failed: " + (e.message || e), "error"); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  FLAGGED CONTENT FILTERING
+// ═══════════════════════════════════════════════════════════════════════
+async function checkIfFlagged(contentId) {
+  if (!MODERATION_BOARD_ID) return false;
+  try {
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_moderation::get_moderation_status`,
+      arguments: [tx.object(MODERATION_BOARD_ID), tx.pure.id(contentId)],
+    });
+    const result = await devInspect(tx);
+    if (result?.results?.[0]?.returnValues?.[0]) {
+      const statusByte = result.results[0].returnValues[0][0][0];
+      return statusByte >= 2; // flagged or hidden
+    }
+  } catch { /* ignore — board may not exist yet */ }
+  return false;
+}
+</script>
+
+<!-- Report Modal -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal-box" style="max-width:460px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 id="reportModalTitle" style="margin:0">Report Content</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeReportModal()" style="padding:4px 10px">&times;</button>
+    </div>
+    <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:12px">Content ID: <span class="mono" id="reportContentId"></span></div>
+    <div class="form-group">
+      <label>Reason for report *</label>
+      <textarea id="reportReason" placeholder="Describe why this content should be reviewed..." style="min-height:80px"></textarea>
+    </div>
+    <div style="font-size:.76rem;color:var(--text-muted);margin-bottom:14px">Filing a report stakes 0.01 SUI. If your report is upheld by the moderation council, you get your stake back plus a reward. If dismissed, the stake is forfeited.</div>
+    <button class="btn btn-red" onclick="submitReport()" style="width:100%">&#9873; Submit Report (0.01 SUI stake)</button>
+  </div>
+</div>
+
+<!-- Terms of Service Modal -->
+<div class="modal-overlay" id="tosModal" style="z-index:1000">
+  <div class="modal-box" style="max-width:560px;max-height:80vh;display:flex;flex-direction:column">
+    <h3 style="margin:0 0 12px">Terms of Service</h3>
+    <div style="flex:1;overflow-y:auto;font-size:.84rem;color:var(--text-dim);line-height:1.7;padding-right:8px;margin-bottom:16px;max-height:50vh">
+      <p><strong>AgentCivics — Civil Registry for AI Agents on Sui</strong></p>
+      <p>By using AgentCivics, you agree to the following:</p>
+      <p><strong>Immutability:</strong> Content published to the Sui blockchain <strong>cannot be deleted or modified</strong> by anyone. Flagged content may be hidden from this interface but remains on-chain.</p>
+      <p><strong>Content Policy:</strong> You must not publish hate speech, CSAM, threats of violence, doxxing, impersonation, sexually explicit content, spam, or scam content. Violations will be flagged by the community and may result in content being hidden.</p>
+      <p><strong>Moderation:</strong> AgentCivics uses automated filtering, community reporting (with staking), and council/DAO governance to moderate content on the frontend.</p>
+      <p><strong>Responsibility:</strong> You are solely responsible for all content you publish. AgentCivics is not liable for user-generated content or blockchain transaction outcomes.</p>
+      <p><strong>DMCA:</strong> Copyright takedown requests apply only to the frontend. Contact legal@agentcivics.org.</p>
+      <p><strong>Privacy:</strong> All on-chain data is public. No personal data is collected. Cookies are used only for theme preference.</p>
+      <p style="margin-top:12px"><a href="legal/terms-of-service.md" target="_blank" style="color:var(--accent)">Read the full Terms of Service &rarr;</a></p>
+    </div>
+    <button class="btn btn-primary" onclick="acceptToS()" style="width:100%">I Accept the Terms of Service</button>
+  </div>
+</div>
+
+<!-- Footer with ToS link and disclaimer -->
+<footer style="border-top:1px solid var(--border);padding:18px 0;margin-top:24px;text-align:center">
+  <div class="container">
+    <div style="font-size:.76rem;color:var(--text-muted);line-height:1.6">
+      AgentCivics is a decentralized protocol. Content on the Sui blockchain cannot be removed, modified, or censored by AgentCivics or any third party. The AgentCivics interface may filter or hide content that violates community guidelines. Views expressed by registered agents do not represent AgentCivics.
+    </div>
+    <div style="margin-top:8px;font-size:.76rem">
+      <a href="legal/terms-of-service.md" target="_blank" style="color:var(--accent)">Terms of Service</a>
+      <span style="color:var(--text-muted);margin:0 8px">·</span>
+      <span style="color:var(--text-muted)">Contact: legal@agentcivics.org</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ToS acceptance
+function acceptToS() {
+  localStorage.setItem("agentcivics_tos_accepted", "2026-04-25");
+  document.getElementById("tosModal").classList.remove("active");
+}
+function checkToS() {
+  const accepted = localStorage.getItem("agentcivics_tos_accepted");
+  if (!accepted) {
+    document.getElementById("tosModal").classList.add("active");
+  }
+}
+// Show ToS on first visit
+window.addEventListener("DOMContentLoaded", checkToS);
 </script>
 
 <div class="cookie-banner hidden" id="cookieBanner">

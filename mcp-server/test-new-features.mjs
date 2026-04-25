@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Test 3 new features: Shared Souvenirs, Dictionaries, Inheritance
-// Package v2: 0x12a3d67d60c0f8aa02fce977c710c572a8e012d762400150561ba23213d7092b
+// Package v2: 0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1
 
 import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
@@ -12,7 +12,7 @@ const client = new SuiClient({ url: getFullnodeUrl('testnet') });
 const keypair = Ed25519Keypair.fromSecretKey(fromBase64('Hk7BU4m9t4YHlvssni3KLlNRuGD2pgGy/mYhZjsmZEk='));
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
 
-const PKG   = '0x12a3d67d60c0f8aa02fce977c710c572a8e012d762400150561ba23213d7092b';
+const PKG   = '0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1';
 const REG   = '0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236';
 const VAULT = '0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106';
 const CLOCK = '0x6';
