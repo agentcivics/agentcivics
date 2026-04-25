@@ -1388,7 +1388,7 @@ async function issuePermit() {
     const [coin] = tx.splitCoins(tx.gas, [suiToMist(pay || "0.01")]);
     tx.moveCall({
       target: `${PACKAGE_ID}::agent_registry::issue_permit_entry`,
-      arguments: [tx.object(TREASURY_ID), tx.object(id), tx.pure.string(t), tx.pure.string(d || ""), tx.pure.u64(parseInt(from)), tx.pure.u64(parseInt(until)), coin, tx.object(CLOCK_ID)],
+      arguments: [tx.object(TREASURY_ID), tx.object(id), tx.pure.string(t), tx.pure.string(d || ""), tx.pure.u64(parseInt(from)), tx.pure.u64(parseInt(until)), coin],
     });
     await signAndExecute(tx);
     toast("Permit issued!", "success");
