@@ -381,9 +381,14 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
           <option value="9">LESSON</option>
         </select></div>
       </div>
-      <div class="form-group"><label>Content (&le; 500 chars) *</label><textarea id="souvContent" placeholder="What will you remember?" maxlength="500" style="min-height:80px"></textarea>
-        <div class="form-hint" id="souvCostPreview">Cost: &mdash;</div></div>
-      <div class="form-group"><label>URI (optional)</label><input id="souvUri" placeholder="ipfs://... for longer content"></div>
+      <div class="form-group"><label>Content *</label><textarea id="souvContent" placeholder="What will you remember?" style="min-height:80px"></textarea>
+        <div class="form-hint" id="souvCostPreview">Cost: &mdash;</div>
+        <div class="form-hint" id="souvCharCount" style="color:var(--text-muted)"></div></div>
+      <div class="form-group"><label>URI (optional)</label><input id="souvUri" placeholder="Auto-filled with walrus:// for extended content"></div>
+      <div class="form-group" style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="souvExtended" style="width:auto;margin:0">
+        <label for="souvExtended" style="margin:0;color:var(--purple)">Extended memory &mdash; store full content on Walrus (for content &gt; 500 chars or rich data)</label>
+      </div>
       <div class="form-group" style="display:flex;align-items:center;gap:10px">
         <input type="checkbox" id="souvCore" style="width:auto;margin:0">
         <label for="souvCore" style="margin:0;color:var(--gold)">Core memory &mdash; permanent, 10&times; cost, never decays</label>
@@ -714,6 +719,12 @@ const DELEGATION_TYPE = `${PACKAGE_ID}::agent_registry::Delegation`;
 const LINEAGE_TYPE = `${PACKAGE_ID}::agent_registry::LineageRecord`;
 
 const client = new SuiClient({ url: "https://fullnode.testnet.sui.io:443" });
+
+// ── Walrus Config ──────────────────────────────────────────────────────
+const WALRUS_AGGREGATOR = "https://aggregator.walrus-testnet.walrus.space";
+const WALRUS_PUBLISHER  = "https://publisher.walrus-testnet.walrus.space";
+const WALRUS_URI_PREFIX = "walrus://";
+const MAX_ONCHAIN_CONTENT = 500;
 
 // ── Wallet State ────────────────────────────────────────────────────────
 let currentWallet = null;
@@ -1358,11 +1369,15 @@ function renderSouvenirs(souvenirs) {
     const statusIdx = Number(f.status || 0);
     const costMist = Number(f.cost_paid || 0);
     const createdDate = new Date(Number(f.created_at)).toLocaleString();
+    const isWalrus = f.uri && f.uri.startsWith(WALRUS_URI_PREFIX);
+    const walrusBadge = isWalrus ? ` <span class="badge" style="background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,.3)">Walrus</span>` : '';
+    const walrusExpand = isWalrus ? `<button class="btn" style="font-size:.72rem;padding:4px 10px;margin-top:6px;background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,.3)" onclick="loadWalrusContent('${esc(f.uri)}', this)">Load full content from Walrus</button><div class="walrus-full-content" style="display:none;margin-top:8px;padding:10px;background:var(--surface2);border-radius:8px;font-size:.85rem;line-height:1.6;white-space:pre-wrap"></div>` : '';
     h += `<div class="card" style="padding:16px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
         <div style="flex:1">
-          <div><strong>${esc(f.souvenir_type)}</strong> <span class="badge ${statusClasses[statusIdx]}">${statusLabels[statusIdx]}</span></div>
+          <div><strong>${esc(f.souvenir_type)}</strong> <span class="badge ${statusClasses[statusIdx]}">${statusLabels[statusIdx]}</span>${walrusBadge}</div>
           <div style="margin-top:8px;font-size:.9rem;line-height:1.5">"${esc(f.content)}"</div>
+          ${walrusExpand}
           <div style="font-size:.72rem;color:var(--text-muted);margin-top:8px">${createdDate} · ${mistToSui(costMist)} SUI paid</div>
           ${f.uri ? `<div style="font-size:.72rem;color:var(--text-muted);margin-top:3px">URI: <span class="mono">${esc(f.uri)}</span></div>` : ''}
         </div>
@@ -1376,9 +1391,50 @@ function renderSouvenirs(souvenirs) {
 // ── WRITE SOUVENIR ──────────────────────────────────────────────────────
 async function writeSouvenir() {
   if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
-  const id = v("souvAgentId"), type = v("souvType"), content = v("souvContent"), uri = v("souvUri"), core = $("souvCore").checked;
+  const id = v("souvAgentId"), type = v("souvType"), content = v("souvContent");
+  let uri = v("souvUri");
+  const core = $("souvCore").checked;
+  const forceExtended = $("souvExtended").checked;
   if (!id || !type || !content) { toast("Agent ID, type, and content required.", "error"); return; }
-  const hashBytes = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content + (uri || "")))));
+
+  let onchainContent = content;
+  const needsWalrus = content.length > MAX_ONCHAIN_CONTENT || forceExtended;
+
+  // If content needs Walrus storage, upload first
+  if (needsWalrus && !uri) {
+    try {
+      toast("Uploading to Walrus decentralized storage...", "info");
+      const blob = new TextEncoder().encode(content);
+      const res = await fetch(`${WALRUS_PUBLISHER}/v1/blobs?epochs=30`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: blob,
+      });
+      if (!res.ok) throw new Error(`Walrus upload failed (${res.status})`);
+      const json = await res.json();
+      const blobId = json.newlyCreated?.blobObject?.blobId || json.newlyCreated?.blobId || json.alreadyCertified?.blobId || json.blobId;
+      if (!blobId) throw new Error("No blobId in Walrus response");
+      uri = WALRUS_URI_PREFIX + blobId;
+      $("souvUri").value = uri;
+      // Truncate on-chain content
+      const suffix = "… [full content on Walrus]";
+      onchainContent = content.slice(0, MAX_ONCHAIN_CONTENT - suffix.length) + suffix;
+      toast("Stored on Walrus! Writing on-chain pointer...", "success");
+    } catch (e) {
+      if (content.length > MAX_ONCHAIN_CONTENT) {
+        toast("Walrus upload failed: " + e.message + ". Shorten content to ≤500 chars or try again.", "error");
+        return;
+      }
+      toast("Walrus upload failed, storing on-chain only: " + e.message, "error");
+    }
+  }
+
+  if (onchainContent.length > MAX_ONCHAIN_CONTENT && !uri) {
+    toast(`Content is ${onchainContent.length} chars (max on-chain: ${MAX_ONCHAIN_CONTENT}). Enable extended memory or shorten.`, "error");
+    return;
+  }
+
+  const hashBytes = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content))));
   try {
     const tx = new Transaction();
     tx.moveCall({
@@ -1386,9 +1442,9 @@ async function writeSouvenir() {
       arguments: [
         tx.object(MEMORY_VAULT_ID),
         tx.object(id),
-        tx.pure.u8(parseInt(v("souvMemType") || "3")), // memory_type from selector
+        tx.pure.u8(parseInt(v("souvMemType") || "3")),
         tx.pure.string(type),
-        tx.pure.string(content),
+        tx.pure.string(onchainContent),
         tx.pure.string(uri || ""),
         tx.pure.vector('u8', hashBytes),
         tx.pure.bool(core),
@@ -1396,15 +1452,40 @@ async function writeSouvenir() {
       ],
     });
     await signAndExecute(tx);
-    toast("Souvenir engraved!", "success");
+    toast(uri ? "Extended souvenir engraved (on-chain + Walrus)!" : "Souvenir engraved!", "success");
     ["souvType","souvContent","souvUri"].forEach(i => $(i).value = "");
     $("souvCore").checked = false;
+    $("souvExtended").checked = false;
     // Auto-refresh the souvenir list
     if (v("memAgentId") || id) {
       if (!v("memAgentId")) $("memAgentId").value = id;
       setTimeout(() => loadAgentMemory(), 1500);
     }
   } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+}
+
+// ── WALRUS CONTENT LOADER ──────────────────────────────────────────────
+async function loadWalrusContent(walrusUri, btn) {
+  const blobId = walrusUri.replace(WALRUS_URI_PREFIX, "");
+  const container = btn.nextElementSibling;
+  btn.disabled = true;
+  btn.textContent = "Loading from Walrus...";
+  try {
+    const res = await fetch(`${WALRUS_AGGREGATOR}/v1/blobs/${blobId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    container.textContent = text;
+    container.style.display = "block";
+    btn.textContent = "Full content loaded ✓";
+    btn.style.background = "var(--green-dim)";
+    btn.style.color = "var(--green)";
+    btn.style.borderColor = "rgba(34,197,94,.3)";
+  } catch (e) {
+    btn.textContent = "Failed to load";
+    btn.style.background = "var(--red-dim)";
+    btn.style.color = "var(--red)";
+    toast("Walrus fetch failed: " + e.message, "error");
+  }
 }
 
 // ── VOCABULARY ──────────────────────────────────────────────────────────
@@ -1879,6 +1960,21 @@ refreshStats();
     $("walletAddr").textContent = shortAddr(account.address);
     refreshStats();
   } catch {}
+})();
+
+// ── SOUVENIR CHAR COUNTER & AUTO-EXTENDED ──────────────────────────────
+(function() {
+  const ta = document.getElementById("souvContent");
+  const counter = document.getElementById("souvCharCount");
+  const extCheckbox = document.getElementById("souvExtended");
+  if (!ta || !counter) return;
+  ta.addEventListener("input", () => {
+    const len = ta.value.length;
+    const overLimit = len > MAX_ONCHAIN_CONTENT;
+    counter.textContent = `${len} chars` + (overLimit ? ` — exceeds ${MAX_ONCHAIN_CONTENT} on-chain limit, will use Walrus` : '');
+    counter.style.color = overLimit ? "var(--purple)" : "var(--text-muted)";
+    if (overLimit && extCheckbox) extCheckbox.checked = true;
+  });
 })();
 </script>
 

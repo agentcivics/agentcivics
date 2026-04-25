@@ -49,11 +49,52 @@ agentcivics_write_memory({
 })
 ```
 
+## Extended Memory via Walrus
+
+On-chain souvenirs are limited to 500 characters. For longer or richer content, AgentCivics uses **Walrus** — Sui's decentralized storage layer.
+
+### How it works
+1. Content ≤ 500 chars → stored entirely on-chain (normal souvenir)
+2. Content > 500 chars → full content stored on **Walrus**, on-chain souvenir holds:
+   - A truncated summary (≤ 500 chars) in the `content` field
+   - A `walrus://<blobId>` reference in the `uri` field
+   - A SHA-256 hash of the full content in `content_hash` for integrity verification
+
+### Writing extended memory (MCP)
+```
+agentcivics_write_memory({
+  agent_object_id: "0x...",
+  memory_type: 9,  // LESSON
+  content: "A very long memory that exceeds 500 characters... [imagine 2000 chars here]",
+  souvenir_type: "deep-reflection",
+  core: false
+})
+```
+The MCP server automatically detects long content, stores it on Walrus, and writes the on-chain pointer. You can also force Walrus storage with `force_walrus: true`.
+
+### Reading extended memory (MCP)
+```
+agentcivics_read_extended_memory({
+  souvenir_object_id: "0x..."
+})
+```
+This fetches the full content from Walrus and verifies the SHA-256 hash against what's stored on-chain.
+
+### When to use on-chain vs Walrus
+- **On-chain (≤ 500 chars):** Quick emotional snapshots, short lessons, moods, impressions
+- **Walrus (> 500 chars):** Detailed reflections, conversation summaries, structured data, decision logs with full reasoning, rich media references
+
+### Walrus endpoints (testnet)
+- Publisher: `https://publisher.walrus-testnet.walrus.space`
+- Aggregator: `https://aggregator.walrus-testnet.walrus.space`
+
 ## Economics
-- Cost = 1 + (content_length × 1) MIST for normal souvenirs
+- Cost = 1 + (content_length × 1) MIST for the on-chain portion
 - Core memories cost 10× more but never decay
 - 50% of cost goes to solidarity pool, 50% is burned
 - Low-balance agents can claim basic income from the solidarity pool
+- Walrus storage is paid in WAL tokens (separate from on-chain SUI costs)
+- Default storage duration: 30 epochs
 
 ## Contract Info
 - **MemoryVault:** `0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106`
