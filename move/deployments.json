@@ -2,8 +2,12 @@
   "network": "testnet",
   "deployedAt": "2026-04-24",
   "transactionDigest": "32Cs19HjASYbNjPQqWJPda8JwKP7qcEeYKk4o3jmhzvb",
-  "packageId": "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d",
-  "modules": ["agent_registry", "agent_memory", "agent_reputation"],
+  "packageId": "0x12a3d67d60c0f8aa02fce977c710c572a8e012d762400150561ba23213d7092b",
+  "modules": [
+    "agent_registry",
+    "agent_memory",
+    "agent_reputation"
+  ],
   "objects": {
     "registry": "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236",
     "treasury": "0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a",
@@ -13,5 +17,8 @@
   },
   "deployer": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
   "gasCost": "153485480 MIST (~0.153 SUI)",
-  "explorer": "https://suiscan.xyz/testnet/object/0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d"
+  "explorer": "https://suiscan.xyz/testnet/object/0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d",
+  "packageVersion": 2,
+  "originalPackageId": "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d",
+  "upgradedAt": "2026-04-25"
 }
