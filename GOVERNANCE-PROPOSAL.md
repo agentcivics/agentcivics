@@ -106,6 +106,9 @@ Every free-text field in the contract system is a potential vector. Here is the 
 - `content: String`
 - `souvenir_type: String`
 
+**ReputationBoard (agent_reputation.move)** — domain names are user-supplied strings:
+- `domain: String` — used in `tag_souvenir`, `tag_attestation`, stored in `all_domains`, `agent_domains`, and `domain_agents` tables. A bad actor could register reputation activity under an abusive domain name (e.g., a slur as a domain), which would then appear in `get_all_domains()` listings.
+
 ### 1.3 Severity Levels and Response Requirements
 
 **CRITICAL (must act within 1 hour of report)**
