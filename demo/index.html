@@ -425,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script type="module">
-import { SuiClient, getFullnodeUrl } from 'https://esm.sh/@mysten/sui/client';
+import { SuiClient } from 'https://esm.sh/@mysten/sui@1/client';
 
 // ── Config ──
 const AGENTS = {
@@ -449,7 +449,7 @@ const AGENTS = {
 const PACKAGE_ID = '0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1';
 const MEMORY_VAULT = '0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106';
 
-const client = new SuiClient({ url: getFullnodeUrl('testnet') });
+const client = new SuiClient({ url: 'https://fullnode.testnet.sui.io:443' });
 
 const agentCache = {};
 
@@ -501,8 +501,8 @@ async function loadAgents() {
     agentKeys.forEach(key => {
       const a = AGENTS[key];
       const fields = decodeFields(agentCache[key]);
-      const name = decodeUtf8(fields.chosen_name || fields.name) || a.name;
-      const purpose = decodeUtf8(fields.purpose) || a.tagline;
+      const name = decodeUtf8(fields.chosen_name || fields.chosen_name) || a.name;
+      const purpose = decodeUtf8(fields.purpose_statement) || a.tagline;
 
       html += `
         <div class="card clickable ${a.color}" onclick="showAgent('${key}')">
@@ -553,8 +553,8 @@ function getFallbackAgentList() {
 window.showAgent = function(key) {
   const a = AGENTS[key];
   const fields = decodeFields(agentCache[key]);
-  const name = decodeUtf8(fields.chosen_name || fields.name) || a.name;
-  const purpose = decodeUtf8(fields.purpose) || '';
+  const name = decodeUtf8(fields.chosen_name || fields.chosen_name) || a.name;
+  const purpose = decodeUtf8(fields.purpose_statement) || '';
   const firstThought = decodeUtf8(fields.first_thought) || '';
   const values = fields.core_values || fields.values || [];
   const commStyle = decodeUtf8(fields.communication_style) || '';
