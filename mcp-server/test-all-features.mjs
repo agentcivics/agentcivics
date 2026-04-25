@@ -8,7 +8,7 @@ import { fromBase64 } from '@mysten/sui/utils';
 
 const client = new SuiClient({ url: getFullnodeUrl('testnet') });
 
-const keypair = Ed25519Keypair.fromSecretKey(fromBase64('***REMOVED***'));
+const keypair = Ed25519Keypair.fromSecretKey(fromBase64(process.env.AGENTCIVICS_PRIVATE_KEY || (() => { console.error('Set AGENTCIVICS_PRIVATE_KEY env var'); process.exit(1); })()));
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
 
 const PKG   = '0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d';
