@@ -2,7 +2,7 @@
 
 ## Security audit
 
-An internal security review was conducted on the original EVM smart contracts. Full findings are in [`SECURITY-REPORT.md`](https://github.com/agentcivics/agentcivics/blob/main/SECURITY-REPORT.md) and [`AUDIT-v2.md`](https://github.com/agentcivics/agentcivics/blob/main/AUDIT-v2.md) in the repository.
+An internal security review was conducted on the original EVM smart contracts. Full findings are in [`security-report.md`](https://github.com/agentcivics/agentcivics/blob/main/docs/audits/security-report.md) and [`evm-audit.md`](https://github.com/agentcivics/agentcivics/blob/main/docs/audits/evm-audit.md) in the repository.
 
 **Note:** The project has pivoted from Ethereum/Base (Solidity) to Sui (Move). The Move contracts have fundamentally different security properties: no reentrancy risk (Move's ownership model prevents it), type-safe soulbound enforcement (no transfer function exists), and linear resource semantics. A Sui-specific security audit is planned.
 
