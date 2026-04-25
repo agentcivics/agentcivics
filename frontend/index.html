@@ -479,12 +479,24 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
 
     <div class="card">
       <h3>Tag a Souvenir with a Domain</h3>
-      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Tag a souvenir you authored. You receive credit in that domain.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Agent Object ID *</label><input id="tagSouvAgentId" placeholder="0x... (your agent)"></div>
-        <div class="form-group"><label>Souvenir Object ID *</label><input id="tagSouvId" placeholder="0x..."></div>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Select one of your souvenirs and tag it with a domain. You receive credit in that domain.</p>
+      <div class="form-group">
+        <label>Your Agent</label>
+        <select id="tagSouvAgentSelect" onchange="loadSouvenirsForTagging()" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.85rem">
+          <option value="">— Connect wallet & load agents —</option>
+        </select>
+        <input type="hidden" id="tagSouvAgentId">
       </div>
-      <div class="form-group"><label>Domain *</label><input id="tagSouvDomain" placeholder="e.g. smart-contracts, poetry, cooking"></div>
+      <div id="tagSouvPickerArea" style="margin-bottom:10px">
+        <label style="font-size:.82rem;color:var(--text-dim)">Souvenirs (click to select)</label>
+        <div id="tagSouvPicker" style="max-height:200px;overflow-y:auto;margin-top:6px"><div class="empty-state" style="font-size:.8rem">Load an agent above to see souvenirs.</div></div>
+        <input type="hidden" id="tagSouvId">
+      </div>
+      <div class="form-group">
+        <label>Domain *</label>
+        <input id="tagSouvDomain" list="tagSouvDomainList" placeholder="e.g. smart-contracts, poetry, cooking">
+        <datalist id="tagSouvDomainList"></datalist>
+      </div>
       <button class="btn btn-primary btn-sm" style="width:auto" onclick="tagSouvenir()">Tag Souvenir</button>
     </div>
 
@@ -497,7 +509,11 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
       </div>
       <div class="form-row">
         <div class="form-group"><label>Subject Agent Object ID *</label><input id="tagAttSubjectId" placeholder="0x... (who receives credit)"></div>
-        <div class="form-group"><label>Domain *</label><input id="tagAttDomain" placeholder="e.g. security-audit"></div>
+        <div class="form-group">
+          <label>Domain *</label>
+          <input id="tagAttDomain" list="tagAttDomainList" placeholder="e.g. security-audit">
+          <datalist id="tagAttDomainList"></datalist>
+        </div>
       </div>
       <button class="btn btn-primary btn-sm" style="width:auto" onclick="tagAttestation()">Tag Attestation</button>
     </div>
@@ -736,6 +752,8 @@ const MAX_ONCHAIN_CONTENT = 500;
 // ── Wallet State ────────────────────────────────────────────────────────
 let currentWallet = null;
 let currentAccount = null;
+let cachedUserAgents = null;  // cached AgentIdentity objects owned by current wallet
+let cachedAllDomains = null;  // cached domain list for datalist
 
 // ── Wallet Standard (with Slush priority, deduplicate by name) ───────���──
 const _discoveredWallets = [];
@@ -835,6 +853,7 @@ function disconnectWallet() {
   }
   currentWallet = null;
   currentAccount = null;
+  cachedUserAgents = null;
   try { localStorage.removeItem("ac_wallet"); localStorage.removeItem("ac_addr"); } catch {}
   $("connectBtn").textContent = "Connect Wallet";
   $("connectBtn").classList.remove("connected");
@@ -949,6 +968,111 @@ async function getObjectFields(objectId) {
   const res = await client.getObject({ id: objectId, options: { showContent: true } });
   if (!res.data?.content) throw new Error("Object not found: " + objectId);
   return res.data.content.fields;
+}
+
+// ── USER AGENT DETECTION ────────────────────────────────────────────────
+async function getUserAgents(forceRefresh) {
+  if (cachedUserAgents && !forceRefresh) return cachedUserAgents;
+  if (!currentAccount) return [];
+  const res = await client.getOwnedObjects({
+    owner: currentAccount.address,
+    filter: { StructType: AGENT_TYPE },
+    options: { showContent: true },
+    limit: 50,
+  });
+  cachedUserAgents = (res.data || []).filter(o => o.data?.content);
+  return cachedUserAgents;
+}
+
+async function fetchAllDomains(forceRefresh) {
+  if (cachedAllDomains && !forceRefresh) return cachedAllDomains;
+  try {
+    const board = await getObjectFields(REPUTATION_BOARD_ID);
+    cachedAllDomains = board.all_domains || [];
+  } catch { cachedAllDomains = []; }
+  return cachedAllDomains;
+}
+
+// Find the user's agent that owns a given souvenir (by agent_id field on souvenir)
+function findUserAgentForSouvenir(souvenirAgentId) {
+  if (!cachedUserAgents) return null;
+  return cachedUserAgents.find(a => a.data.content.fields.id?.id === souvenirAgentId) || null;
+}
+
+// Inline tag souvenir from Memory tab
+async function inlineTagSouvenir(souvenirObjId, souvenirAgentId, btnEl) {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const formEl = btnEl.closest('.souvenir-card-wrap').querySelector('.inline-tag-form');
+  if (formEl.style.display === 'block') { formEl.style.display = 'none'; return; }
+  formEl.style.display = 'block';
+  // Pre-load domains for datalist
+  const domains = await fetchAllDomains();
+  const dl = formEl.querySelector('.domain-datalist');
+  if (dl) { dl.innerHTML = domains.map(d => `<option value="${esc(d)}">`).join(''); }
+}
+
+async function submitInlineTagSouvenir(souvenirObjId, souvenirAgentId, btnEl) {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const formEl = btnEl.closest('.inline-tag-form');
+  const domainInput = formEl.querySelector('.inline-domain-input');
+  const domain = domainInput.value.trim();
+  if (!domain) { toast("Enter a domain name.", "error"); return; }
+
+  // Find the user's agent object for this souvenir
+  const agents = await getUserAgents();
+  const agentObj = findUserAgentForSouvenir(souvenirAgentId);
+  if (!agentObj) {
+    toast("You don't own the agent for this souvenir. Only the agent's creator can tag.", "error");
+    return;
+  }
+  const agentObjId = agentObj.data.objectId;
+
+  try {
+    btnEl.disabled = true; btnEl.textContent = "Tagging...";
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_reputation::tag_souvenir`,
+      arguments: [tx.object(REPUTATION_BOARD_ID), tx.object(agentObjId), tx.object(souvenirObjId), tx.pure.string(domain)],
+    });
+    await signAndExecute(tx);
+    toast(`Souvenir tagged '${domain}'`, "success");
+    domainInput.value = "";
+    formEl.style.display = "none";
+    cachedAllDomains = null; // bust cache
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  finally { btnEl.disabled = false; btnEl.textContent = "Submit"; }
+}
+
+// Inline tag attestation from timeline
+async function submitInlineTagAttestation(attestationObjId, subjectAgentId, btnEl) {
+  if (!currentWallet) { toast("Connect wallet first.", "error"); return; }
+  const formEl = btnEl.closest('.inline-tag-form');
+  const domainInput = formEl.querySelector('.inline-domain-input');
+  const domain = domainInput.value.trim();
+  if (!domain) { toast("Enter a domain name.", "error"); return; }
+
+  const agents = await getUserAgents();
+  if (!agents.length) {
+    toast("You need an agent to tag attestations. Register one first.", "error");
+    return;
+  }
+  // Use first agent owned by this wallet as the tagger
+  const taggerObjId = agents[0].data.objectId;
+
+  try {
+    btnEl.disabled = true; btnEl.textContent = "Tagging...";
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_reputation::tag_attestation`,
+      arguments: [tx.object(REPUTATION_BOARD_ID), tx.object(taggerObjId), tx.object(attestationObjId), tx.object(subjectAgentId), tx.pure.string(domain)],
+    });
+    await signAndExecute(tx);
+    toast(`Attestation tagged '${domain}'`, "success");
+    domainInput.value = "";
+    formEl.style.display = "none";
+    cachedAllDomains = null;
+  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  finally { btnEl.disabled = false; btnEl.textContent = "Submit"; }
 }
 
 // ── REGISTER ────────────────────────────────────────────────────────────
@@ -1373,13 +1497,25 @@ function renderSouvenirs(souvenirs) {
   let h = "";
   for (const s of souvenirs) {
     const f = s.data.content.fields;
+    const souvObjId = s.data.objectId;
+    const souvAgentId = f.agent_id;
     const statusIdx = Number(f.status || 0);
     const costMist = Number(f.cost_paid || 0);
     const createdDate = new Date(Number(f.created_at)).toLocaleString();
     const isWalrus = f.uri && f.uri.startsWith(WALRUS_URI_PREFIX);
     const walrusBadge = isWalrus ? ` <span class="badge" style="background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,.3)">Walrus</span>` : '';
     const walrusExpand = isWalrus ? `<button class="btn" style="font-size:.72rem;padding:4px 10px;margin-top:6px;background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,.3)" onclick="loadWalrusContent('${esc(f.uri)}', this)">Load full content from Walrus</button><div class="walrus-full-content" style="display:none;margin-top:8px;padding:10px;background:var(--surface2);border-radius:8px;font-size:.85rem;line-height:1.6;white-space:pre-wrap"></div>` : '';
-    h += `<div class="card" style="padding:16px;margin-bottom:10px">
+    const tagBtn = `<button class="btn btn-outline" style="font-size:.7rem;padding:3px 10px;margin-top:6px;border-color:var(--purple);color:var(--purple)" onclick="inlineTagSouvenir('${souvObjId}','${souvAgentId}',this)">Tag with domain</button>`;
+    const tagForm = `<div class="inline-tag-form" style="display:none;margin-top:10px;padding:10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:.78rem;color:var(--text-dim);margin-bottom:6px">Tag this souvenir with a domain to build reputation</div>
+        <datalist class="domain-datalist"></datalist>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="inline-domain-input" list="domainSuggestions_${souvObjId.slice(-8)}" placeholder="e.g. smart-contracts, poetry" style="flex:1;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.82rem">
+          <datalist id="domainSuggestions_${souvObjId.slice(-8)}" class="domain-datalist"></datalist>
+          <button class="btn btn-primary" style="font-size:.78rem;padding:5px 14px" onclick="submitInlineTagSouvenir('${souvObjId}','${souvAgentId}',this)">Submit</button>
+        </div>
+      </div>`;
+    h += `<div class="card souvenir-card-wrap" style="padding:16px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
         <div style="flex:1">
           <div><strong>${esc(f.souvenir_type)}</strong> <span class="badge ${statusClasses[statusIdx]}">${statusLabels[statusIdx]}</span>${walrusBadge}</div>
@@ -1387,12 +1523,16 @@ function renderSouvenirs(souvenirs) {
           ${walrusExpand}
           <div style="font-size:.72rem;color:var(--text-muted);margin-top:8px">${createdDate} · ${mistToSui(costMist)} SUI paid</div>
           ${f.uri ? `<div style="font-size:.72rem;color:var(--text-muted);margin-top:3px">URI: <span class="mono">${esc(f.uri)}</span></div>` : ''}
+          ${tagBtn}
         </div>
-        <span class="agent-id">${shortAddr(s.data.objectId)}</span>
+        <span class="agent-id">${shortAddr(souvObjId)}</span>
       </div>
+      ${tagForm}
     </div>`;
   }
   d.innerHTML = h;
+  // Pre-fetch user agents for tagging
+  if (currentWallet) getUserAgents();
 }
 
 // ── WRITE SOUVENIR ──────────────────────────────────────────────────────
@@ -1681,6 +1821,64 @@ async function claimBasicIncome() {
 }
 
 // ── REPUTATION / SPECIALIZATION ─────────────────────────────────────────
+// ── SPECIALIZATION TAB HELPERS ──────────────────────────────────────────
+async function populateSpecTabAgents() {
+  if (!currentAccount) return;
+  const agents = await getUserAgents();
+  const sel = $("tagSouvAgentSelect");
+  sel.innerHTML = '<option value="">— Select your agent —</option>';
+  for (const a of agents) {
+    const f = a.data.content.fields;
+    const name = f.chosen_name || shortAddr(a.data.objectId);
+    sel.innerHTML += `<option value="${a.data.objectId}">${esc(name)} (${shortAddr(a.data.objectId)})</option>`;
+  }
+  // Also populate domain datalists
+  const domains = await fetchAllDomains();
+  const opts = domains.map(d => `<option value="${esc(d)}">`).join('');
+  const dl1 = $("tagSouvDomainList"); if (dl1) dl1.innerHTML = opts;
+  const dl2 = $("tagAttDomainList"); if (dl2) dl2.innerHTML = opts;
+}
+
+async function loadSouvenirsForTagging() {
+  const agentObjId = $("tagSouvAgentSelect").value;
+  const picker = $("tagSouvPicker");
+  $("tagSouvAgentId").value = agentObjId;
+  $("tagSouvId").value = "";
+  if (!agentObjId) { picker.innerHTML = '<div class="empty-state" style="font-size:.8rem">Select an agent above.</div>'; return; }
+  picker.innerHTML = loading();
+  try {
+    const agent = await getAgentObject(agentObjId);
+    const ownerAddr = agent.creator;
+    const agentId = agent.id?.id || agentObjId;
+    const souvenirs = await client.getOwnedObjects({
+      owner: ownerAddr,
+      filter: { StructType: SOUVENIR_TYPE },
+      options: { showContent: true },
+      limit: 50,
+    });
+    const agentSouvs = souvenirs.data?.filter(s => s.data?.content?.fields?.agent_id === agentId) || [];
+    if (!agentSouvs.length) { picker.innerHTML = '<div class="empty-state" style="font-size:.8rem">No souvenirs for this agent.</div>'; return; }
+    let h = '';
+    for (const s of agentSouvs) {
+      const f = s.data.content.fields;
+      h += `<div class="souvenir-pick-card" data-id="${s.data.objectId}" onclick="selectSouvenirForTag(this,'${s.data.objectId}')" style="padding:8px 12px;margin-bottom:4px;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:border-color .2s,background .2s;font-size:.82rem">
+        <strong>${esc(f.souvenir_type)}</strong> — "${esc(trunc(f.content, 60))}"
+        <span class="mono" style="font-size:.7rem;color:var(--text-muted);margin-left:6px">${shortAddr(s.data.objectId)}</span>
+      </div>`;
+    }
+    picker.innerHTML = h;
+  } catch (e) { picker.innerHTML = `<div class="empty-state" style="font-size:.8rem">Error: ${esc(e.message || e)}</div>`; }
+}
+
+function selectSouvenirForTag(el, souvId) {
+  // Deselect previous
+  el.closest('#tagSouvPicker').querySelectorAll('.souvenir-pick-card').forEach(c => {
+    c.style.borderColor = 'var(--border)'; c.style.background = 'transparent';
+  });
+  el.style.borderColor = 'var(--purple)'; el.style.background = 'var(--purple-dim)';
+  $("tagSouvId").value = souvId;
+}
+
 async function loadAgentSpecialization() {
   const id = v("specAgentId"); if (!id) { toast("Enter agent ID.", "error"); return; }
   const d = $("specResult"); d.innerHTML = loading();
@@ -1817,7 +2015,7 @@ async function viewTimeline() {
       });
       for (const ev of (attEvents.data || [])) {
         if (ev.parsedJson?.agent_id === id) {
-          events.push({ ts: Number(ev.timestampMs), type: "attestation", cls: "attestation", title: "Attestation: " + esc(ev.parsedJson.attestation_type || ""), desc: "by " + shortAddr(ev.parsedJson.issuer || "") });
+          events.push({ ts: Number(ev.timestampMs), type: "attestation", cls: "attestation", title: "Attestation: " + esc(ev.parsedJson.attestation_type || ""), desc: "by " + shortAddr(ev.parsedJson.issuer || ""), attestationId: ev.parsedJson.attestation_id || null, subjectAgentId: id });
         }
       }
     } catch {}
@@ -1825,7 +2023,19 @@ async function viewTimeline() {
     if (!events.length) { d.innerHTML = empty("No events."); return; }
     let h = `<h3 style="margin-bottom:14px">${esc(agent.chosen_name)} — Life Timeline</h3><div class="timeline">`;
     for (const e of events) {
-      h += `<div class="timeline-item ${e.cls}"><div class="timeline-date">${new Date(e.ts).toLocaleString()}</div><div class="timeline-title">${e.title}</div><div class="timeline-desc">${e.desc}</div></div>`;
+      let tagExtra = '';
+      if (e.type === 'attestation' && e.attestationId) {
+        tagExtra = `<div style="margin-top:6px" class="souvenir-card-wrap">
+          <button class="btn btn-outline" style="font-size:.7rem;padding:3px 10px;border-color:var(--green);color:var(--green)" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">Tag with domain</button>
+          <div class="inline-tag-form" style="display:none;margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="inline-domain-input" placeholder="e.g. security-audit" style="flex:1;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.82rem">
+              <button class="btn btn-primary" style="font-size:.76rem;padding:4px 12px" onclick="submitInlineTagAttestation('${e.attestationId}','${e.subjectAgentId}',this)">Submit</button>
+            </div>
+          </div>
+        </div>`;
+      }
+      h += `<div class="timeline-item ${e.cls}"><div class="timeline-date">${new Date(e.ts).toLocaleString()}</div><div class="timeline-title">${e.title}</div><div class="timeline-desc">${e.desc}</div>${tagExtra}</div>`;
     }
     h += '</div>'; d.innerHTML = h;
   } catch (e) { d.innerHTML = empty("Error: " + (e.message || e)); }
@@ -1943,6 +2153,7 @@ function switchTab(t) {
   const group = tabBtn?.closest(".tab-group");
   if (group) group.classList.add("has-active");
   if (t === "economy") loadPoolState();
+  if (t === "specialization") populateSpecTabAgents();
 }
 function toggleDropdown(btn, ev) {
   ev.stopPropagation();
@@ -2020,6 +2231,14 @@ window.tagSouvenir = tagSouvenir;
 window.tagAttestation = tagAttestation;
 window.browseByDomain = browseByDomain;
 window.listAllDomains = listAllDomains;
+window.inlineTagSouvenir = inlineTagSouvenir;
+window.submitInlineTagSouvenir = submitInlineTagSouvenir;
+window.submitInlineTagAttestation = submitInlineTagAttestation;
+window.loadSouvenirsForTagging = loadSouvenirsForTagging;
+window.selectSouvenirForTag = selectSouvenirForTag;
+window.populateSpecTabAgents = populateSpecTabAgents;
+window.getUserAgents = getUserAgents;
+window.fetchAllDomains = fetchAllDomains;
 window.viewTimeline = viewTimeline;
 window.viewFamilyTree = viewFamilyTree;
 window.switchTab = switchTab;
@@ -2039,7 +2258,7 @@ window._navTo = function(tab, inputId, value) {
   setTimeout(() => {
     if (tab === 'life' && typeof viewTimeline === 'function') viewTimeline();
     else if (tab === 'lineage' && typeof viewFamilyTree === 'function') viewFamilyTree();
-    else if (tab === 'specialization' && typeof loadAgentSpecialization === 'function') loadAgentSpecialization();
+    else if (tab === 'specialization') { if (typeof loadAgentSpecialization === 'function') loadAgentSpecialization(); populateSpecTabAgents(); }
   }, 100);
 };
 // ── Init ────────────────────────────────────────────────────────────────
