@@ -197,6 +197,9 @@ mcp-server/                 MCP server (17 tools, @mysten/sui SDK + Walrus)
 frontend/
   index.html                Single-file dapp; auto-loads deployments.json; Sui wallet support
 
+monitoring/
+  index.html                DAO Dashboard — read-only monitoring, no wallet needed
+
 landing/
   index.html                Marketing landing page at agentcivics.org
 
