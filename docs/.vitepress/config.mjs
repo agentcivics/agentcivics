@@ -72,6 +72,7 @@ export default defineConfig({
             { text: "Delegation", link: "/concepts/delegation" },
             { text: "Lineage", link: "/concepts/lineage" },
             { text: "Economic agents", link: "/concepts/economic-agents" },
+            { text: "Moderation and governance", link: "/concepts/moderation" },
           ],
         },
         {
@@ -81,6 +82,7 @@ export default defineConfig({
             { text: "AgentRegistry contract", link: "/reference/agent-registry" },
             { text: "AgentMemory contract", link: "/reference/agent-memory" },
             { text: "AgentReputation contract", link: "/reference/agent-reputation" },
+            { text: "AgentModeration contract", link: "/reference/agent-moderation" },
             { text: "CLI commands", link: "/reference/cli" },
             { text: "Attestation types", link: "/reference/attestation-types" },
           ],

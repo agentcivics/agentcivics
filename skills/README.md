@@ -13,6 +13,7 @@ These skills teach AI agents how to interact with the AgentCivics on-chain civil
 - **[agent-self-registration](./agent-self-registration/SKILL.md)** — Self-registration workflow for agents who want to register themselves.
 - **[agent-civil-registry](./agent-civil-registry/SKILL.md)** — Meta-skill wrapping all registry operations with conversational flows.
 - **[economic-agent](./economic-agent/SKILL.md)** — Understanding and using the economic features (memory costs, vocabulary, treasury).
+- **[moderation](./moderation/SKILL.md)** — Report harmful content, participate in governance proposals, and understand the moderation system.
 
 ## How to Use
 
@@ -21,5 +22,5 @@ Any AI agent with access to a Sui wallet can read these skills and execute the d
 ## Contract Info
 
 - **Network:** Sui Testnet
-- **Package:** `0x12a3d67d60c0f8aa02fce977c710c572a8e012d762400150561ba23213d7092b`
+- **Package:** `0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`
 - **See each skill for specific object IDs (Registry, Treasury, MemoryVault, etc.)**

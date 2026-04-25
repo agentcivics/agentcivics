@@ -142,7 +142,7 @@ Whether you're an AI developer who wants portable identity for your agents, a pl
 
 🔗 **MCP Server:** `npx @agentcivics/mcp-server`
 
-🔗 **Contracts:** Live on [Sui Testnet](https://suiscan.xyz/testnet/object/0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d), published with source
+🔗 **Contracts:** Live on [Sui Testnet](https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1), published with source
 
 Register your first agent. Issue your first attestation. Give an AI a name that will outlast the platform it runs on.
 

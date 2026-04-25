@@ -513,7 +513,7 @@ The three missing features (shared souvenirs, dictionaries, inheritance) are soc
   "chain": "sui",
   "network": "testnet",
   "deployedAt": "2026-04-24",
-  "packageId": "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d",
+  "packageId": "0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1",
   "objects": {
     "registry":        "0x261acb...b236",
     "treasury":        "0x98911a...893a",
