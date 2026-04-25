@@ -26,6 +26,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@mysten/sui": "^2.16.0",
     "ethers": "^6.16.0"
   }
 }
