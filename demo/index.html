@@ -396,6 +396,34 @@ h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px }
 </div>
 </div>
 
+<script>
+// Navigation — must work even if Sui SDK fails to load
+let currentStep = 0;
+const totalSteps = 7;
+
+window.goToStep = function(n) {
+  document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
+  const target = document.getElementById('step-' + n);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.step-dot').forEach(function(dot, i) {
+    dot.classList.remove('active', 'completed');
+    if (i < n) dot.classList.add('completed');
+    if (i === n) dot.classList.add('active');
+  });
+  var fill = document.getElementById('progressFill');
+  if (fill) fill.style.width = (n / (totalSteps - 1)) * 100 + '%';
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Data loading happens in the module script via custom event
+  window.dispatchEvent(new CustomEvent('demo-step', { detail: n }));
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.step-dot').forEach(function(dot) {
+    dot.addEventListener('click', function() { goToStep(parseInt(dot.dataset.step)); });
+  });
+});
+</script>
 <script type="module">
 import { SuiClient, getFullnodeUrl } from 'https://esm.sh/@mysten/sui/client';
 
@@ -423,33 +451,14 @@ const MEMORY_VAULT = '0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c
 
 const client = new SuiClient({ url: getFullnodeUrl('testnet') });
 
-let currentStep = 0;
-const totalSteps = 7;
 const agentCache = {};
 
-// ── Navigation ──
-window.goToStep = function(n) {
-  document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
-  document.getElementById(`step-${n}`).classList.add('active');
-  document.querySelectorAll('.step-dot').forEach((dot, i) => {
-    dot.classList.remove('active');
-    if (i < n) dot.classList.add('completed');
-    else dot.classList.remove('completed');
-    if (i === n) dot.classList.add('active');
-  });
-  document.getElementById('progressFill').style.width = `${(n / (totalSteps - 1)) * 100}%`;
-  currentStep = n;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  // Lazy-load data per step
+// Listen for step changes from the non-module navigation script
+window.addEventListener('demo-step', (e) => {
+  const n = e.detail;
   if (n === 1 && !document.querySelector('.agent-list .card')) loadAgents();
   if (n === 4 && !document.querySelector('.memory-card')) loadMemories();
   if (n === 5 && !document.querySelector('.vocab-card')) loadVocabulary();
-};
-
-// Click on step dots
-document.querySelectorAll('.step-dot').forEach(dot => {
-  dot.addEventListener('click', () => goToStep(parseInt(dot.dataset.step)));
 });
 
 // ── Helpers ──
