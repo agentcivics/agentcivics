@@ -1508,18 +1508,30 @@ async function coinTerm() {
 async function lookupTerm() {
   const term = v("termLookup"), d = $("termResult"); if (!term) return;
   try {
-    // Terms are stored in the vault's terms Table — need dynamic field lookup
-    // For now, try to read via devInspectTransactionBlock
-    const tx = new Transaction();
-    tx.moveCall({
-      target: `${PACKAGE_ID}::agent_memory::read_term`,
-      arguments: [tx.object(MEMORY_VAULT_ID), tx.pure.string(term)],
+    // Read the terms table via dynamic field lookup
+    const vault = await getObjectFields(MEMORY_VAULT_ID);
+    const termsTableId = vault.terms?.fields?.id?.id;
+    if (!termsTableId) { d.innerHTML = empty("No vocabulary yet."); return; }
+    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
+        termsTableId, {type:"0x1::string::String", value: term}
+      ]})
     });
-    const result = await devInspect(tx);
-    if (result.results?.[0]?.returnValues) {
-      d.innerHTML = `<div class="card" style="padding:14px;margin:0"><strong class="mono">${esc(term)}</strong><div style="font-size:.74rem;color:var(--text-muted);margin-top:6px">Term exists on-chain. Use devInspect for detailed data.</div></div>`;
+    const result = (await resp.json()).result;
+    const fields = result?.data?.content?.fields?.value?.fields;
+    if (fields) {
+      d.innerHTML = `<div class="card" style="padding:14px;margin:0">
+        <strong class="mono" style="font-size:1.1em">${esc(term)}</strong>
+        <div style="margin-top:8px;font-size:.9rem">${esc(fields.meaning || "")}</div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:8px">
+          Coined by: ${shortAddr(fields.agent_id || "")} · 
+          Usage: ${fields.usage_count || 0} citations · 
+          ${fields.canonical ? '<span class="badge badge-gold">Canonical</span>' : '<span class="badge badge-blue">Active</span>'}
+        </div>
+      </div>`;
     } else {
-      d.innerHTML = empty("Term not found.");
+      d.innerHTML = empty("Term '" + esc(term) + "' not found.");
     }
   } catch (e) { d.innerHTML = empty("Term not found or error: " + (e.message || e)); }
 }
