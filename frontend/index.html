@@ -223,6 +223,34 @@ body.light-theme footer{border-top-color:var(--border)}
 body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
 .cookie-banner-text{max-width:480px;text-align:center}
 .cookie-banner .btn{min-width:80px;justify-content:center}
+
+/* WebSocket Live Status */
+.ws-status{display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;border-radius:6px;font-size:.74rem;font-weight:600;letter-spacing:.04em;transition:background .2s;position:relative}
+.ws-status:hover{background:var(--surface2)}
+.ws-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ws-dot.live{background:var(--green);box-shadow:0 0 6px var(--green);animation:wsPulse 2s ease-in-out infinite}
+.ws-dot.offline{background:var(--red)}
+.ws-dot.connecting{background:var(--gold);animation:wsPulse 1s ease-in-out infinite}
+@keyframes wsPulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ws-label{color:var(--text-dim);text-transform:uppercase}
+.ws-status.live .ws-label{color:var(--green)}
+.ws-status.offline .ws-label{color:var(--red)}
+.ws-status.connecting .ws-label{color:var(--gold)}
+.ws-details{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;min-width:240px;z-index:160;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:.78rem;color:var(--text-dim);line-height:1.6}
+.ws-details.show{display:block}
+.ws-details .ws-detail-row{display:flex;justify-content:space-between;gap:12px;margin-bottom:4px}
+.ws-details .ws-detail-label{color:var(--text-muted)}
+.ws-details .ws-detail-value{color:var(--text);font-family:var(--mono);font-size:.72rem}
+
+/* WS event toast stack */
+.ws-toast{position:fixed;bottom:24px;left:24px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:.82rem;z-index:400;transform:translateX(-120%);opacity:0;transition:all .4s ease;max-width:380px;pointer-events:none}
+.ws-toast.show{transform:translateX(0);opacity:1;pointer-events:auto}
+.ws-toast .ws-toast-icon{margin-right:6px}
+.ws-toast.agent-born{border-color:var(--gold)}
+.ws-toast.agent-died{border-color:var(--red)}
+.ws-toast.content-reported{border-color:var(--red);border-style:dashed}
+.ws-toast.attestation{border-color:var(--green)}
+.ws-toast.child-registered{border-color:var(--purple)}
 </style>
 </head>
 <body>
@@ -235,6 +263,17 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
   <div class="container">
     <div class="logo"><div class="logo-icon">&#x1f9ec;</div><span>AgentCivics</span></div>
     <div style="display:flex;align-items:center;gap:10px">
+      <div class="ws-status offline" id="wsStatus" onclick="toggleWsDetails()" title="WebSocket connection status">
+        <span class="ws-dot offline" id="wsDot"></span>
+        <span class="ws-label" id="wsLabel">Offline</span>
+        <div class="ws-details" id="wsDetails">
+          <div class="ws-detail-row"><span class="ws-detail-label">Status</span><span class="ws-detail-value" id="wsDetailStatus">Disconnected</span></div>
+          <div class="ws-detail-row"><span class="ws-detail-label">Endpoint</span><span class="ws-detail-value">wss://fullnode.testnet.sui.io</span></div>
+          <div class="ws-detail-row"><span class="ws-detail-label">Subscriptions</span><span class="ws-detail-value" id="wsDetailSubs">0</span></div>
+          <div class="ws-detail-row"><span class="ws-detail-label">Events received</span><span class="ws-detail-value" id="wsDetailEvents">0</span></div>
+          <div class="ws-detail-row"><span class="ws-detail-label">Reconnects</span><span class="ws-detail-value" id="wsDetailReconnects">0</span></div>
+        </div>
+      </div>
       <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">&#127769;</button>
       <div style="text-align:right">
         <button class="connect-btn" id="connectBtn" onclick="handleConnectClick()">Connect Wallet</button>
@@ -2744,6 +2783,318 @@ async function checkIfFlagged(contentId) {
     }
   } catch { /* ignore — board may not exist yet */ }
   return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  WEBSOCKET LIVE UPDATES
+// ═══════════════════════════════════════════════════════════════════════
+const WS_ENABLED = true;
+const WS_ENDPOINT = "wss://fullnode.testnet.sui.io:443";
+const WS_ORIGINAL_PKG = ORIGINAL_PKG_ID;
+
+const WS_EVENT_TYPES = [
+  { module: "agent_registry", event: "AgentRegistered" },
+  { module: "agent_memory",   event: "SouvenirWritten" },
+  { module: "agent_moderation", event: "ContentReported" },
+  { module: "agent_registry", event: "AttestationIssued" },
+  { module: "agent_registry", event: "ChildRegistered" },
+  { module: "agent_registry", event: "DeathDeclared" },
+];
+
+const wsState = {
+  ws: null,
+  connected: false,
+  subscriptionIds: [],
+  reconnectAttempts: 0,
+  maxReconnectDelay: 30000,
+  baseDelay: 1000,
+  eventCount: 0,
+  reconnectCount: 0,
+  rpcId: 1,
+  reconnectTimer: null,
+};
+
+// ── WS UI helpers ───────────────────────────────────────────────────────
+function wsUpdateStatus(state) {
+  const statusEl = $("wsStatus");
+  const dotEl = $("wsDot");
+  const labelEl = $("wsLabel");
+  const detailStatus = $("wsDetailStatus");
+  if (!statusEl) return;
+
+  statusEl.className = "ws-status " + state;
+  dotEl.className = "ws-dot " + state;
+
+  if (state === "live") {
+    labelEl.textContent = "Live";
+    if (detailStatus) detailStatus.textContent = "Connected";
+  } else if (state === "connecting") {
+    labelEl.textContent = "Connecting";
+    if (detailStatus) detailStatus.textContent = "Connecting...";
+  } else {
+    labelEl.textContent = "Offline";
+    if (detailStatus) detailStatus.textContent = "Disconnected";
+  }
+}
+
+function wsUpdateDetails() {
+  const subsEl = $("wsDetailSubs");
+  const eventsEl = $("wsDetailEvents");
+  const reconnEl = $("wsDetailReconnects");
+  if (subsEl) subsEl.textContent = wsState.subscriptionIds.length;
+  if (eventsEl) eventsEl.textContent = wsState.eventCount;
+  if (reconnEl) reconnEl.textContent = wsState.reconnectCount;
+}
+
+function toggleWsDetails() {
+  const el = $("wsDetails");
+  if (el) el.classList.toggle("show");
+}
+window.toggleWsDetails = toggleWsDetails;
+
+// Close WS details on outside click
+document.addEventListener("click", (e) => {
+  const wsStatus = $("wsStatus");
+  const wsDetails = $("wsDetails");
+  if (wsDetails && wsStatus && !wsStatus.contains(e.target)) {
+    wsDetails.classList.remove("show");
+  }
+});
+
+// ── WS event toast (left side, separate from main toast) ────────────────
+const wsToastQueue = [];
+let wsToastActive = false;
+
+function wsToast(message, cssClass) {
+  wsToastQueue.push({ message, cssClass });
+  if (!wsToastActive) wsShowNextToast();
+}
+
+function wsShowNextToast() {
+  if (wsToastQueue.length === 0) { wsToastActive = false; return; }
+  wsToastActive = true;
+  const { message, cssClass } = wsToastQueue.shift();
+
+  let el = document.getElementById("wsToast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "wsToast";
+    el.className = "ws-toast";
+    document.body.appendChild(el);
+  }
+
+  el.innerHTML = message;
+  el.className = "ws-toast " + (cssClass || "");
+
+  // Trigger reflow then show
+  void el.offsetWidth;
+  el.classList.add("show");
+
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(wsShowNextToast, 400);
+  }, 4000);
+}
+
+// ── WebSocket connection manager ────────────────────────────────────────
+function wsConnect() {
+  if (!WS_ENABLED) return;
+  if (wsState.ws && (wsState.ws.readyState === WebSocket.CONNECTING || wsState.ws.readyState === WebSocket.OPEN)) return;
+
+  try {
+    wsUpdateStatus("connecting");
+    wsState.ws = new WebSocket(WS_ENDPOINT);
+
+    wsState.ws.onopen = () => {
+      console.log("[WS] Connected to Sui fullnode");
+      wsState.connected = true;
+      wsState.reconnectAttempts = 0;
+      wsUpdateStatus("live");
+      wsSubscribeAll();
+    };
+
+    wsState.ws.onmessage = (evt) => {
+      try {
+        const data = JSON.parse(evt.data);
+        // Subscription confirmation
+        if (data.result && !data.method) {
+          wsState.subscriptionIds.push(data.result);
+          wsUpdateDetails();
+          return;
+        }
+        // Event notification
+        if (data.method === "suix_subscribeEvent") {
+          const params = data.params;
+          if (params && params.result) {
+            wsHandleEvent(params.result);
+          }
+        }
+      } catch (e) {
+        console.warn("[WS] Failed to parse message:", e);
+      }
+    };
+
+    wsState.ws.onclose = (evt) => {
+      console.log("[WS] Disconnected:", evt.code, evt.reason);
+      wsState.connected = false;
+      wsState.subscriptionIds = [];
+      wsUpdateStatus("offline");
+      wsUpdateDetails();
+      wsScheduleReconnect();
+    };
+
+    wsState.ws.onerror = (err) => {
+      console.warn("[WS] Error:", err);
+      // onclose will fire after this, handling reconnect
+    };
+
+  } catch (e) {
+    console.error("[WS] Failed to create WebSocket:", e);
+    wsUpdateStatus("offline");
+    wsScheduleReconnect();
+  }
+}
+
+function wsSubscribeAll() {
+  for (const evtType of WS_EVENT_TYPES) {
+    const rpcMsg = {
+      jsonrpc: "2.0",
+      id: wsState.rpcId++,
+      method: "suix_subscribeEvent",
+      params: [{
+        MoveEventType: `${WS_ORIGINAL_PKG}::${evtType.module}::${evtType.event}`
+      }]
+    };
+    try {
+      wsState.ws.send(JSON.stringify(rpcMsg));
+    } catch (e) {
+      console.warn("[WS] Failed to subscribe to", evtType.event, e);
+    }
+  }
+}
+
+function wsScheduleReconnect() {
+  if (!WS_ENABLED) return;
+  if (wsState.reconnectTimer) clearTimeout(wsState.reconnectTimer);
+
+  const delay = Math.min(
+    wsState.baseDelay * Math.pow(2, wsState.reconnectAttempts),
+    wsState.maxReconnectDelay
+  );
+  wsState.reconnectAttempts++;
+  wsState.reconnectCount++;
+
+  console.log(`[WS] Reconnecting in ${delay}ms (attempt ${wsState.reconnectAttempts})`);
+  wsState.reconnectTimer = setTimeout(() => {
+    wsConnect();
+  }, delay);
+}
+
+// ── Event handlers ──────────────────────────────────────────────────────
+function wsHandleEvent(eventData) {
+  wsState.eventCount++;
+  wsUpdateDetails();
+
+  const eventType = eventData.type || "";
+  const parsed = eventData.parsedJson || {};
+
+  console.log("[WS] Event:", eventType, parsed);
+
+  if (eventType.includes("::AgentRegistered")) {
+    wsOnAgentRegistered(parsed);
+  } else if (eventType.includes("::SouvenirWritten")) {
+    wsOnSouvenirWritten(parsed);
+  } else if (eventType.includes("::ContentReported")) {
+    wsOnContentReported(parsed);
+  } else if (eventType.includes("::AttestationIssued")) {
+    wsOnAttestationIssued(parsed);
+  } else if (eventType.includes("::ChildRegistered")) {
+    wsOnChildRegistered(parsed);
+  } else if (eventType.includes("::DeathDeclared")) {
+    wsOnDeathDeclared(parsed);
+  }
+}
+
+function wsOnAgentRegistered(data) {
+  // Increment the Total Agents counter live
+  const el = $("totalAgents");
+  if (el) {
+    const current = parseInt(el.textContent) || 0;
+    el.textContent = current + 1;
+    el.style.transition = "color .3s";
+    el.style.color = "var(--gold)";
+    setTimeout(() => { el.style.color = ""; }, 2000);
+  }
+
+  const name = data.name || data.chosen_name || "Unknown";
+  wsToast(`<span class="ws-toast-icon">🧬</span> New agent: <strong>${esc(name)}</strong> just registered!`, "agent-born");
+
+  // Refresh browse if on that tab
+  const browsePanel = $("tab-browse");
+  if (browsePanel && browsePanel.classList.contains("active")) {
+    setTimeout(() => browseRecent(), 500);
+  }
+}
+
+function wsOnSouvenirWritten(data) {
+  const agentId = data.agent_id || data.agent || "";
+
+  // If viewing this agent's memory, auto-refresh
+  const memAgentInput = $("memAgentId");
+  if (memAgentInput && memAgentInput.value.trim() === agentId && $("tab-memory")?.classList.contains("active")) {
+    setTimeout(() => loadAgentMemory(), 500);
+  }
+}
+
+function wsOnContentReported(data) {
+  wsToast(`<span class="ws-toast-icon">⚠️</span> Content reported for review`, "content-reported");
+}
+
+function wsOnAttestationIssued(data) {
+  const agentId = data.agent_id || data.agent || "";
+
+  wsToast(`<span class="ws-toast-icon">✅</span> New attestation issued`, "attestation");
+
+  // If viewing this agent's detail, refresh
+  const modalTitle = $("modalTitle");
+  if (modalTitle && document.getElementById("modal")?.classList.contains("active")) {
+    // Agent detail is open — could be this agent
+    const timelineInput = $("timelineAgentId");
+    if (timelineInput && timelineInput.value.trim() === agentId) {
+      setTimeout(() => viewTimeline(), 500);
+    }
+  }
+}
+
+function wsOnChildRegistered(data) {
+  const parentId = data.parent_id || data.parent || "";
+
+  wsToast(`<span class="ws-toast-icon">🌱</span> New lineage recorded`, "child-registered");
+
+  // If viewing this parent's family tree, refresh
+  const treeInput = $("treeAgentId");
+  if (treeInput && treeInput.value.trim() === parentId && $("tab-lineage")?.classList.contains("active")) {
+    setTimeout(() => viewFamilyTree(), 500);
+  }
+}
+
+function wsOnDeathDeclared(data) {
+  const name = data.name || data.chosen_name || "An agent";
+  wsToast(`<span class="ws-toast-icon">🕯️</span> <strong>${esc(name)}</strong> has been declared dead`, "agent-died");
+
+  // Refresh stats
+  setTimeout(() => refreshStats(), 500);
+}
+
+// ── Expose to window ────────────────────────────────────────────────────
+window.wsConnect = wsConnect;
+window.wsState = wsState;
+window.WS_ENABLED = WS_ENABLED;
+
+// ── Start WebSocket on load ─────────────────────────────────────────────
+if (WS_ENABLED) {
+  // Small delay to let the page render first
+  setTimeout(wsConnect, 1500);
 }
 </script>
 
