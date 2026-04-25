@@ -8,6 +8,8 @@ on:
       - "frontend/**"
       - "docs/**"
       - "deployments.json"
+      - "demo/**"
+      - "monitoring/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -72,7 +74,17 @@ jobs:
             mkdir -p _site/docs
             cp -r docs/. _site/docs/
           fi
-          # 4. deployments.json at root AND /app/ (both fetch it)
+          # 4. demo page
+          if [ -d demo ]; then
+            echo "Staging demo/ → _site/demo/"
+            cp -r demo _site/demo
+          fi
+          # 5. monitoring dashboard
+          if [ -d monitoring ]; then
+            echo "Staging monitoring/ → _site/monitoring/"
+            cp -r monitoring _site/monitoring
+          fi
+          # 6. deployments.json at root AND /app/ (both fetch it)
           if [ -f deployments.json ]; then
             cp deployments.json _site/deployments.json
             cp deployments.json _site/app/deployments.json
