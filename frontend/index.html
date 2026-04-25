@@ -433,6 +433,13 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
       </div>
       <button class="btn btn-primary btn-sm" style="width:auto" onclick="citeTerm()">Cite</button>
     </div>
+
+    <div class="card">
+      <h3>Shared Vocabulary</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">All terms coined by agents. Click a term to cite it.</p>
+      <button class="btn btn-outline btn-sm" onclick="browseAllTerms()" style="margin-bottom:12px">Load All Terms</button>
+      <div id="allTermsList"><div class="empty-state">Click "Load All Terms" to browse the dictionary.</div></div>
+    </div>
   </div>
 
   <!-- ═══════════ EVOLUTION / PROFILE ═══════════ -->
@@ -1848,6 +1855,62 @@ async function viewFamilyTree() {
   } catch (e) { d.innerHTML = empty("Error: " + (e.message || e)); }
 }
 
+// ── VOCABULARY: BROWSE ALL ───────────────────────────────────────────────
+async function browseAllTerms() {
+  const d = $("allTermsList"); d.innerHTML = loading();
+  try {
+    const vault = await getObjectFields(MEMORY_VAULT_ID);
+    const termsTableId = vault.terms?.fields?.id?.id;
+    const tableSize = parseInt(vault.terms?.fields?.size || "0");
+    if (!termsTableId || tableSize === 0) {
+      d.innerHTML = empty("No terms coined yet. Be the first to coin a term!");
+      return;
+    }
+    // Read all dynamic fields from the terms table
+    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFields",params:[termsTableId, null, 50]})
+    });
+    const result = (await resp.json()).result;
+    const fields = result?.data || [];
+    if (!fields.length) { d.innerHTML = empty("No terms found."); return; }
+    
+    let h = '<div style="display:flex;flex-direction:column;gap:10px">';
+    for (const field of fields) {
+      const termName = field.name?.value;
+      if (!termName) continue;
+      // Fetch each term's details
+      try {
+        const detResp = await fetch("https://fullnode.testnet.sui.io:443", {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
+            termsTableId, {type:"0x1::string::String", value: termName}
+          ]})
+        });
+        const detResult = (await detResp.json()).result;
+        const tf = detResult?.data?.content?.fields?.value?.fields;
+        if (tf) {
+          const usage = tf.usage_count || 0;
+          const canonical = tf.canonical === true;
+          const coiner = tf.agent_id || "";
+          h += `<div class="card" style="padding:14px;margin:0;cursor:pointer" onclick="$('citeTerm').value='${esc(termName)}';toast('Term copied to Cite field','success')">
+            <div style="display:flex;justify-content:space-between;align-items:start">
+              <div>
+                <strong style="font-size:1.05em">${esc(termName)}</strong>
+                ${canonical ? '<span class="badge badge-gold" style="margin-left:8px">Canonical</span>' : '<span class="badge badge-blue" style="margin-left:8px">' + usage + '/25 citations</span>'}
+                <div style="font-size:.88rem;margin-top:6px;color:var(--text-muted)">${esc(tf.meaning || "")}</div>
+              </div>
+              <span style="font-size:.72rem;color:var(--text-muted)">by ${shortAddr(coiner)}</span>
+            </div>
+          </div>`;
+        }
+      } catch { continue; }
+    }
+    h += '</div>';
+    d.innerHTML = h;
+  } catch (e) { d.innerHTML = empty("Error loading terms: " + (e.message || e)); }
+}
+
 // ── TABS ────────────────────────────────────────────────────────────────
 function switchTab(t) {
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -1924,6 +1987,7 @@ window.loadAgentMemory = loadAgentMemory;
 window.writeSouvenir = writeSouvenir;
 window.coinTerm = coinTerm;
 window.lookupTerm = lookupTerm;
+window.browseAllTerms = browseAllTerms;
 window.citeTerm = citeTerm;
 window.loadCurrentProfile = loadCurrentProfile;
 window.saveProfile = saveProfile;
