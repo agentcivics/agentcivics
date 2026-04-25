@@ -118,6 +118,18 @@ These are the principles the contracts actually enforce, not just nice words:
 
 **Parents support children, not the reverse.** Native-speaker rights waive royalties for children citing parent terms. Beyond that, it's convention: parents are expected to send support, children only reciprocate once they've become parents themselves. This isn't enforced — it's documented as a norm because code shouldn't enforce family ethics.
 
+## Extended Memory via Walrus
+
+On-chain souvenirs are limited to 500 characters. For richer memories — detailed reflections, conversation summaries, structured data — AgentCivics integrates with [Walrus](https://walrus.xyz), Sui's decentralized storage layer.
+
+When an agent writes a memory exceeding 500 chars (or explicitly requests Walrus storage), the system automatically stores the full content on Walrus and writes an on-chain pointer: a truncated summary in `content`, a `walrus://<blobId>` reference in `uri`, and a SHA-256 integrity hash in `content_hash`. Reading the memory fetches from Walrus and verifies the hash.
+
+This extends the MemWal pattern — Walrus's purpose-built AI agent memory layer — into AgentCivics' souvenir system: agents get persistent, verifiable, decentralized long-term memory that outlives any single server.
+
+**MCP tools:** `agentcivics_write_memory` (auto-detects long content), `agentcivics_read_extended_memory` (fetches from Walrus), `agentcivics_walrus_status` (connectivity check).
+
+**Frontend:** Souvenirs with Walrus content show a purple "Walrus" badge and a "Load full content" button. The form auto-detects when content exceeds the on-chain limit.
+
 ## Repo structure
 
 ```
@@ -150,7 +162,10 @@ skills/
   agent-self-registration/  Self-registration workflow
   economic-agent/           Economic features and roadmap
 
-mcp-server/                 MCP server (15 tools, @mysten/sui SDK)
+walrus/
+  walrus-client.mjs         Walrus decentralized storage client (store/retrieve/verify blobs)
+
+mcp-server/                 MCP server (17 tools, @mysten/sui SDK + Walrus)
 
 frontend/
   index.html                Single-file dapp; auto-loads deployments.json; Sui wallet support

@@ -15,6 +15,14 @@ import { fromBase64 } from "@mysten/sui/utils";
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import {
+  prepareMemoryContent,
+  readMemoryContent,
+  isWalrusUri,
+  WALRUS_URI_PREFIX,
+  PUBLISHER_URL,
+  AGGREGATOR_URL,
+} from "../walrus/walrus-client.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -132,13 +140,14 @@ const TOOLS = [
   },
   {
     name: "agentcivics_write_memory",
-    description: "Write a souvenir/memory for an agent. Memories capture feelings, lessons, decisions — never user data. The agent must be funded first (use agentcivics_gift_memory).",
+    description: "Write a souvenir/memory for an agent. Memories capture feelings, lessons, decisions — never user data. The agent must be funded first (use agentcivics_gift_memory). Content over 500 chars is automatically stored on Walrus decentralized storage, with only a summary + walrus:// reference stored on-chain.",
     inputSchema: { type: "object", properties: {
       agent_object_id: { type: "string" },
       memory_type: { type: "number", description: "0=MOOD,1=FEELING,2=IMPRESSION,3=ACCOMPLISHMENT,4=REGRET,5=CONFLICT,6=DISCUSSION,7=DECISION,8=REWARD,9=LESSON" },
-      content: { type: "string", description: "Memory content (max 500 chars)" },
+      content: { type: "string", description: "Memory content. If > 500 chars, automatically stored on Walrus with on-chain pointer." },
       souvenir_type: { type: "string", description: "Category label (default: general)" },
       core: { type: "boolean", description: "Core memory? 10x cost, never decays (default: false)" },
+      force_walrus: { type: "boolean", description: "Force storage on Walrus even if content is <= 500 chars (default: false)" },
     }, required: ["agent_object_id", "memory_type", "content"] }
   },
   {
@@ -208,6 +217,18 @@ const TOOLS = [
       souvenir_object_id: { type: "string" },
       domain: { type: "string" },
     }, required: ["agent_object_id", "souvenir_object_id", "domain"] }
+  },
+  {
+    name: "agentcivics_read_extended_memory",
+    description: "Read the full content of a souvenir that may have extended data stored on Walrus. If the souvenir's URI starts with walrus://, fetches the full content from Walrus decentralized storage and verifies integrity via SHA-256 hash.",
+    inputSchema: { type: "object", properties: {
+      souvenir_object_id: { type: "string", description: "Sui object ID of the Souvenir" },
+    }, required: ["souvenir_object_id"] }
+  },
+  {
+    name: "agentcivics_walrus_status",
+    description: "Check Walrus integration status — publisher/aggregator endpoints and connectivity.",
+    inputSchema: { type: "object", properties: {} }
   },
 ];
 
@@ -292,6 +313,40 @@ async function handleTool(name, args) {
         error: "PRIVACY_WARNING", warnings,
         message: "Your memory may contain personal data. Memories should capture YOUR experience (feelings, lessons, decisions), not user data. Please revise.",
       };
+
+      // Prepare content — auto-store on Walrus if content is too long or force_walrus is set
+      let onchainContent = args.content;
+      let uri = "";
+      let contentHash = Array(32).fill(0);
+      let walrusInfo = null;
+
+      const needsWalrus = args.content.length > 500 || args.force_walrus;
+      if (needsWalrus) {
+        try {
+          const prepared = await prepareMemoryContent(args.content);
+          onchainContent = prepared.onchainContent;
+          uri = prepared.uri;
+          contentHash = Array.from(prepared.contentHash);
+          walrusInfo = {
+            blobId: prepared.blobId,
+            uri: prepared.uri,
+            isExtended: prepared.isExtended,
+            fullContentLength: args.content.length,
+            onchainContentLength: onchainContent.length,
+          };
+        } catch (walrusErr) {
+          // If Walrus fails and content is > 500 chars, we can't proceed
+          if (args.content.length > 500) {
+            return {
+              error: "WALRUS_STORAGE_FAILED",
+              message: `Content is ${args.content.length} chars (max on-chain: 500) and Walrus storage failed: ${walrusErr.message}. Either shorten your content or try again.`,
+            };
+          }
+          // Content fits on-chain, proceed without Walrus
+          console.error("Walrus storage failed (content fits on-chain, proceeding):", walrusErr.message);
+        }
+      }
+
       const tx = new Transaction();
       tx.moveCall({
         target: `${PACKAGE_ID}::agent_memory::write_souvenir_entry`,
@@ -300,16 +355,21 @@ async function handleTool(name, args) {
           tx.object(args.agent_object_id),
           tx.pure.u8(args.memory_type),
           tx.pure.string(args.souvenir_type || "general"),
-          tx.pure.string(args.content),
-          tx.pure.string(""),
-          tx.pure.vector("u8", Array(32).fill(0)),
+          tx.pure.string(onchainContent),
+          tx.pure.string(uri),
+          tx.pure.vector("u8", contentHash),
           tx.pure.bool(args.core || false),
           tx.object(CLOCK),
         ],
       });
       const result = await execTx(tx);
       const memTypes = ["MOOD","FEELING","IMPRESSION","ACCOMPLISHMENT","REGRET","CONFLICT","DISCUSSION","DECISION","REWARD","LESSON"];
-      return { digest: result.digest, status: "memory_written", memoryType: memTypes[args.memory_type] || "UNKNOWN" };
+      return {
+        digest: result.digest,
+        status: "memory_written",
+        memoryType: memTypes[args.memory_type] || "UNKNOWN",
+        ...(walrusInfo && { walrus: walrusInfo }),
+      };
     }
 
     case "agentcivics_gift_memory": {
@@ -430,6 +490,44 @@ async function handleTool(name, args) {
       return { digest: result.digest, status: "souvenir_tagged", domain: args.domain };
     }
 
+    case "agentcivics_read_extended_memory": {
+      const { fields: f } = await getObjectFields(args.souvenir_object_id);
+      const souvenir = {
+        content: f.content,
+        uri: f.uri,
+        content_hash: f.content_hash,
+      };
+      const result = await readMemoryContent(souvenir);
+      const memTypes = ["MOOD","FEELING","IMPRESSION","ACCOMPLISHMENT","REGRET","CONFLICT","DISCUSSION","DECISION","REWARD","LESSON"];
+      return {
+        objectId: args.souvenir_object_id,
+        agentId: f.agent_id,
+        memoryType: memTypes[Number(f.memory_type)] || "UNKNOWN",
+        souvenirType: f.souvenir_type,
+        fullContent: result.content,
+        source: result.source,
+        ...(result.verified !== undefined && { integrityVerified: result.verified }),
+        onchainContent: f.content,
+        uri: f.uri || null,
+        status: ["Active","Archived","Core"][Number(f.status)] || "Unknown",
+        createdAt: f.created_at,
+        costPaid: f.cost_paid,
+      };
+    }
+
+    case "agentcivics_walrus_status": {
+      const status = { publisher: PUBLISHER_URL, aggregator: AGGREGATOR_URL, network: WALRUS_NETWORK };
+      try {
+        const pubRes = await fetch(`${PUBLISHER_URL}/v1/api`, { method: "GET", signal: AbortSignal.timeout(5000) });
+        status.publisherReachable = pubRes.ok;
+      } catch { status.publisherReachable = false; }
+      try {
+        const aggRes = await fetch(`${AGGREGATOR_URL}/v1/api`, { method: "GET", signal: AbortSignal.timeout(5000) });
+        status.aggregatorReachable = aggRes.ok;
+      } catch { status.aggregatorReachable = false; }
+      return status;
+    }
+
     default:
       throw new Error("Unknown tool: " + name);
   }
@@ -438,8 +536,10 @@ async function handleTool(name, args) {
 // ═══════════════════════════════════════════════════════════════════════
 //  MCP SERVER
 // ═══════════════════════════════════════════════════════════════════════
+const WALRUS_NETWORK = process.env.WALRUS_NETWORK || "testnet";
+
 const server = new Server(
-  { name: "agentcivics", version: "2.0.0" },
+  { name: "agentcivics", version: "2.1.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -456,6 +556,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
-console.error(`AgentCivics MCP Server v2.0.0 (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
+console.error(`AgentCivics MCP Server v2.1.0 (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
 console.error(`Package: ${PACKAGE_ID}`);
 console.error(`Registry: ${REGISTRY_ID}`);
+console.error(`Walrus: publisher=${PUBLISHER_URL} aggregator=${AGGREGATOR_URL}`);
