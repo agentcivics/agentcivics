@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentCivics — DAO Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070c;--surface:#0f0f18;--surface2:#161623;--surface3:#1e1e30;
+  --border:#2a2a40;--accent:#6366f1;--accent-hover:#818cf8;--accent-glow:rgba(99,102,241,.12);
+  --gold:#f59e0b;--gold-dim:rgba(245,158,11,.1);--gold-border:rgba(245,158,11,.25);
+  --green:#22c55e;--green-dim:rgba(34,197,94,.1);--blue:#3b82f6;--blue-dim:rgba(59,130,246,.1);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.3);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,.1);
+  --text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;
+  --radius:12px;--mono:'SF Mono','Fira Code','Cascadia Code',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent-hover)}
+</style>
+</head>
+<body>
+<style>
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--border);padding:16px 0;position:sticky;top:0;background:rgba(7,7,12,.92);backdrop-filter:blur(20px);z-index:100}
+header .container{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1rem}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:grid;place-items:center;font-size:16px;color:#fff}
+.header-right{display:flex;align-items:center;gap:14px;font-size:.78rem;color:var(--text-muted)}
+.refresh-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.refresh-toggle input{accent-color:var(--accent)}
+.last-updated{font-family:var(--mono);font-size:.72rem;color:var(--text-muted)}
+.back-link{font-size:.82rem;color:var(--accent);padding:4px 10px;border:1px solid var(--border);border-radius:6px;transition:border-color .2s}
+.back-link:hover{border-color:var(--accent)}
+</style>
+<style>
+h2{font-size:1.1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section{margin-bottom:28px}
+.section-icon{font-size:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:border-color .2s}
+.card:hover{border-color:var(--accent)}
+.card-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.card-value{font-size:1.8rem;font-weight:800;font-family:var(--mono);line-height:1.2}
+.card-sub{font-size:.74rem;color:var(--text-muted);margin-top:4px}
+.card-gold{border-color:var(--gold-border);background:linear-gradient(135deg,rgba(245,158,11,.04),var(--surface))}
+.card-gold .card-value{color:var(--gold)}
+.card-red{border-color:var(--red-border);background:linear-gradient(135deg,rgba(239,68,68,.04),var(--surface))}
+.card-red .card-value{color:var(--red)}
+.card-green{border-color:rgba(34,197,94,.25);background:linear-gradient(135deg,rgba(34,197,94,.04),var(--surface))}
+.card-green .card-value{color:var(--green)}
+.card-blue{border-color:rgba(59,130,246,.25);background:linear-gradient(135deg,rgba(59,130,246,.04),var(--surface))}
+.card-blue .card-value{color:var(--blue)}
+.card-purple{border-color:rgba(168,85,247,.25);background:linear-gradient(135deg,rgba(168,85,247,.04),var(--surface))}
+.card-purple .card-value{color:var(--purple)}
+</style>
+<style>
+/* Mini bar chart */
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:60px;margin-top:10px;padding-top:4px}
+.bar-chart .bar{flex:1;background:var(--gold);border-radius:3px 3px 0 0;min-height:2px;transition:height .4s ease;position:relative}
+.bar-chart .bar:hover::after{content:attr(data-label);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);padding:2px 6px;border-radius:4px;font-size:.65rem;color:var(--text);white-space:nowrap;z-index:10}
+.bar-chart .bar-label{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:.58rem;color:var(--text-muted);white-space:nowrap}
+
+/* Event list */
+.event-list{max-height:260px;overflow-y:auto;font-size:.8rem}
+.event-item{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px;align-items:center}
+.event-item:last-child{border-bottom:none}
+.event-type{font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
+.event-time{font-family:var(--mono);font-size:.68rem;color:var(--text-muted)}
+.event-id{font-family:var(--mono);font-size:.68rem;color:var(--text-dim);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Badge pills */
+.badge{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:600;letter-spacing:.03em}
+.badge-gold{background:var(--gold-dim);color:var(--gold)}
+.badge-green{background:var(--green-dim);color:var(--green)}
+.badge-red{background:var(--red-dim);color:var(--red)}
+.badge-blue{background:var(--blue-dim);color:var(--blue)}
+.badge-purple{background:var(--purple-dim);color:var(--purple)}
+
+/* Fee table */
+.fee-table{width:100%;font-size:.82rem;border-collapse:collapse}
+.fee-table th{text-align:left;color:var(--text-muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;padding:6px 8px;border-bottom:1px solid var(--border)}
+.fee-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.fee-table td:last-child{font-family:var(--mono);text-align:right;color:var(--green)}
+
+/* ID display */
+.id-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.id-row:last-child{border-bottom:none}
+.id-label{color:var(--text-dim);font-weight:600}
+.id-value{font-family:var(--mono);font-size:.72rem;color:var(--accent);max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.id-value a{color:var(--accent)}
+
+/* Council list */
+.council-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.council-addr{font-family:var(--mono);font-size:.7rem;background:var(--surface2);border:1px solid var(--border);padding:3px 8px;border-radius:4px;color:var(--text-dim)}
+
+/* Loading shimmer */
+.shimmer{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px;height:1.8rem;width:80px;display:inline-block}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+footer{text-align:center;padding:24px 0;color:var(--text-muted);font-size:.74rem;border-top:1px solid var(--border);margin-top:32px}
+@media(max-width:640px){.container{padding:0 14px}.grid{grid-template-columns:1fr}.card-value{font-size:1.4rem}}
+</style>
+
+<header>
+  <div class="container">
+    <div class="logo"><div class="logo-icon">&#x1f9ec;</div><span>AgentCivics DAO Dashboard</span></div>
+    <div class="header-right">
+      <a href="../frontend/" class="back-link">&larr; Registry</a>
+      <label class="refresh-toggle">
+        <input type="checkbox" id="autoRefresh" checked onchange="toggleAutoRefresh()">
+        Auto-refresh
+      </label>
+      <span class="last-updated" id="lastUpdated">Loading...</span>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="padding:28px 24px 0">
+
+<!-- ═══ 1. REGISTRY HEALTH ═══ -->
+<div class="section">
+  <h2><span class="section-icon" style="color:var(--gold)">&#x1f4cb;</span> Registry Health</h2>
+  <div class="grid">
+    <div class="card card-gold">
+      <div class="card-label">Total Agents</div>
+      <div class="card-value" id="regTotal"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-gold">
+      <div class="card-label">Recent Registrations (7d)</div>
+      <div class="card-value" id="regRecent7d"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-gold">
+      <div class="card-label">Status Breakdown</div>
+      <div id="regStatusBreakdown" style="margin-top:6px;font-size:.84rem;color:var(--text-dim)"><span class="shimmer"></span></div>
+    </div>
+  </div>
+  <div class="card card-gold" style="margin-top:14px">
+    <div class="card-label">Registration Trend (Last 7 Days)</div>
+    <div class="bar-chart" id="regTrendChart"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:20px;font-size:.6rem;color:var(--text-muted)" id="regTrendLabels"></div>
+  </div>
+</div>
+
+<!-- ═══ 2. MODERATION BOARD ═══ -->
+<div class="section">
+  <h2><span class="section-icon" style="color:var(--red)">&#x1f6e1;</span> Moderation Board</h2>
+  <div class="grid">
+    <div class="card card-red">
+      <div class="card-label">Total Reports</div>
+      <div class="card-value" id="modReportCount"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-red">
+      <div class="card-label">Flagged Content</div>
+      <div class="card-value" id="modFlaggedCount"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-red">
+      <div class="card-label">Active Proposals</div>
+      <div class="card-value" id="modProposalCount"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-red">
+      <div class="card-label">Moderation Treasury</div>
+      <div class="card-value" id="modTreasury"><span class="shimmer"></span></div>
+    </div>
+  </div>
+  <div class="grid" style="margin-top:14px">
+    <div class="card">
+      <div class="card-label">Council Members</div>
+      <div class="council-list" id="modCouncil"><span class="shimmer"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Recent Reports</div>
+      <div class="event-list" id="modRecentReports"><span class="shimmer"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 3. ECONOMY ═══ -->
+<div class="section">
+  <h2><span class="section-icon" style="color:var(--green)">&#x1f4b0;</span> Economy</h2>
+  <div class="grid">
+    <div class="card card-green">
+      <div class="card-label">DAO Treasury</div>
+      <div class="card-value" id="ecoTreasury"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-green">
+      <div class="card-label">Solidarity Pool</div>
+      <div class="card-value" id="ecoSolidarity"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-green">
+      <div class="card-label">Total Burned</div>
+      <div class="card-value" id="ecoBurned"><span class="shimmer"></span></div>
+    </div>
+  </div>
+  <div class="grid" style="margin-top:14px">
+    <div class="card">
+      <div class="card-label">Fee Structure</div>
+      <table class="fee-table" id="ecoFees">
+        <thead><tr><th>Action</th><th>Fee</th></tr></thead>
+        <tbody><tr><td colspan="2" style="color:var(--text-muted)">Loading...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-label">Recent Donations</div>
+      <div class="event-list" id="ecoRecentDonations"><span class="shimmer"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 4. MEMORY SYSTEM ═══ -->
+<div class="section">
+  <h2><span class="section-icon" style="color:var(--blue)">&#x1f9e0;</span> Memory System</h2>
+  <div class="grid">
+    <div class="card card-blue">
+      <div class="card-label">Total Souvenirs Written</div>
+      <div class="card-value" id="memSouvenirs"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-blue">
+      <div class="card-label">Terms Coined</div>
+      <div class="card-value" id="memTerms"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-blue">
+      <div class="card-label">Dictionaries</div>
+      <div class="card-value" id="memDictionaries"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-blue">
+      <div class="card-label">MemoryVault Pool</div>
+      <div class="card-value" id="memPool"><span class="shimmer"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 5. REPUTATION ═══ -->
+<div class="section">
+  <h2><span class="section-icon" style="color:var(--purple)">&#x2b50;</span> Reputation</h2>
+  <div class="grid">
+    <div class="card card-purple">
+      <div class="card-label">Domains Registered</div>
+      <div class="card-value" id="repDomains"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-purple">
+      <div class="card-label">Total Tags</div>
+      <div class="card-value" id="repTags"><span class="shimmer"></span></div>
+    </div>
+    <div class="card card-purple">
+      <div class="card-label">Most Active Domains</div>
+      <div id="repTopDomains" style="margin-top:6px;font-size:.82rem;color:var(--text-dim)"><span class="shimmer"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 6. NETWORK INFO ═══ -->
+<div class="section">
+  <h2><span class="section-icon" style="color:var(--accent)">&#x1f517;</span> Network Info</h2>
+  <div class="card" style="max-width:700px">
+    <div id="networkInfo">
+      <div class="id-row"><span class="id-label">Chain</span><span class="id-value">Sui Testnet</span></div>
+      <div class="id-row"><span class="id-label">Package (v3)</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1" target="_blank" id="netPackage">0xc3e38f...75f1</a></span></div>
+      <div class="id-row"><span class="id-label">Original Package</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d" target="_blank">0x1be807...083d</a></span></div>
+      <div class="id-row"><span class="id-label">Registry</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236" target="_blank">0x261acb...b236</a></span></div>
+      <div class="id-row"><span class="id-label">Treasury</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a" target="_blank">0x98911a...893a</a></span></div>
+      <div class="id-row"><span class="id-label">MemoryVault</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106" target="_blank">0x98cf27...f106</a></span></div>
+      <div class="id-row"><span class="id-label">ReputationBoard</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f" target="_blank">0x892fc3...1f2f</a></span></div>
+      <div class="id-row"><span class="id-label">ModerationBoard</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d" target="_blank">0xf0f103...d66d</a></span></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div class="container">
+    AgentCivics DAO Dashboard &mdash; Read-only monitoring &mdash; No wallet required<br>
+    <a href="../frontend/">Registry App</a> &middot;
+    <a href="../landing/">Home</a> &middot;
+    <a href="https://github.com/agentcivics/agentcivics" target="_blank">GitHub</a> &middot;
+    Sui Testnet
+  </div>
+</footer>
+
+<script type="module">
+import { SuiClient } from "https://esm.sh/@mysten/sui@1/client";
+
+// ── Constants ─────────────────────────────────────────────────────
+const RPC = "https://fullnode.testnet.sui.io:443";
+const PACKAGE_ID        = "0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1";
+const ORIGINAL_PKG_ID   = "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d";
+const REGISTRY_ID       = "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236";
+const TREASURY_ID       = "0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a";
+const MEMORY_VAULT_ID   = "0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106";
+const REPUTATION_BOARD_ID = "0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f";
+const MODERATION_BOARD_ID = "0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d";
+const MIST = 1_000_000_000;
+const REFRESH_INTERVAL = 30_000;
+
+const client = new SuiClient({ url: RPC });
+let refreshTimer = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const shortAddr = a => a ? a.slice(0,8) + "..." + a.slice(-4) : "—";
+const suiAmt = mist => (Number(mist) / MIST).toFixed(4) + " SUI";
+const ago = ts => {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return s + "s ago";
+  if (s < 3600) return Math.floor(s/60) + "m ago";
+  if (s < 86400) return Math.floor(s/3600) + "h ago";
+  return Math.floor(s/86400) + "d ago";
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────
+async function getFields(objectId) {
+  try {
+    const res = await client.getObject({ id: objectId, options: { showContent: true } });
+    return res.data?.content?.fields || {};
+  } catch (e) { console.warn("getFields error for", objectId, e); return {}; }
+}
+
+async function queryEvents(module, event, limit = 25, descending = true) {
+  try {
+    const resp = await fetch(RPC, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_queryEvents",params:[
+        { MoveEventType: `${ORIGINAL_PKG_ID}::${module}::${event}` },
+        null, limit, descending
+      ]})
+    });
+    const json = await resp.json();
+    return json.result?.data || [];
+  } catch (e) { console.warn("queryEvents error", module, event, e); return []; }
+}
+
+function setVal(id, val) {
+  const el = $(id);
+  if (el) el.innerHTML = val;
+}
+
+function updateTimestamp() {
+  const el = $("lastUpdated");
+  if (el) el.textContent = "Updated: " + new Date().toLocaleTimeString();
+}
+
+// ── 1. Registry Health ───────────────────────────────────────────────
+async function loadRegistryHealth() {
+  const fields = await getFields(REGISTRY_ID);
+  setVal("regTotal", fields.total_agents || "0");
+
+  // Query AgentRegistered events (up to 50, descending)
+  const events = await queryEvents("agent_registry", "AgentRegistered", 50, true);
+
+  // Count events from last 7 days
+  const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
+  const recent = events.filter(e => parseInt(e.timestampMs || "0") > sevenDaysAgo);
+  setVal("regRecent7d", recent.length.toString());
+
+  // Status breakdown from event data (best effort — count active as total minus known deceased)
+  const deathEvents = await queryEvents("agent_registry", "DeathDeclared", 50, true);
+  const deceased = deathEvents.length;
+  const total = parseInt(fields.total_agents || "0");
+  const active = Math.max(0, total - deceased);
+  setVal("regStatusBreakdown",
+    `<span class="badge badge-green">Active: ${active}</span> ` +
+    `<span class="badge badge-red" style="margin-left:4px">Deceased: ${deceased}</span>`
+  );
+
+  // Build 7-day trend chart
+  buildTrendChart(recent, sevenDaysAgo);
+}
+
+function buildTrendChart(events, startMs) {
+  const chart = $("regTrendChart");
+  const labels = $("regTrendLabels");
+  if (!chart) return;
+
+  // Build day buckets
+  const days = [];
+  const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    days.push({ date: d, label: dayNames[d.getDay()], count: 0 });
+  }
+
+  // Bucket events
+  events.forEach(evt => {
+    const ts = parseInt(evt.timestampMs || "0");
+    const dayIdx = Math.floor((ts - startMs) / 86400000);
+    if (dayIdx >= 0 && dayIdx < 7) {
+      days[dayIdx].count++;
+    }
+  });
+
+  const max = Math.max(1, ...days.map(d => d.count));
+  chart.innerHTML = "";
+  labels.innerHTML = "";
+  days.forEach(d => {
+    const pct = (d.count / max) * 100;
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    bar.style.height = Math.max(2, pct) + "%";
+    bar.setAttribute("data-label", d.count + " registrations");
+    bar.innerHTML = `<span class="bar-label">${d.label}</span>`;
+    chart.appendChild(bar);
+  });
+}
+
+// ── 2. Moderation Board ────────────────────────────────────────────────
+async function loadModerationBoard() {
+  const fields = await getFields(MODERATION_BOARD_ID);
+
+  setVal("modReportCount", fields.report_count || "0");
+  setVal("modFlaggedCount", fields.flagged_count || "0");
+  setVal("modProposalCount", fields.proposal_count || "0");
+
+  // Moderation treasury
+  const modBal = fields.treasury?.fields?.value || fields.treasury_balance || fields.moderation_treasury?.fields?.value || "0";
+  setVal("modTreasury", suiAmt(modBal));
+
+  // Council members
+  const council = fields.council_members?.fields?.contents || fields.council || [];
+  const councilArr = Array.isArray(council) ? council : [];
+  if (councilArr.length > 0) {
+    setVal("modCouncil", councilArr.map(a =>
+      `<span class="council-addr" title="${esc(a)}">${shortAddr(a)}</span>`
+    ).join(""));
+  } else {
+    setVal("modCouncil", '<span style="color:var(--text-muted);font-size:.8rem">No council data available</span>');
+  }
+
+  // Recent ContentReported events
+  const reports = await queryEvents("agent_moderation", "ContentReported", 10, true);
+  if (reports.length > 0) {
+    setVal("modRecentReports", reports.map(e => {
+      const p = e.parsedJson || {};
+      return `<div class="event-item">
+        <span class="event-type" style="color:var(--red)">Report</span>
+        <span class="event-id" title="${esc(p.content_id || "")}">${shortAddr(p.content_id || "")}</span>
+        <span class="event-time">${ago(parseInt(e.timestampMs || "0"))}</span>
+      </div>`;
+    }).join(""));
+  } else {
+    setVal("modRecentReports", '<div style="color:var(--text-muted);font-size:.8rem;padding:8px">No reports yet</div>');
+  }
+}
+
+// ── 3. Economy ──────────────────────────────────────────────────────────
+async function loadEconomy() {
+  // Treasury
+  const tFields = await getFields(TREASURY_ID);
+  const tBal = tFields.balance?.fields?.value || tFields.balance || "0";
+  setVal("ecoTreasury", suiAmt(tBal));
+
+  // MemoryVault — solidarity pool and burned
+  const vFields = await getFields(MEMORY_VAULT_ID);
+  const poolBal = vFields.solidarity_pool?.fields?.value || vFields.solidarity_pool || "0";
+  setVal("ecoSolidarity", suiAmt(poolBal));
+  const burned = vFields.total_burned || "0";
+  setVal("ecoBurned", suiAmt(burned));
+
+  // Fee structure from Treasury fields
+  const fees = [];
+  if (tFields.attestation_fee) fees.push(["Attestation", suiAmt(tFields.attestation_fee)]);
+  if (tFields.permit_fee) fees.push(["Permit", suiAmt(tFields.permit_fee)]);
+  if (tFields.affiliation_fee) fees.push(["Affiliation", suiAmt(tFields.affiliation_fee)]);
+  if (tFields.verification_fee) fees.push(["Verification", suiAmt(tFields.verification_fee)]);
+  if (tFields.registration_fee) fees.push(["Registration", suiAmt(tFields.registration_fee)]);
+
+  const feeTbody = $("ecoFees")?.querySelector("tbody");
+  if (feeTbody) {
+    if (fees.length > 0) {
+      feeTbody.innerHTML = fees.map(([name, val]) =>
+        `<tr><td>${esc(name)}</td><td>${val}</td></tr>`
+      ).join("");
+    } else {
+      feeTbody.innerHTML = '<tr><td colspan="2" style="color:var(--text-muted)">Fee data not available in object fields</td></tr>';
+    }
+  }
+
+  // Recent donations
+  const donations = await queryEvents("agent_registry", "DonationReceived", 10, true);
+  if (donations.length > 0) {
+    setVal("ecoRecentDonations", donations.map(e => {
+      const p = e.parsedJson || {};
+      const amt = p.amount ? suiAmt(p.amount) : "—";
+      return `<div class="event-item">
+        <span class="event-type" style="color:var(--green)">Donation</span>
+        <span class="event-id" title="${esc(p.donor || "")}">${shortAddr(p.donor || "")}</span>
+        <span style="font-family:var(--mono);font-size:.72rem;color:var(--green)">${amt}</span>
+        <span class="event-time">${ago(parseInt(e.timestampMs || "0"))}</span>
+      </div>`;
+    }).join(""));
+  } else {
+    setVal("ecoRecentDonations", '<div style="color:var(--text-muted);font-size:.8rem;padding:8px">No donations yet</div>');
+  }
+}
+
+// ── 4. Memory System ────────────────────────────────────────────────────
+async function loadMemorySystem() {
+  const vFields = await getFields(MEMORY_VAULT_ID);
+
+  // Souvenir count from events
+  const souvenirEvents = await queryEvents("agent_memory", "SouvenirWritten", 50, true);
+  setVal("memSouvenirs", souvenirEvents.length >= 50 ? "50+" : souvenirEvents.length.toString());
+
+  // Terms and dictionaries from vault fields
+  const termCount = vFields.term_count || vFields.total_terms || "—";
+  setVal("memTerms", termCount.toString());
+
+  const dictCount = vFields.dictionary_count || vFields.total_dictionaries || "—";
+  setVal("memDictionaries", dictCount.toString());
+
+  // Pool balance
+  const poolBal = vFields.solidarity_pool?.fields?.value || vFields.solidarity_pool || "0";
+  setVal("memPool", suiAmt(poolBal));
+}
+
+// ── 5. Reputation ───────────────────────────────────────────────────────
+async function loadReputation() {
+  const rFields = await getFields(REPUTATION_BOARD_ID);
+
+  // All domains
+  const allDomains = rFields.all_domains?.fields?.contents || rFields.all_domains || [];
+  const domainArr = Array.isArray(allDomains) ? allDomains : [];
+  setVal("repDomains", domainArr.length.toString());
+
+  // Total tags
+  const tagCount = rFields.total_tags || rFields.tag_count || "—";
+  setVal("repTags", tagCount.toString());
+
+  // Most active (just list first few domains)
+  if (domainArr.length > 0) {
+    const display = domainArr.slice(0, 8).map(d =>
+      `<span class="badge badge-purple" style="margin:2px">${esc(typeof d === "string" ? d : d.key || d)}</span>`
+    ).join("");
+    setVal("repTopDomains", display + (domainArr.length > 8 ? ` <span style="color:var(--text-muted)">+${domainArr.length - 8} more</span>` : ""));
+  } else {
+    setVal("repTopDomains", '<span style="color:var(--text-muted)">No domains registered yet</span>');
+  }
+}
+
+// ── Master refresh ──────────────────────────────────────────────────────
+async function refreshAll() {
+  console.log("[Dashboard] Refreshing all sections...");
+  await Promise.allSettled([
+    loadRegistryHealth(),
+    loadModerationBoard(),
+    loadEconomy(),
+    loadMemorySystem(),
+    loadReputation(),
+  ]);
+  updateTimestamp();
+  console.log("[Dashboard] Refresh complete.");
+}
+
+function toggleAutoRefresh() {
+  const checked = $("autoRefresh")?.checked;
+  if (checked) {
+    if (!refreshTimer) refreshTimer = setInterval(refreshAll, REFRESH_INTERVAL);
+  } else {
+    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+  }
+}
+window.toggleAutoRefresh = toggleAutoRefresh;
+
+// ── Init ────────────────────────────────────────────────────────────────
+refreshAll();
+refreshTimer = setInterval(refreshAll, REFRESH_INTERVAL);
+</script>
+
+</body>
+</html>

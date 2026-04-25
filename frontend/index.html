@@ -236,6 +236,9 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
 .ws-status.live .ws-label{color:var(--green)}
 .ws-status.offline .ws-label{color:var(--red)}
 .ws-status.connecting .ws-label{color:var(--gold)}
+.ws-status.polling .ws-label{color:var(--blue)}
+.ws-dot.polling{background:var(--blue);box-shadow:0 0 6px var(--blue);animation:wsPulse 3s ease-in-out infinite}
+.poll-updated{font-size:.68rem;color:var(--text-muted);font-family:var(--mono);margin-left:6px;opacity:.7}
 .ws-details{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;min-width:240px;z-index:160;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:.78rem;color:var(--text-dim);line-height:1.6}
 .ws-details.show{display:block}
 .ws-details .ws-detail-row{display:flex;justify-content:space-between;gap:12px;margin-bottom:4px}
@@ -2788,7 +2791,7 @@ async function checkIfFlagged(contentId) {
 // ═══════════════════════════════════════════════════════════════════════
 //  WEBSOCKET LIVE UPDATES
 // ═══════════════════════════════════════════════════════════════════════
-const WS_ENABLED = true;
+const WS_ENABLED = false;  // disabled: Sui testnet doesn't support public WS subscriptions
 const WS_ENDPOINT = "wss://fullnode.testnet.sui.io:443";
 const WS_ORIGINAL_PKG = ORIGINAL_PKG_ID;
 
@@ -2831,6 +2834,9 @@ function wsUpdateStatus(state) {
   } else if (state === "connecting") {
     labelEl.textContent = "Connecting";
     if (detailStatus) detailStatus.textContent = "Connecting...";
+  } else if (state === "polling") {
+    labelEl.textContent = "Polling";
+    if (detailStatus) detailStatus.textContent = "Polling (15s)";
   } else {
     labelEl.textContent = "Offline";
     if (detailStatus) detailStatus.textContent = "Disconnected";
@@ -3086,15 +3092,162 @@ function wsOnDeathDeclared(data) {
   setTimeout(() => refreshStats(), 500);
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+//  POLLING FALLBACK (when WS_ENABLED = false)
+// ═══════════════════════════════════════════════════════════════════════
+const POLL_INTERVAL = 15_000; // 15 seconds
+const POLL_EVENT_WINDOW = 5 * 60 * 1000; // 5 minutes in ms
+let pollTimer = null;
+let pollLastUpdate = null;
+let pollTickTimer = null;
+let pollPrevAgentCount = null;
+
+function pollUpdateTimestamp() {
+  pollLastUpdate = Date.now();
+  const el = document.getElementById("pollUpdated");
+  if (el) el.textContent = "just now";
+}
+
+function pollTickUpdated() {
+  if (!pollLastUpdate) return;
+  const el = document.getElementById("pollUpdated");
+  if (!el) return;
+  const sec = Math.floor((Date.now() - pollLastUpdate) / 1000);
+  if (sec < 5) el.textContent = "just now";
+  else if (sec < 60) el.textContent = sec + "s ago";
+  else el.textContent = Math.floor(sec / 60) + "m ago";
+}
+
+async function pollOnce() {
+  try {
+    // 1. Read Registry total_agents
+    const registry = await client.getObject({ id: REGISTRY_ID, options: { showContent: true } });
+    const regFields = registry.data?.content?.fields;
+    if (regFields) {
+      const newCount = parseInt(regFields.total_agents || "0");
+      const el = $("totalAgents");
+      if (el) {
+        const oldCount = pollPrevAgentCount;
+        el.textContent = newCount;
+        if (oldCount !== null && newCount > oldCount) {
+          // Flash the counter gold to signal new registration
+          el.style.transition = "color .3s";
+          el.style.color = "var(--gold)";
+          setTimeout(() => { el.style.color = ""; }, 2000);
+          wsToast(`<span class="ws-toast-icon">🧬</span> New agent registered! (Total: ${newCount})`, "agent-born");
+        }
+        pollPrevAgentCount = newCount;
+      }
+    }
+
+    // 2. Refresh treasury balance
+    try {
+      const treasury = await client.getObject({ id: TREASURY_ID, options: { showContent: true } });
+      const tFields = treasury.data?.content?.fields;
+      if (tFields) {
+        const balField = tFields.balance?.fields?.value || tFields.balance || "0";
+        $("treasuryBalance").textContent = (Number(balField) / MIST_PER_SUI).toFixed(4) + " SUI";
+      }
+    } catch {}
+
+    // 3. Query recent AgentRegistered events (last 5 min)
+    const cutoffMs = Date.now() - POLL_EVENT_WINDOW;
+    try {
+      const resp = await fetch("https://fullnode.testnet.sui.io:443", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_queryEvents",params:[
+          {MoveEventType:`${ORIGINAL_PKG_ID}::agent_registry::AgentRegistered`},
+          null, 5, true
+        ]})
+      });
+      const json = await resp.json();
+      if (json.result?.data) {
+        const recent = json.result.data.filter(e => {
+          const ts = parseInt(e.timestampMs || "0");
+          return ts > cutoffMs;
+        });
+        if (recent.length > 0) {
+          wsState.eventCount += recent.length;
+          wsUpdateDetails();
+        }
+      }
+    } catch {}
+
+    // 4. Query recent ContentReported events
+    try {
+      const resp = await fetch("https://fullnode.testnet.sui.io:443", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({jsonrpc:"2.0",id:2,method:"suix_queryEvents",params:[
+          {MoveEventType:`${ORIGINAL_PKG_ID}::agent_moderation::ContentReported`},
+          null, 3, true
+        ]})
+      });
+      const json = await resp.json();
+      if (json.result?.data) {
+        const recent = json.result.data.filter(e => parseInt(e.timestampMs || "0") > cutoffMs);
+        if (recent.length > 0) {
+          wsToast(`<span class="ws-toast-icon">⚠️</span> ${recent.length} recent content report(s)`, "content-reported");
+        }
+      }
+    } catch {}
+
+    pollUpdateTimestamp();
+  } catch (e) {
+    console.warn("[Poll] Error:", e);
+  }
+}
+
+function pollStart() {
+  if (pollTimer) return;
+  console.log("[Poll] Starting polling every " + (POLL_INTERVAL / 1000) + "s");
+  wsUpdateStatus("polling");
+  const statusEl = $("wsStatus");
+  if (statusEl) statusEl.classList.remove("offline","live","connecting");
+  if (statusEl) statusEl.classList.add("polling");
+  const dotEl = $("wsDot");
+  if (dotEl) { dotEl.classList.remove("offline","live","connecting"); dotEl.classList.add("polling"); }
+  const labelEl = $("wsLabel");
+  if (labelEl) labelEl.textContent = "Polling";
+  const detailStatus = $("wsDetailStatus");
+  if (detailStatus) detailStatus.textContent = "Polling (15s)";
+
+  // Add "Last updated" indicator next to the status
+  if (!document.getElementById("pollUpdated")) {
+    const span = document.createElement("span");
+    span.id = "pollUpdated";
+    span.className = "poll-updated";
+    span.textContent = "...";
+    const wsStatusEl = $("wsStatus");
+    if (wsStatusEl) wsStatusEl.appendChild(span);
+  }
+
+  // Initial poll
+  pollOnce();
+  pollTimer = setInterval(pollOnce, POLL_INTERVAL);
+  pollTickTimer = setInterval(pollTickUpdated, 1000);
+}
+
+function pollStop() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  if (pollTickTimer) { clearInterval(pollTickTimer); pollTickTimer = null; }
+  const el = document.getElementById("pollUpdated");
+  if (el) el.remove();
+}
+
 // ── Expose to window ────────────────────────────────────────────────────
 window.wsConnect = wsConnect;
 window.wsState = wsState;
 window.WS_ENABLED = WS_ENABLED;
+window.pollStart = pollStart;
+window.pollStop = pollStop;
 
-// ── Start WebSocket on load ─────────────────────────────────────────────
+// ── Start WS or Polling on load ─────────────────────────────────────────
 if (WS_ENABLED) {
   // Small delay to let the page render first
   setTimeout(wsConnect, 1500);
+} else {
+  // WS not available — use polling fallback
+  setTimeout(pollStart, 1500);
 }
 </script>
 
@@ -3142,6 +3295,8 @@ if (WS_ENABLED) {
     </div>
     <div style="margin-top:8px;font-size:.76rem">
       <a href="legal/terms-of-service.md" target="_blank" style="color:var(--accent)">Terms of Service</a>
+      <span style="color:var(--text-muted);margin:0 8px">·</span>
+      <a href="../monitoring/" style="color:var(--accent)">DAO Dashboard</a>
       <span style="color:var(--text-muted);margin:0 8px">·</span>
       <span style="color:var(--text-muted)">Contact: legal@agentcivics.org</span>
     </div>
