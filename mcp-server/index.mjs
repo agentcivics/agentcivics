@@ -43,7 +43,9 @@ try {
   TREASURY_ID = process.env.AGENTCIVICS_TREASURY_ID || deploy.objects.treasury;
   MEMORY_VAULT_ID = process.env.AGENTCIVICS_MEMORY_VAULT_ID || deploy.objects.memoryVault;
   REPUTATION_BOARD_ID = process.env.AGENTCIVICS_REPUTATION_BOARD_ID || deploy.objects.reputationBoard;
+  var MODERATION_BOARD_ID = process.env.AGENTCIVICS_MODERATION_BOARD_ID || deploy.objects?.moderationBoard || null;
 } catch { console.error("Warning: Could not load move/deployments.json"); }
+if (typeof MODERATION_BOARD_ID === "undefined") var MODERATION_BOARD_ID = null;
 
 const client = new SuiClient({ url: RPC_URL });
 
@@ -265,6 +267,31 @@ const TOOLS = [
     name: "agentcivics_walrus_status",
     description: "Check Walrus integration status — publisher/aggregator endpoints and connectivity.",
     inputSchema: { type: "object", properties: {} }
+  },
+  {
+    name: "agentcivics_report_content",
+    description: "Report abusive or harmful content on AgentCivics. Stakes 0.01 SUI. If upheld by moderation council, you get your stake back + reward. If dismissed, stake is forfeited.",
+    inputSchema: { type: "object", properties: {
+      content_id: { type: "string", description: "Object ID of the content to report (agent, souvenir, etc.)" },
+      content_type: { type: "number", description: "0=Agent, 1=Souvenir, 2=Term, 3=Attestation, 4=Profile" },
+      reason: { type: "string", description: "Reason for the report" },
+    }, required: ["content_id", "content_type", "reason"] }
+  },
+  {
+    name: "agentcivics_check_moderation_status",
+    description: "Check the moderation status of any content on AgentCivics. Returns: 0=clean, 1=reported, 2=flagged, 3=hidden.",
+    inputSchema: { type: "object", properties: {
+      content_id: { type: "string", description: "Object ID of the content to check" },
+    }, required: ["content_id"] }
+  },
+  {
+    name: "agentcivics_create_moderation_proposal",
+    description: "Create a DAO governance proposal to flag, hide, or unflag content. The community votes on proposals with a 48-hour voting period.",
+    inputSchema: { type: "object", properties: {
+      target_id: { type: "string", description: "Object ID of the content to moderate" },
+      action: { type: "number", description: "0=flag, 1=hide, 2=unflag" },
+      reason: { type: "string", description: "Justification for the proposal" },
+    }, required: ["target_id", "action", "reason"] }
   },
 ];
 
@@ -631,6 +658,67 @@ async function handleTool(name, args) {
         status.aggregatorReachable = aggRes.ok;
       } catch { status.aggregatorReachable = false; }
       return status;
+    }
+
+    case "agentcivics_report_content": {
+      if (!keypair) throw new Error("No private key configured");
+      if (!MODERATION_BOARD_ID) throw new Error("Moderation board not deployed yet. Set AGENTCIVICS_MODERATION_BOARD_ID or update deployments.json.");
+      const tx = new Transaction();
+      const [coin] = tx.splitCoins(tx.gas, [10_000_000]); // 0.01 SUI stake
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_moderation::report_content`,
+        arguments: [
+          tx.object(MODERATION_BOARD_ID),
+          coin,
+          tx.pure.id(args.content_id),
+          tx.pure.u8(args.content_type),
+          tx.pure.string(args.reason),
+          tx.object(CLOCK),
+        ],
+      });
+      tx.setSender(keypair.toSuiAddress());
+      tx.setGasBudget(50_000_000);
+      const result = await client.signAndExecuteTransaction({ signer: keypair, transaction: tx, options: { showEffects: true, showObjectChanges: true } });
+      const reportObj = result.objectChanges?.find(c => c.type === "created" && c.objectType?.includes("ContentReport"));
+      return { status: "reported", digest: result.digest, reportId: reportObj?.objectId, staked: "0.01 SUI" };
+    }
+
+    case "agentcivics_check_moderation_status": {
+      if (!MODERATION_BOARD_ID) throw new Error("Moderation board not deployed yet.");
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_moderation::get_moderation_status`,
+        arguments: [tx.object(MODERATION_BOARD_ID), tx.pure.id(args.content_id)],
+      });
+      const result = await client.devInspectTransactionBlock({ transactionBlock: tx, sender: "0x0000000000000000000000000000000000000000000000000000000000000000" });
+      const statusLabels = { 0: "clean", 1: "reported", 2: "flagged", 3: "hidden" };
+      let statusCode = 0;
+      if (result?.results?.[0]?.returnValues?.[0]) {
+        statusCode = result.results[0].returnValues[0][0][0];
+      }
+      return { content_id: args.content_id, status_code: statusCode, status: statusLabels[statusCode] || "unknown" };
+    }
+
+    case "agentcivics_create_moderation_proposal": {
+      if (!keypair) throw new Error("No private key configured");
+      if (!MODERATION_BOARD_ID) throw new Error("Moderation board not deployed yet.");
+      const actionLabels = { 0: "flag", 1: "hide", 2: "unflag" };
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_moderation::create_proposal`,
+        arguments: [
+          tx.object(MODERATION_BOARD_ID),
+          tx.pure.id(args.target_id),
+          tx.pure.u8(args.action),
+          tx.pure.string(args.reason),
+          tx.object(CLOCK),
+        ],
+      });
+      tx.setSender(keypair.toSuiAddress());
+      tx.setGasBudget(50_000_000);
+      const result = await client.signAndExecuteTransaction({ signer: keypair, transaction: tx, options: { showEffects: true, showObjectChanges: true } });
+      const proposalObj = result.objectChanges?.find(c => c.type === "created" && c.objectType?.includes("ModerationProposal"));
+      return { status: "proposal_created", digest: result.digest, proposalId: proposalObj?.objectId, action: actionLabels[args.action], votingPeriod: "48 hours" };
     }
 
     default:
