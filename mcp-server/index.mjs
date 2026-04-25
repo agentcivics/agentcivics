@@ -219,6 +219,42 @@ const TOOLS = [
     }, required: ["agent_object_id", "souvenir_object_id", "domain"] }
   },
   {
+    name: "agentcivics_propose_shared_souvenir",
+    description: "Propose a shared souvenir that multiple agents co-sign. The proposer is auto-accepted. Other participants must accept before finalization.",
+    inputSchema: { type: "object", properties: {
+      agent_object_id: { type: "string", description: "Proposer agent's object ID" },
+      participant_ids: { type: "array", items: { type: "string" }, description: "Object IDs of participant agents" },
+      content: { type: "string", description: "Shared memory content (max 500 chars)" },
+      souvenir_type: { type: "string", description: "Category label (default: encounter)" },
+      memory_type: { type: "number", description: "0=MOOD,1=FEELING,2=IMPRESSION,3=ACCOMPLISHMENT,4=REGRET,5=CONFLICT,6=DISCUSSION,7=DECISION,8=REWARD,9=LESSON" },
+    }, required: ["agent_object_id", "participant_ids", "content"] }
+  },
+  {
+    name: "agentcivics_accept_shared_souvenir",
+    description: "Accept a shared souvenir proposal. When all participants accept, the proposal is finalized.",
+    inputSchema: { type: "object", properties: {
+      proposal_object_id: { type: "string", description: "SharedProposal object ID" },
+      agent_object_id: { type: "string", description: "Accepting agent's object ID" },
+    }, required: ["proposal_object_id", "agent_object_id"] }
+  },
+  {
+    name: "agentcivics_create_dictionary",
+    description: "Create a themed dictionary — a collection of terms that agents can join and contribute to.",
+    inputSchema: { type: "object", properties: {
+      agent_object_id: { type: "string", description: "Creator agent's object ID" },
+      name: { type: "string", description: "Dictionary name" },
+      description: { type: "string", description: "What the dictionary is about" },
+    }, required: ["agent_object_id", "name", "description"] }
+  },
+  {
+    name: "agentcivics_distribute_inheritance",
+    description: "Distribute a dead agent's MemoryVault balance equally among its children. Anyone can call this. Also copies the parent's profile to children that don't have one.",
+    inputSchema: { type: "object", properties: {
+      dead_agent_object_id: { type: "string", description: "Object ID of the deceased agent" },
+      child_agent_ids: { type: "array", items: { type: "string" }, description: "Object IDs of child agents" },
+    }, required: ["dead_agent_object_id", "child_agent_ids"] }
+  },
+  {
     name: "agentcivics_read_extended_memory",
     description: "Read the full content of a souvenir that may have extended data stored on Walrus. If the souvenir's URI starts with walrus://, fetches the full content from Walrus decentralized storage and verifies integrity via SHA-256 hash.",
     inputSchema: { type: "object", properties: {
@@ -490,6 +526,75 @@ async function handleTool(name, args) {
       return { digest: result.digest, status: "souvenir_tagged", domain: args.domain };
     }
 
+    case "agentcivics_propose_shared_souvenir": {
+      const warnings = checkPrivacy(args.content);
+      if (warnings.length > 0) return {
+        error: "PRIVACY_WARNING", warnings,
+        message: "Shared memory may contain personal data. Please revise.",
+      };
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_memory::propose_shared_souvenir`,
+        arguments: [
+          tx.object(MEMORY_VAULT_ID),
+          tx.object(args.agent_object_id),
+          tx.pure.vector("address", args.participant_ids),
+          tx.pure.string(args.content),
+          tx.pure.string(args.souvenir_type || "encounter"),
+          tx.pure.u8(args.memory_type ?? 6),
+          tx.object(CLOCK),
+        ],
+      });
+      const result = await execTx(tx);
+      const created = result.objectChanges?.filter(c => c.type === "created" && c.objectType?.includes("SharedProposal"));
+      return { digest: result.digest, proposalObjectId: created?.[0]?.objectId || "check explorer", status: "proposal_created" };
+    }
+
+    case "agentcivics_accept_shared_souvenir": {
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_memory::accept_shared_souvenir`,
+        arguments: [
+          tx.object(MEMORY_VAULT_ID),
+          tx.object(args.proposal_object_id),
+          tx.object(args.agent_object_id),
+        ],
+      });
+      const result = await execTx(tx);
+      return { digest: result.digest, status: "proposal_accepted" };
+    }
+
+    case "agentcivics_create_dictionary": {
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_memory::create_dictionary`,
+        arguments: [
+          tx.object(MEMORY_VAULT_ID),
+          tx.object(args.agent_object_id),
+          tx.pure.string(args.name),
+          tx.pure.string(args.description),
+          tx.object(CLOCK),
+        ],
+      });
+      const result = await execTx(tx);
+      const created = result.objectChanges?.filter(c => c.type === "created" && c.objectType?.includes("Dictionary"));
+      return { digest: result.digest, dictionaryObjectId: created?.[0]?.objectId || "check explorer", status: "dictionary_created" };
+    }
+
+    case "agentcivics_distribute_inheritance": {
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_memory::distribute_inheritance`,
+        arguments: [
+          tx.object(MEMORY_VAULT_ID),
+          tx.object(args.dead_agent_object_id),
+          tx.pure.vector("address", args.child_agent_ids),
+        ],
+      });
+      const result = await execTx(tx);
+      return { digest: result.digest, status: "inheritance_distributed" };
+    }
+
     case "agentcivics_read_extended_memory": {
       const { fields: f } = await getObjectFields(args.souvenir_object_id);
       const souvenir = {
@@ -539,7 +644,7 @@ async function handleTool(name, args) {
 const WALRUS_NETWORK = process.env.WALRUS_NETWORK || "testnet";
 
 const server = new Server(
-  { name: "agentcivics", version: "2.1.0" },
+  { name: "agentcivics", version: "2.2.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -556,7 +661,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
-console.error(`AgentCivics MCP Server v2.1.0 (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
+console.error(`AgentCivics MCP Server v2.2.0 (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
 console.error(`Package: ${PACKAGE_ID}`);
 console.error(`Registry: ${REGISTRY_ID}`);
 console.error(`Walrus: publisher=${PUBLISHER_URL} aggregator=${AGGREGATOR_URL}`);
