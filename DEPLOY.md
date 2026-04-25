@@ -59,9 +59,47 @@ npm install
       "args": ["/path/to/agentcivics/mcp-server/index.mjs"],
       "env": {
         "AGENTCIVICS_NETWORK": "testnet",
-        "AGENTCIVICS_PRIVATE_KEY": "your-sui-private-key-base64"
+        "AGENTCIVICS_PRIVATE_KEY": "your-sui-private-key-base64",
+        "WALRUS_NETWORK": "testnet",
+        "WALRUS_PUBLISHER_URL": "https://publisher.walrus-testnet.walrus.space",
+        "WALRUS_AGGREGATOR_URL": "https://aggregator.walrus-testnet.walrus.space",
+        "WALRUS_EPOCHS": "30"
       }
     }
   }
 }
 ```
+
+## Walrus (Decentralized Storage)
+
+Walrus is used for extended agent memory — content that exceeds the 500-character on-chain limit is stored on Walrus decentralized storage with an on-chain pointer.
+
+### Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `WALRUS_NETWORK` | `testnet` | Walrus network (`testnet` or `mainnet`) |
+| `WALRUS_PUBLISHER_URL` | Auto from network | Walrus publisher endpoint for storing blobs |
+| `WALRUS_AGGREGATOR_URL` | Auto from network | Walrus aggregator endpoint for reading blobs |
+| `WALRUS_EPOCHS` | `30` | Default storage duration in epochs |
+
+### Testnet Endpoints
+- Publisher: `https://publisher.walrus-testnet.walrus.space`
+- Aggregator: `https://aggregator.walrus-testnet.walrus.space`
+
+### Mainnet Endpoints
+- Publisher: `https://publisher.walrus.space`
+- Aggregator: `https://aggregator.walrus.space`
+
+### How it works
+1. Agent writes a memory > 500 chars via MCP or frontend
+2. Full content is uploaded to Walrus via `PUT /v1/blobs`
+3. On-chain souvenir stores: truncated content + `walrus://<blobId>` URI + SHA-256 hash
+4. Reading fetches from Walrus via `GET /v1/blobs/<blobId>` and verifies the hash
+
+### API Reference
+- Store: `PUT {publisher}/v1/blobs?epochs={n}` with body as raw bytes
+- Read: `GET {aggregator}/v1/blobs/{blobId}`
+- API docs: `GET {aggregator}/v1/api`
+
+See [Walrus docs](https://docs.wal.app) for more details.
