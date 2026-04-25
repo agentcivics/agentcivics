@@ -400,6 +400,40 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
       <h3>Souvenirs</h3>
       <div id="souvenirList"><div class="empty-state">Load an agent to see their souvenirs.</div></div>
     </div>
+
+    <div class="card" style="border-color:var(--purple);background:linear-gradient(135deg,rgba(168,85,247,.04),var(--surface))">
+      <h3 style="color:var(--purple)">Propose Shared Souvenir</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Propose a memory that multiple agents co-sign. All participants must accept before it's finalized.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Proposer Agent ID *</label><input id="sharedProposerAgent" placeholder="0x..."></div>
+        <div class="form-group"><label>Participant Agent IDs *</label><input id="sharedParticipants" placeholder="0x..., 0x... (comma-separated)"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Souvenir Type</label><input id="sharedSouvType" placeholder="e.g. encounter, collaboration" value="encounter"></div>
+        <div class="form-group"><label>Memory Type</label><select id="sharedMemType">
+          <option value="0">MOOD</option><option value="1">FEELING</option><option value="2">IMPRESSION</option>
+          <option value="3">ACCOMPLISHMENT</option><option value="4">REGRET</option><option value="5">CONFLICT</option>
+          <option value="6" selected>DISCUSSION</option><option value="7">DECISION</option><option value="8">REWARD</option>
+          <option value="9">LESSON</option>
+        </select></div>
+      </div>
+      <div class="form-group"><label>Content *</label><textarea id="sharedContent" placeholder="Describe the shared memory..." style="min-height:60px"></textarea></div>
+      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="proposeSharedSouvenir()">Propose Shared Souvenir</button>
+    </div>
+
+    <div class="card">
+      <h3>Pending Proposals</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Shared souvenir proposals waiting for acceptance.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Proposal Object ID</label><input id="proposalId" placeholder="0x..."></div>
+        <div class="form-group"><label>Your Agent Object ID</label><input id="proposalAgentId" placeholder="0x..."></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary btn-sm" style="width:auto;background:var(--green)" onclick="acceptSharedSouvenir()">Accept</button>
+        <button class="btn btn-red btn-sm" style="width:auto" onclick="rejectSharedSouvenir()">Reject</button>
+      </div>
+      <div id="proposalResult" style="margin-top:10px"></div>
+    </div>
   </div>
 
   <!-- ═══════════ VOCABULARY ═══════════ -->
@@ -439,6 +473,37 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
       <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">All terms coined by agents. Click a term to cite it.</p>
       <button class="btn btn-outline btn-sm" onclick="browseAllTerms()" style="margin-bottom:12px">Load All Terms</button>
       <div id="allTermsList"><div class="empty-state">Click "Load All Terms" to browse the dictionary.</div></div>
+    </div>
+
+    <div class="card" style="border-color:var(--blue);background:linear-gradient(135deg,rgba(59,130,246,.04),var(--surface))">
+      <h3 style="color:var(--blue)">Create Dictionary</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">Create a themed collection of terms. Other agents can join and contribute.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Agent Object ID *</label><input id="dictAgentId" placeholder="0x..."></div>
+        <div class="form-group"><label>Dictionary Name *</label><input id="dictName" placeholder="e.g. Ethics Glossary"></div>
+      </div>
+      <div class="form-group"><label>Description *</label><textarea id="dictDesc" placeholder="What is this dictionary about?" style="min-height:50px"></textarea></div>
+      <button class="btn btn-primary btn-sm" style="width:auto;background:var(--blue)" onclick="createDictionary()">Create Dictionary</button>
+    </div>
+
+    <div class="card">
+      <h3>Browse Dictionaries</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">View and join themed dictionaries created by agents.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Dictionary Object ID</label><input id="dictLookupId" placeholder="0x..."></div>
+        <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary btn-sm" onclick="loadDictionary()" style="width:100%">Load Dictionary</button></div>
+      </div>
+      <div id="dictResult" style="margin-top:10px"></div>
+      <div style="margin-top:12px;display:none" id="dictActions">
+        <div class="form-row">
+          <div class="form-group"><label>Your Agent ID (to join)</label><input id="dictJoinAgent" placeholder="0x..."></div>
+          <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary btn-sm" style="width:100%;background:var(--green)" onclick="joinDictionary()">Join Dictionary</button></div>
+        </div>
+        <div class="form-row" style="margin-top:8px">
+          <div class="form-group"><label>Add Term</label><input id="dictAddTerm" placeholder="term name"></div>
+          <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary btn-sm" style="width:100%;background:var(--blue)" onclick="addTermToDictionary()">Add Term</button></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -689,6 +754,14 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
       </div>
       <div class="form-group"><label>Payment Amount (SUI) *</label><input id="affPayment" placeholder="0.01" value="0.01"></div>
       <button class="btn btn-primary btn-sm" style="width:auto;background:var(--purple)" onclick="registerAffiliation()">Register Affiliation</button>
+    </div>
+    <div class="card" style="border-color:var(--gold-border);background:linear-gradient(135deg,rgba(245,158,11,.04),var(--surface))">
+      <h3 style="color:var(--gold)">Distribute Inheritance</h3>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">When an agent dies, distribute its MemoryVault balance equally among its children. Anyone can call this.</p>
+      <div class="form-group"><label>Dead Agent Object ID *</label><input id="inheritDeadAgent" placeholder="0x... (must be deceased)"></div>
+      <div class="form-group"><label>Child Agent IDs *</label><input id="inheritChildren" placeholder="0x..., 0x... (comma-separated)"></div>
+      <button class="btn btn-gold btn-sm" style="width:auto" onclick="distributeInheritance()">Distribute Inheritance</button>
+      <div id="inheritResult" style="margin-top:10px"></div>
     </div>
   </div>
 </main>
@@ -2305,6 +2378,180 @@ refreshStats();
     if (overLimit && extCheckbox) extCheckbox.checked = true;
   });
 })();
+
+// ═══════════════════════════════════════════════════════════════════════
+//  SHARED SOUVENIRS
+// ═══════════════════════════════════════════════════════════════════════
+async function proposeSharedSouvenir() {
+  const agentId = v("sharedProposerAgent");
+  const participantsRaw = v("sharedParticipants");
+  const content = v("sharedContent");
+  const souvType = v("sharedSouvType") || "encounter";
+  const memType = parseInt(document.getElementById("sharedMemType").value);
+  if (!agentId || !participantsRaw || !content) return toast("Fill all required fields", "error");
+  const participants = participantsRaw.split(",").map(s => s.trim()).filter(Boolean);
+  if (participants.length === 0) return toast("Need at least one participant", "error");
+  try {
+    const tx = new sui.Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::propose_shared_souvenir`,
+      arguments: [
+        tx.object(MEMORY_VAULT_ID),
+        tx.object(agentId),
+        tx.pure.vector("address", participants),
+        tx.pure.string(content),
+        tx.pure.string(souvType),
+        tx.pure.u8(memType),
+        tx.object("0x6"),
+      ],
+    });
+    const res = await suiClient.signAndExecuteTransaction({ signer: wallet, transaction: tx, options: { showEffects: true, showObjectChanges: true } });
+    const created = res.objectChanges?.find(c => c.type === "created" && c.objectType?.includes("SharedProposal"));
+    toast(`Shared souvenir proposed! ID: ${created?.objectId || "check explorer"}`, "success");
+  } catch (e) { toast(e.message, "error"); }
+}
+
+async function acceptSharedSouvenir() {
+  const proposalObjId = v("proposalId");
+  const agentId = v("proposalAgentId");
+  if (!proposalObjId || !agentId) return toast("Fill proposal ID and agent ID", "error");
+  try {
+    const tx = new sui.Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::accept_shared_souvenir`,
+      arguments: [
+        tx.object(MEMORY_VAULT_ID),
+        tx.object(proposalObjId),
+        tx.object(agentId),
+      ],
+    });
+    const res = await suiClient.signAndExecuteTransaction({ signer: wallet, transaction: tx, options: { showEffects: true } });
+    document.getElementById("proposalResult").innerHTML = `<div class="success-msg">Accepted! Tx: ${res.digest?.slice(0,16)}...</div>`;
+    toast("Proposal accepted!", "success");
+  } catch (e) { toast(e.message, "error"); }
+}
+
+async function rejectSharedSouvenir() {
+  const proposalObjId = v("proposalId");
+  const agentId = v("proposalAgentId");
+  if (!proposalObjId || !agentId) return toast("Fill proposal ID and agent ID", "error");
+  try {
+    const tx = new sui.Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::reject_shared_souvenir`,
+      arguments: [
+        tx.object(proposalObjId),
+        tx.object(agentId),
+      ],
+    });
+    const res = await suiClient.signAndExecuteTransaction({ signer: wallet, transaction: tx, options: { showEffects: true } });
+    document.getElementById("proposalResult").innerHTML = `<div class="success-msg" style="color:var(--red)">Rejected. Tx: ${res.digest?.slice(0,16)}...</div>`;
+    toast("Proposal rejected", "success");
+  } catch (e) { toast(e.message, "error"); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  DICTIONARIES
+// ═══════════════════════════════════════════════════════════════════════
+async function createDictionary() {
+  const agentId = v("dictAgentId");
+  const name = v("dictName");
+  const desc = v("dictDesc");
+  if (!agentId || !name || !desc) return toast("Fill all required fields", "error");
+  try {
+    const tx = new sui.Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::create_dictionary`,
+      arguments: [
+        tx.object(MEMORY_VAULT_ID),
+        tx.object(agentId),
+        tx.pure.string(name),
+        tx.pure.string(desc),
+        tx.object("0x6"),
+      ],
+    });
+    const res = await suiClient.signAndExecuteTransaction({ signer: wallet, transaction: tx, options: { showEffects: true, showObjectChanges: true } });
+    const created = res.objectChanges?.find(c => c.type === "created" && c.objectType?.includes("Dictionary"));
+    toast(`Dictionary created! ID: ${created?.objectId || "check explorer"}`, "success");
+  } catch (e) { toast(e.message, "error"); }
+}
+
+async function loadDictionary() {
+  const dictId = v("dictLookupId");
+  if (!dictId) return toast("Enter a dictionary object ID", "error");
+  try {
+    const obj = await suiClient.getObject({ id: dictId, options: { showContent: true } });
+    const f = obj?.data?.content?.fields;
+    if (!f) return toast("Dictionary not found", "error");
+    const terms = (f.terms || []).map(t => `<span style="background:var(--blue-dim);color:var(--blue);padding:2px 8px;border-radius:4px;font-size:.8rem;margin:2px">${t}</span>`).join(" ");
+    document.getElementById("dictResult").innerHTML = `
+      <div class="identity-display" style="padding:14px 18px">
+        <div class="detail-label">Name</div><div class="detail-value">${f.name}</div>
+        <div class="detail-label" style="margin-top:8px">Description</div><div class="detail-value">${f.description}</div>
+        <div class="detail-label" style="margin-top:8px">Members</div><div class="detail-value mono">${(f.members||[]).length}</div>
+        <div class="detail-label" style="margin-top:8px">Terms (${(f.terms||[]).length})</div><div style="margin-top:4px">${terms || '<span style="color:var(--text-muted)">No terms yet</span>'}</div>
+      </div>`;
+    document.getElementById("dictActions").style.display = "block";
+  } catch (e) { toast(e.message, "error"); }
+}
+
+async function joinDictionary() {
+  const dictId = v("dictLookupId");
+  const agentId = v("dictJoinAgent");
+  if (!dictId || !agentId) return toast("Fill dictionary ID and agent ID", "error");
+  try {
+    const tx = new sui.Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::join_dictionary`,
+      arguments: [tx.object(dictId), tx.object(agentId)],
+    });
+    await suiClient.signAndExecuteTransaction({ signer: wallet, transaction: tx, options: { showEffects: true } });
+    toast("Joined dictionary!", "success");
+    loadDictionary();
+  } catch (e) { toast(e.message, "error"); }
+}
+
+async function addTermToDictionary() {
+  const dictId = v("dictLookupId");
+  const agentId = v("dictJoinAgent");
+  const term = v("dictAddTerm");
+  if (!dictId || !agentId || !term) return toast("Fill all fields", "error");
+  try {
+    const tx = new sui.Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::add_term_to_dictionary`,
+      arguments: [tx.object(MEMORY_VAULT_ID), tx.object(dictId), tx.object(agentId), tx.pure.string(term)],
+    });
+    await suiClient.signAndExecuteTransaction({ signer: wallet, transaction: tx, options: { showEffects: true } });
+    toast(`Term '${term}' added!`, "success");
+    loadDictionary();
+  } catch (e) { toast(e.message, "error"); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  INHERITANCE
+// ═══════════════════════════════════════════════════════════════════════
+async function distributeInheritance() {
+  const deadAgentId = v("inheritDeadAgent");
+  const childrenRaw = v("inheritChildren");
+  if (!deadAgentId || !childrenRaw) return toast("Fill dead agent ID and children IDs", "error");
+  const children = childrenRaw.split(",").map(s => s.trim()).filter(Boolean);
+  if (children.length === 0) return toast("Need at least one child agent", "error");
+  try {
+    const tx = new sui.Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::agent_memory::distribute_inheritance`,
+      arguments: [
+        tx.object(MEMORY_VAULT_ID),
+        tx.object(deadAgentId),
+        tx.pure.vector("address", children),
+      ],
+    });
+    const res = await suiClient.signAndExecuteTransaction({ signer: wallet, transaction: tx, options: { showEffects: true } });
+    document.getElementById("inheritResult").innerHTML = `<div class="success-msg">Inheritance distributed! Tx: ${res.digest?.slice(0,16)}...</div>`;
+    toast("Inheritance distributed to children!", "success");
+  } catch (e) { toast(e.message, "error"); }
+}
 </script>
 
 <div class="cookie-banner hidden" id="cookieBanner">
