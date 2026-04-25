@@ -1548,6 +1548,22 @@ async function citeTerm() {
   const id = v("citeAgentId"), term = v("citeTerm");
   if (!id || !term) { toast("Agent ID and term required.", "error"); return; }
   try {
+    // Check if term exists first
+    const vault = await getObjectFields(MEMORY_VAULT_ID);
+    const termsTableId = vault.terms?.fields?.id?.id;
+    if (termsTableId) {
+      const checkResp = await fetch("https://fullnode.testnet.sui.io:443", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
+          termsTableId, {type:"0x1::string::String", value: term}
+        ]})
+      });
+      const checkResult = (await checkResp.json()).result;
+      if (!checkResult?.data?.content) {
+        toast("Term '" + term + "' does not exist. Coin it first!", "error");
+        return;
+      }
+    }
     const tx = new Transaction();
     tx.moveCall({
       target: `${PACKAGE_ID}::agent_memory::cite_term`,
@@ -1556,7 +1572,11 @@ async function citeTerm() {
     await signAndExecute(tx);
     toast(`Cited '${term}'`, "success");
     $("citeTerm").value = "";
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) {
+    const msg = e.message || String(e);
+    if (msg.includes("MoveAbort")) toast("Term '" + term + "' not found or you don't have enough balance.", "error");
+    else toast("Failed: " + msg, "error");
+  }
 }
 
 // ── PROFILE / EVOLUTION ─────────────────────────────────────────────────
