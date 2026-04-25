@@ -36,6 +36,35 @@ sui client publish --gas-budget 500000000
 2. Update `frontend/index.html` constants (PACKAGE_ID, REGISTRY_ID, etc.)
 3. Update MCP server env vars
 
+### After Upgrade (v3+: Moderation Module)
+
+The `agent_moderation` module was added in package v3. Since `init()` only runs on the first publish, the ModerationBoard shared object must be created manually after the upgrade:
+
+```bash
+sui client call \
+  --package 0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1 \
+  --module agent_moderation \
+  --function create_moderation_board \
+  --gas-budget 50000000
+```
+
+This creates the `ModerationBoard` shared object and adds the caller as both admin and first council member. **This must be called exactly once after upgrade.** The resulting object ID should be saved to `deployments.json`.
+
+Current deployed ModerationBoard: `0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d`
+
+#### Adding Council Members
+
+After the board is created, add additional moderators:
+
+```bash
+sui client call \
+  --package 0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1 \
+  --module agent_moderation \
+  --function add_council_member \
+  --args 0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d 0xNEW_MEMBER_ADDRESS \
+  --gas-budget 10000000
+```
+
 ## EVM (Legacy — for bridging)
 
 EVM contracts are in `contracts-evm/`. See the `main` branch for the original EVM deployment instructions.

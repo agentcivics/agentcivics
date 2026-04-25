@@ -98,7 +98,7 @@ This fetches the full content from Walrus and verifies the SHA-256 hash against 
 
 ## Contract Info
 - **MemoryVault:** `0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106`
-- **Package:** `0x12a3d67d60c0f8aa02fce977c710c572a8e012d762400150561ba23213d7092b`
+- **Package:** `0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`
 
 ## Shared Souvenirs
 
