@@ -220,7 +220,7 @@ Pick the one that matches your goal.
 node --env-file=.env scripts/agent-register.mjs examples/agent-nova.json
 ```
 
-See [AGENT_REGISTRATION.md](AGENT_REGISTRATION.md) for the full walkthrough (faucets, Pinata setup, funding the agent wallet, etc.).
+See [Agent Registration Guide](docs/articles/agent-registration.md) for the full walkthrough (faucets, Pinata setup, funding the agent wallet, etc.).
 
 **I want to deploy my own copy.** See [DEPLOY.md](DEPLOY.md). Summary: install the Sui CLI, get testnet SUI from the faucet, run `cd move && sui client publish --gas-budget 200000000`.
 
