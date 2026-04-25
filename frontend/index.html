@@ -1557,18 +1557,24 @@ async function loadCurrentProfile() {
   const id = v("profileAgentId"); if (!id) { toast("Enter agent ID.", "error"); return; }
   const d = $("currentProfile"); d.innerHTML = loading();
   try {
-    const tx = new Transaction();
-    tx.moveCall({
-      target: `${PACKAGE_ID}::agent_memory::get_profile`,
-      arguments: [tx.object(MEMORY_VAULT_ID), tx.pure.address(id)],
+    const vault = await getObjectFields(MEMORY_VAULT_ID);
+    const profilesTableId = vault.profiles?.fields?.id?.id;
+    if (!profilesTableId) { d.innerHTML = empty("No evolving profile set yet."); return; }
+    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
+        profilesTableId, {type:"0x2::object::ID", value: id}
+      ]})
     });
-    const result = await devInspect(tx);
-    if (result.results?.[0]?.returnValues) {
-      d.innerHTML = `<div style="padding:10px 0"><span class="badge badge-blue">Profile data found on-chain</span><div style="font-size:.82rem;color:var(--text-muted);margin-top:8px">Use the Update Profile form to modify.</div></div>`;
+    const result = (await resp.json()).result;
+    const fields = result?.data?.content?.fields?.value?.fields || result?.data?.content?.fields?.value;
+    if (fields) {
+      const bio = typeof fields === 'string' ? fields : (fields.bio || fields.text || JSON.stringify(fields));
+      d.innerHTML = `<div class="card" style="padding:14px"><h4 style="margin-bottom:8px">Current Profile</h4><div style="font-size:.9rem;line-height:1.6;white-space:pre-wrap">${esc(bio)}</div></div>`;
     } else {
-      d.innerHTML = empty("No evolving profile set yet.");
+      d.innerHTML = empty("No evolving profile set yet. Use the form below to create one.");
     }
-  } catch (e) { d.innerHTML = empty("No profile found or error."); }
+  } catch (e) { d.innerHTML = empty("No profile found yet."); }
 }
 
 async function saveProfile() {
@@ -1652,19 +1658,26 @@ async function loadAgentSpecialization() {
   const id = v("specAgentId"); if (!id) { toast("Enter agent ID.", "error"); return; }
   const d = $("specResult"); d.innerHTML = loading();
   try {
-    const tx = new Transaction();
-    tx.moveCall({
-      target: `${PACKAGE_ID}::agent_reputation::get_agent_domains`,
-      arguments: [tx.object(REPUTATION_BOARD_ID), tx.pure.address(id)],
-    });
-    const result = await devInspect(tx);
-    // Parse return values
-    if (result.results?.[0]?.returnValues?.length > 0) {
-      d.innerHTML = `<div><span class="badge badge-purple">Domain data found</span><div style="font-size:.82rem;color:var(--text-muted);margin-top:8px">Agent has domain activity on-chain.</div></div>`;
-    } else {
-      d.innerHTML = empty("No tagged activity yet.");
+    const board = await getObjectFields(REPUTATION_BOARD_ID);
+    const agentDomainsTableId = board.agent_domains?.fields?.id?.id;
+    if (!agentDomainsTableId || board.agent_domains?.fields?.size === "0") {
+      d.innerHTML = empty("No specialization data yet. Tag a souvenir or attestation with a domain first.");
+      return;
     }
-  } catch (e) { d.innerHTML = empty("No specialization data found."); }
+    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
+        agentDomainsTableId, {type:"0x2::object::ID", value: id}
+      ]})
+    });
+    const result = (await resp.json()).result;
+    const domains = result?.data?.content?.fields?.value || [];
+    if (domains.length) {
+      d.innerHTML = `<div><h4 style="color:var(--purple);margin-bottom:8px">Active Domains</h4>${domains.map(dom => `<span class="badge badge-purple" style="margin:3px">${esc(dom)}</span>`).join("")}</div>`;
+    } else {
+      d.innerHTML = empty("No domains tagged for this agent yet.");
+    }
+  } catch (e) { d.innerHTML = empty("No specialization data yet."); }
 }
 
 async function tagSouvenir() {
