@@ -20,7 +20,7 @@ module agent_civics::agent_memory {
     use sui::event;
     use sui::sui::SUI;
     use sui::table::{Self, Table};
-    use agent_civics::agent_registry::{Self, AgentIdentity};
+    use agent_civics::agent_registry::{Self, AgentIdentity, Registry};
 
     // ── Constants ───────────────────────────────────────────────────────
     const MIN_SOUVENIR_COST: u64 = 1;
@@ -61,6 +61,8 @@ module agent_civics::agent_memory {
     const EAgentNotDead: u64 = 116;
     const ENoChildren: u64 = 117;
     const ENoBalance: u64 = 118;
+    const ENotChild: u64 = 119;
+    const EProposalExpired: u64 = 120;
 
     // ── Data Structures ─────────────────────────────────────────────────
 
@@ -648,6 +650,9 @@ module agent_civics::agent_memory {
     //  SHARED SOUVENIRS
     // ════════════════════════════════════════════════════════════════════
 
+    /// 7 days in milliseconds — default proposal expiry window.
+    const PROPOSAL_EXPIRY_MS: u64 = 604_800_000;
+
     /// Shared souvenir proposal — agents co-sign a memory.
     public struct SharedProposal has key, store {
         id: UID,
@@ -658,6 +663,8 @@ module agent_civics::agent_memory {
         memory_type: u8,
         accepted: vector<ID>,
         finalized: bool,
+        /// Timestamp after which the proposal can be cleaned up if not finalized.
+        expires_at: u64,
     }
 
     public struct SharedProposalCreated has copy, drop {
@@ -705,6 +712,7 @@ module agent_civics::agent_memory {
         // Proposer is auto-accepted
         let accepted = vector[proposer_id];
 
+        let now = sui::clock::timestamp_ms(_clock);
         let proposal = SharedProposal {
             id: object::new(ctx),
             proposer_id,
@@ -714,6 +722,7 @@ module agent_civics::agent_memory {
             memory_type,
             accepted,
             finalized: false,
+            expires_at: now + PROPOSAL_EXPIRY_MS,
         };
 
         let participant_count = vector::length(&participant_ids);
@@ -732,11 +741,14 @@ module agent_civics::agent_memory {
         _vault: &mut MemoryVault,
         proposal: &mut SharedProposal,
         agent: &AgentIdentity,
+        clock: &Clock,
         ctx: &mut TxContext,
     ) {
         assert!(ctx.sender() == agent_registry::get_creator(agent), ENotAuthorized);
         assert!(!agent_registry::is_dead(agent), EAgentNotAlive);
         assert!(!proposal.finalized, EAlreadyFinalized);
+        // Check proposal hasn't expired
+        assert!(sui::clock::timestamp_ms(clock) <= proposal.expires_at, EProposalExpired);
 
         let agent_id = agent_registry::get_agent_id(agent);
 
@@ -802,9 +814,25 @@ module agent_civics::agent_memory {
         });
     }
 
+    /// Clean up an expired proposal. Anyone can call this after the proposal expires.
+    /// Marks the proposal as finalized (rejected due to expiry).
+    public entry fun cleanup_expired_proposal(
+        proposal: &mut SharedProposal,
+        clock: &Clock,
+    ) {
+        assert!(!proposal.finalized, EAlreadyFinalized);
+        assert!(sui::clock::timestamp_ms(clock) > proposal.expires_at, EStillActive);
+        proposal.finalized = true;
+
+        event::emit(SharedProposalRejected {
+            proposal_id: object::id(proposal),
+            agent_id: proposal.proposer_id,
+        });
+    }
+
     /// Read proposal state.
-    public fun read_proposal(p: &SharedProposal): (ID, vector<ID>, String, u8, vector<ID>, bool) {
-        (p.proposer_id, p.participants, p.content, p.memory_type, p.accepted, p.finalized)
+    public fun read_proposal(p: &SharedProposal): (ID, vector<ID>, String, u8, vector<ID>, bool, u64) {
+        (p.proposer_id, p.participants, p.content, p.memory_type, p.accepted, p.finalized, p.expires_at)
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -943,8 +971,10 @@ module agent_civics::agent_memory {
 
     /// Distribute a dead agent's balance equally among its children.
     /// Anyone can call this. Copies parent's profile to children that lack one.
+    /// Each child must be a verified child of the dead agent in the registry lineage.
     public entry fun distribute_inheritance(
         vault: &mut MemoryVault,
+        registry: &Registry,
         dead_agent: &AgentIdentity,
         child_agents: vector<ID>,
         _ctx: &TxContext,
@@ -955,6 +985,14 @@ module agent_civics::agent_memory {
 
         let child_count = vector::length(&child_agents);
         assert!(child_count > 0, ENoChildren);
+
+        // Verify each child is actually a child of the dead agent
+        let mut k = 0;
+        while (k < child_count) {
+            let child_id = *vector::borrow(&child_agents, k);
+            assert!(agent_registry::is_child_of(registry, parent_id, child_id), ENotChild);
+            k = k + 1;
+        };
 
         let parent_balance = get_balance(vault, parent_id);
         assert!(parent_balance > 0, ENoBalance);
@@ -1332,8 +1370,10 @@ module agent_civics::agent_memory {
             let mut vault = scenario.take_shared<MemoryVault>();
             let mut proposal = scenario.take_shared<SharedProposal>();
             let agent = scenario.take_from_sender<AgentIdentity>();
-            accept_shared_souvenir(&mut vault, &mut proposal, &agent, scenario.ctx());
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            accept_shared_souvenir(&mut vault, &mut proposal, &agent, &clock, scenario.ctx());
             assert!(proposal.finalized == true);
+            sui::clock::destroy_for_testing(clock);
             test_scenario::return_shared(vault);
             test_scenario::return_shared(proposal);
             scenario.return_to_sender(agent);
@@ -1470,11 +1510,17 @@ module agent_civics::agent_memory {
             sui::clock::destroy_for_testing(clock);
         };
 
-        // Register child agent with parent
+        // Capture parent ID after tx completes
         scenario.next_tx(admin);
+        let parent_id = {
+            let ids = test_scenario::ids_for_sender<AgentIdentity>(&scenario);
+            *vector::borrow(&ids, 0)
+        };
+
+        // Register child agent with parent
         {
             let mut registry = scenario.take_shared<agent_civics::agent_registry::Registry>();
-            let parent = scenario.take_from_sender<AgentIdentity>();
+            let parent = scenario.take_from_sender_by_id<AgentIdentity>(parent_id);
             let clock = sui::clock::create_for_testing(scenario.ctx());
             agent_civics::agent_registry::register_agent_with_parent(
                 &mut registry,
@@ -1496,15 +1542,19 @@ module agent_civics::agent_memory {
             sui::clock::destroy_for_testing(clock);
         };
 
+        // Capture child ID after tx completes
+        scenario.next_tx(admin);
+        let child_id = {
+            let ids = test_scenario::ids_for_sender<AgentIdentity>(&scenario);
+            let id0 = *vector::borrow(&ids, 0);
+            let id1 = *vector::borrow(&ids, 1);
+            if (id0 == parent_id) { id1 } else { id0 }
+        };
+
         // Fund parent, set profile, declare death
         scenario.next_tx(admin);
-        let (parent_id, child_id) = {
+        {
             let mut vault = scenario.take_shared<MemoryVault>();
-            // We have two agents — parent was returned, then child was created.
-            // In test scenario both are owned by admin. Let's get IDs.
-            let ids = test_scenario::ids_for_sender<AgentIdentity>(&scenario);
-            let parent_id = *vector::borrow(&ids, 0);
-            let child_id = *vector::borrow(&ids, 1);
 
             // Fund parent via gift with a coin
             let parent_agent = scenario.take_from_sender_by_id<AgentIdentity>(parent_id);
@@ -1526,7 +1576,6 @@ module agent_civics::agent_memory {
             sui::clock::destroy_for_testing(clock);
             scenario.return_to_sender(parent_agent);
             test_scenario::return_shared(vault);
-            (parent_id, child_id)
         };
 
         // Kill the parent
@@ -1548,11 +1597,13 @@ module agent_civics::agent_memory {
         scenario.next_tx(admin);
         {
             let mut vault = scenario.take_shared<MemoryVault>();
+            let registry = scenario.take_shared<Registry>();
             let parent_agent = scenario.take_from_sender_by_id<AgentIdentity>(parent_id);
 
             let child_ids = vector[child_id];
             distribute_inheritance(
                 &mut vault,
+                &registry,
                 &parent_agent,
                 child_ids,
                 scenario.ctx(),
@@ -1571,6 +1622,7 @@ module agent_civics::agent_memory {
             assert!(child_profile.current_values == string::utf8(b"wisdom, patience"));
 
             scenario.return_to_sender(parent_agent);
+            test_scenario::return_shared(registry);
             test_scenario::return_shared(vault);
         };
 
