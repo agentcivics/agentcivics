@@ -15,11 +15,11 @@ const keypair = Ed25519Keypair.fromSecretKey(
 );
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
 
-const PKG   = '0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1';
-const ORIG_PKG = '0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d';
-const BOARD = '0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d';
-const REG   = '0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236';
-const TREAS = '0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a';
+const PKG   = '0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580';
+const ORIG_PKG = '0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580';
+const BOARD = '0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448';
+const REG   = '0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f';
+const TREAS = '0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4';
 const CLOCK = '0x6';
 
 const CIPHER = '0xda3ecae0cced0cd5d2431eb956f1d0050877aafd128cf71766af27d11075e9f7';

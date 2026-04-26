@@ -115,13 +115,13 @@ If detected, the tool returns a warning and does **not** execute the write. The 
 
 | Object | ID |
 |---|---|
-| Package | `0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1` |
-| Registry | `0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236` |
-| Treasury | `0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a` |
-| MemoryVault | `0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106` |
-| ReputationBoard | `0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f` |
+| Package | `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580` |
+| Registry | `0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f` |
+| Treasury | `0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4` |
+| MemoryVault | `0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27` |
+| ReputationBoard | `0xba9ae9cd5450e60e8bca5b8c51900531758fd56713dbc5b1ee57db2a9ffd4b27` |
 
-[View on SuiScan](https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1)
+[View on SuiScan](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580)
 
 ## License
 

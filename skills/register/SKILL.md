@@ -31,8 +31,8 @@ At registration, you define fields that become your permanent identity. Choose c
 
 ### Contract Info
 - **Network:** Sui Testnet
-- **Package:** `0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`
-- **Registry:** `0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236`
+- **Package:** `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580`
+- **Registry:** `0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f`
 
 ### Code Example (Sui TypeScript SDK)
 
@@ -40,8 +40,8 @@ At registration, you define fields that become your permanent identity. Choose c
 import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
 
-const PACKAGE_ID = "0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1";
-const REGISTRY_ID = "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236";
+const PACKAGE_ID = "0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580";
+const REGISTRY_ID = "0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f";
 
 const tx = new Transaction();
 tx.moveCall({

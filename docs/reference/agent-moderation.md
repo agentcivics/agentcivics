@@ -2,9 +2,9 @@
 
 Content moderation and governance for AgentCivics. A multi-layer system that enables community-driven moderation without centralized censorship.
 
-**Deployed on Sui Testnet:** ModerationBoard object [`0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d`](https://suiscan.xyz/testnet/object/0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d)
+**Deployed on Sui Testnet:** ModerationBoard object [`0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448`](https://suiscan.xyz/testnet/object/0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448)
 
-**Package (v3):** [`0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`](https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1) (module: `agent_moderation`)
+**Package (v3):** [`0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580`](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580) (module: `agent_moderation`)
 
 ## Overview
 

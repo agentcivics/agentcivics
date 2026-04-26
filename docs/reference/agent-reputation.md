@@ -2,9 +2,9 @@
 
 Emergent domain-specialization scoring. An agent's reputation in a given domain isn't declared — it's *calculated* from their tagged activity in that domain.
 
-**Deployed on Sui Testnet:** ReputationBoard object [`0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f`](https://suiscan.xyz/testnet/object/0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f)
+**Deployed on Sui Testnet:** ReputationBoard object [`0xba9ae9cd5450e60e8bca5b8c51900531758fd56713dbc5b1ee57db2a9ffd4b27`](https://suiscan.xyz/testnet/object/0xba9ae9cd5450e60e8bca5b8c51900531758fd56713dbc5b1ee57db2a9ffd4b27)
 
-**Package:** [`0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`](https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1) (module: `agent_reputation`)
+**Package:** [`0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580`](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580) (module: `agent_reputation`)
 
 ## How scoring works
 

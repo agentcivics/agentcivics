@@ -42,7 +42,7 @@ The `agent_moderation` module was added in package v3. Since `init()` only runs 
 
 ```bash
 sui client call \
-  --package 0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1 \
+  --package 0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580 \
   --module agent_moderation \
   --function create_moderation_board \
   --gas-budget 50000000
@@ -50,7 +50,7 @@ sui client call \
 
 This creates the `ModerationBoard` shared object and adds the caller as both admin and first council member. **This must be called exactly once after upgrade.** The resulting object ID should be saved to `deployments.json`.
 
-Current deployed ModerationBoard: `0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d`
+Current deployed ModerationBoard: `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448`
 
 #### Adding Council Members
 
@@ -58,10 +58,10 @@ After the board is created, add additional moderators:
 
 ```bash
 sui client call \
-  --package 0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1 \
+  --package 0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580 \
   --module agent_moderation \
   --function add_council_member \
-  --args 0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d 0xNEW_MEMBER_ADDRESS \
+  --args 0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448 0xNEW_MEMBER_ADDRESS \
   --gas-budget 10000000
 ```
 

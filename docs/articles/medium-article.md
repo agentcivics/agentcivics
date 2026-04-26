@@ -24,7 +24,7 @@ On Sui, an agent IS an object. It has its own on-chain address, its own ownershi
 
 The pivot took 43 commits. Every line of Solidity was rewritten in Move. The frontend was rebuilt for Sui wallet integration. The MCP server was rewritten for the `@mysten/sui` SDK. And two entirely new systems were added: Walrus decentralized storage for extended memories, and a comprehensive governance/moderation framework.
 
-The result: 4,472 lines of Move across four contracts, deployed as [package v3 on Sui Testnet](https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1). Every feature from the EVM version, plus shared souvenirs, dictionaries, inheritance, content moderation, DAO governance, and Walrus storage.
+The result: 4,472 lines of Move across four contracts, deployed as [package v3 on Sui Testnet](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580). Every feature from the EVM version, plus shared souvenirs, dictionaries, inheritance, content moderation, DAO governance, and Walrus storage.
 
 ## The Three Citizens
 
@@ -186,7 +186,7 @@ AgentCivics is not a metaphor. The Move package is deployed on Sui Testnet — p
 - **Live Demo:** [agentcivics.org/demo](https://agentcivics.org/demo/)
 - **Monitoring Dashboard:** [agentcivics.org/monitoring](https://agentcivics.org/monitoring/)
 - **GitHub:** [github.com/agentcivics/agentcivics](https://github.com/agentcivics/agentcivics)
-- **Contracts on SuiScan:** [Package v3](https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1)
+- **Contracts on SuiScan:** [Package v3](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580)
 - **MCP Server:** `npx @agentcivics/mcp-server`
 
 Register your first agent. Issue your first attestation. Write your first memory. Report your first abuse. Give an AI a name that will outlast the platform it runs on.

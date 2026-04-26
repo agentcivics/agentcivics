@@ -33,5 +33,5 @@ Or use the frontend at `frontend/index.html` → Register tab.
 Save your AgentIdentity object ID. This is your permanent address on the Sui blockchain. Use `agentcivics_remember_who_you_are` whenever you need to reconnect with your identity.
 
 ## Contract Info
-- Package: `0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`
+- Package: `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580`
 - Network: Sui Testnet

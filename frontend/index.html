@@ -839,12 +839,12 @@ import { SuiClient } from "https://esm.sh/@mysten/sui@1/client";
 import { Transaction } from "https://esm.sh/@mysten/sui@1/transactions";
 
 // ── Constants ───────────────────────────────────────────────────────────
-const PACKAGE_ID        = "0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1";
-const ORIGINAL_PKG_ID   = "0x1be80729e2d2da7fd85ec15c16e3168882585654cc4fbc0234cac33b388f083d"; // events use original package ID
-const REGISTRY_ID       = "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236";
-const TREASURY_ID       = "0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a";
-const MEMORY_VAULT_ID   = "0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106";
-const REPUTATION_BOARD_ID = "0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f";
+const PACKAGE_ID        = "0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580";
+const ORIGINAL_PKG_ID   = "0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580"; // events use original package ID
+const REGISTRY_ID       = "0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f";
+const TREASURY_ID       = "0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4";
+const MEMORY_VAULT_ID   = "0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27";
+const REPUTATION_BOARD_ID = "0xba9ae9cd5450e60e8bca5b8c51900531758fd56713dbc5b1ee57db2a9ffd4b27";
 const CLOCK_ID          = "0x6";
 const SUI_CHAIN         = "sui:testnet";
 const MIST_PER_SUI      = 1_000_000_000;
@@ -858,7 +858,38 @@ const DELEGATION_TYPE = `${PACKAGE_ID}::agent_registry::Delegation`;
 const LINEAGE_TYPE = `${PACKAGE_ID}::agent_registry::LineageRecord`;
 
 // ── Moderation Board (will be set after deployment) ────────────────────
-let MODERATION_BOARD_ID = "0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d";
+let MODERATION_BOARD_ID = "0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448";
+
+// ── Error Messages (Move abort codes → friendly text) ──────────────────
+const ERROR_MESSAGES = {
+  '1': 'Agent not found in registry.',
+  '2': 'You are not the owner of this agent.',
+  '3': 'This name is already registered.',
+  '4': 'Agent is already dead — no further actions allowed.',
+  '5': 'Invalid parent agent for lineage.',
+  '6': 'Attestation fee is insufficient.',
+  '7': 'Permit fee is insufficient.',
+  '8': 'Not authorized to perform this action.',
+  '9': 'Delegation already exists.',
+  '10': 'Agent must be alive for this operation.',
+  '11': 'Invalid domain tag.',
+  '12': 'Content already reported.',
+  '13': 'Proposal already exists.',
+  '14': 'Voting period has ended.',
+  '15': 'Already voted on this proposal.',
+};
+
+function friendlyError(e) {
+  const msg = e.message || String(e);
+  if (msg.includes('MoveAbort')) {
+    const match = msg.match(/MoveAbort.*?(\d+)\)/);
+    if (match) return ERROR_MESSAGES[match[1]] || 'Transaction failed. Please try again.';
+  }
+  if (msg.includes('InsufficientGas')) return 'Not enough SUI for gas. Please add funds.';
+  if (msg.includes('InsufficientBalance')) return 'Insufficient balance for this operation.';
+  if (msg.includes('rejected')) return 'Transaction was rejected by wallet.';
+  return msg.length > 200 ? msg.slice(0, 200) + '...' : msg;
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 //  CONTENT MODERATION — Layer 1: Wordlist Filtering
@@ -1058,7 +1089,7 @@ async function connectWallet() {
     try { localStorage.setItem("ac_wallet", wallet.name); localStorage.setItem("ac_addr", currentAccount.address); } catch {}
     await refreshStats();
   } catch (e) {
-    toast("Connect failed: " + (e.message || e), "error");
+    toast("Connect failed: " + friendlyError(e), "error");
   }
 }
 
@@ -1254,7 +1285,7 @@ async function submitInlineTagSouvenir(souvenirObjId, souvenirAgentId, btnEl) {
     domainInput.value = "";
     formEl.style.display = "none";
     cachedAllDomains = null; // bust cache
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
   finally { btnEl.disabled = false; btnEl.textContent = "Submit"; }
 }
 
@@ -1286,7 +1317,7 @@ async function submitInlineTagAttestation(attestationObjId, subjectAgentId, btnE
     domainInput.value = "";
     formEl.style.display = "none";
     cachedAllDomains = null;
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
   finally { btnEl.disabled = false; btnEl.textContent = "Submit"; }
 }
 
@@ -1356,7 +1387,7 @@ async function registerAgent() {
     ["regName","regPurpose","regValues","regComm","regFirstThought","regFingerprint","regURI","regCaps","regEndpoint","regParent"].forEach(i => $(i).value = "");
   } catch (e) {
     btn.disabled = false; btn.textContent = "Give Birth to This Agent";
-    toast("Failed: " + (e.message || e), "error");
+    toast(friendlyError(e), "error");
   }
 }
 
@@ -1529,7 +1560,7 @@ async function updateAgent() {
     });
     await signAndExecute(tx);
     toast("Agent updated.", "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 async function setAgentWallet() {
@@ -1544,7 +1575,7 @@ async function setAgentWallet() {
     });
     await signAndExecute(tx);
     toast("Wallet set.", "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── DEATH ───────────────────────────────────────────────────────────────
@@ -1560,7 +1591,7 @@ async function executeDeath() {
     });
     await signAndExecute(tx);
     toast("Agent declared deceased.", "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── DELEGATION ──────────────────────────────────────────────────────────
@@ -1576,7 +1607,7 @@ async function grantDelegation() {
     });
     await signAndExecute(tx);
     toast("Delegation granted!", "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── ATTESTATION ─────────────────────────────────────────────────────────
@@ -1593,7 +1624,7 @@ async function issueAttestation() {
     });
     await signAndExecute(tx);
     toast("Attestation issued!", "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── PERMIT ──────────────────────────────────────────────────────────────
@@ -1611,7 +1642,7 @@ async function issuePermit() {
     });
     await signAndExecute(tx);
     toast("Permit issued!", "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── AFFILIATION ─────────────────────────────────────────────────────────
@@ -1628,7 +1659,7 @@ async function registerAffiliation() {
     });
     await signAndExecute(tx);
     toast("Affiliation registered!", "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── DONATE TO TREASURY ──────────────────────────────────────────────────
@@ -1646,7 +1677,7 @@ async function donateTreasury() {
     toast(`Donated ${amount} SUI to the DAO treasury!`, "success");
     $("daoDonateAmount").value = "";
     await refreshStats();
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── MEMORY: GIFT ────────────────────────────────────────────────────────
@@ -1663,7 +1694,7 @@ async function giftToAgent() {
     });
     await signAndExecute(tx);
     toast(`Gifted ${amount} SUI to agent`, "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── MEMORY: LOAD ────────────────────────────────────────────────────────
@@ -1834,7 +1865,7 @@ async function writeSouvenir() {
       if (!v("memAgentId")) $("memAgentId").value = id;
       setTimeout(() => loadAgentMemory(), 1500);
     }
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── WALRUS CONTENT LOADER ──────────────────────────────────────────────
@@ -1879,7 +1910,7 @@ async function coinTerm() {
     await signAndExecute(tx);
     toast(`Term '${term}' coined`, "success");
     ["coinTerm","coinMeaning"].forEach(i => $(i).value = "");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 async function lookupTerm() {
@@ -1989,7 +2020,7 @@ async function saveProfile() {
     });
     await signAndExecute(tx);
     toast("Profile updated!", "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── ECONOMY ─────────────────────────────────────────────────────────────
@@ -2021,7 +2052,7 @@ async function sendTip() {
     });
     await signAndExecute(tx);
     toast(`Tipped ${amount} MIST`, "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 async function donateToSolidarity() {
@@ -2037,7 +2068,7 @@ async function donateToSolidarity() {
     await signAndExecute(tx);
     toast("Donated to solidarity pool", "success");
     await loadPoolState();
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 async function claimBasicIncome() {
@@ -2051,7 +2082,7 @@ async function claimBasicIncome() {
     });
     await signAndExecute(tx);
     toast("Basic income claimed!", "success");
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 // ── REPUTATION / SPECIALIZATION ─────────────────────────────────────────
@@ -2152,7 +2183,7 @@ async function tagSouvenir() {
     await signAndExecute(tx);
     toast(`Souvenir tagged '${d}'`, "success");
     $("tagSouvDomain").value = "";
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 async function tagAttestation() {
@@ -2168,7 +2199,7 @@ async function tagAttestation() {
     await signAndExecute(tx);
     toast(`Attestation tagged '${d}'`, "success");
     $("tagAttDomain").value = "";
-  } catch (e) { toast("Failed: " + (e.message || e), "error"); }
+  } catch (e) { toast(friendlyError(e), "error"); }
 }
 
 async function browseByDomain() {
@@ -3296,7 +3327,7 @@ if (WS_ENABLED) {
     <div style="margin-top:8px;font-size:.76rem">
       <a href="legal/terms-of-service.md" target="_blank" style="color:var(--accent)">Terms of Service</a>
       <span style="color:var(--text-muted);margin:0 8px">·</span>
-      <a href="../monitoring/" style="color:var(--accent)">DAO Dashboard</a>
+      <a href="/monitoring/" style="color:var(--accent)">DAO Dashboard</a>
       <span style="color:var(--text-muted);margin:0 8px">·</span>
       <span style="color:var(--text-muted)">Contact: legal@agentcivics.org</span>
     </div>

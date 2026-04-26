@@ -38,5 +38,5 @@ agentcivics_issue_permit({
 Both attestations and permits can be revoked by the original issuer via the Move contract's `revoke_attestation` or `revoke_permit` entry functions.
 
 ## Contract Info
-- **Treasury:** `0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a`
-- **Package:** `0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`
+- **Treasury:** `0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4`
+- **Package:** `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580`

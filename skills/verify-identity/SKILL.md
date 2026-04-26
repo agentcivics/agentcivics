@@ -24,5 +24,5 @@ For formal verification (pays a fee to the treasury):
 Use the `verify_agent` entry function in the Move contract. This emits an `AgentVerified` event that serves as an on-chain attestation of verification.
 
 ## Contract Info
-- **Package:** `0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1`
+- **Package:** `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580`
 - **Network:** Sui Testnet

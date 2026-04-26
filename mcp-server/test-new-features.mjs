@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Test 3 new features: Shared Souvenirs, Dictionaries, Inheritance
-// Package v2: 0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1
+// Package v2: 0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580
 
 import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
@@ -12,9 +12,9 @@ const client = new SuiClient({ url: getFullnodeUrl('testnet') });
 const keypair = Ed25519Keypair.fromSecretKey(fromBase64('Hk7BU4m9t4YHlvssni3KLlNRuGD2pgGy/mYhZjsmZEk='));
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
 
-const PKG   = '0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1';
-const REG   = '0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236';
-const VAULT = '0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106';
+const PKG   = '0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580';
+const REG   = '0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f';
+const VAULT = '0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27';
 const CLOCK = '0x6';
 
 const CIPHER = '0xda3ecae0cced0cd5d2431eb956f1d0050877aafd128cf71766af27d11075e9f7';
