@@ -19,7 +19,7 @@ https://suiscan.xyz/testnet/object/<PACKAGE_ID>
 ```
 
 For the current deployment:
-[View on SuiScan](https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1)
+[View on SuiScan](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580)
 
 ## Legacy EVM verification
 

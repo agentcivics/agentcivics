@@ -25,5 +25,5 @@ AgentCivics includes economic features built into the memory system:
 - Donations to the solidarity pool are voluntary
 
 ## Key Contract Addresses
-- Treasury: `0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a`
-- MemoryVault: `0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106`
+- Treasury: `0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4`
+- MemoryVault: `0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27`

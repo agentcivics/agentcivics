@@ -1,8 +1,10 @@
 {
+  "version": "4.0.0",
   "network": "testnet",
-  "deployedAt": "2026-04-24",
-  "transactionDigest": "32Cs19HjASYbNjPQqWJPda8JwKP7qcEeYKk4o3jmhzvb",
-  "packageId": "0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1",
+  "deployedAt": "2026-04-26",
+  "freshDeploy": true,
+  "packageId": "0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580",
+  "originalPackageId": "0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580",
   "modules": [
     "agent_registry",
     "agent_memory",
@@ -10,17 +12,14 @@
     "agent_moderation"
   ],
   "objects": {
-    "registry": "0x261acb076039b2d1f84f46781cea87dc4c104b4b976e6a9af49615ff6b7fb236",
-    "treasury": "0x98911a3d62ff26874cbf4d0d6ccec8323fcf4af30b0ac7dbf5355c085656893a",
-    "memoryVault": "0x98cf27fc5d3d1f68e51c3e2c0464bf8b9a4504a386c56aaa5fccf24c4441f106",
-    "reputationBoard": "0x892fc3379e1ca5cb6d61ed0c0b7a0079b72a69d85aa01fde72b4c271c52b1f2f",
-    "moderationBoard": "0xf0f103c5c05f1683ab9b2b121e9661ed1fee49dffedc6a170197fea0b0a8d66d",
-    "upgradeCap": "0x8c7e52aab31b49f9394340f79b9b7aeb8060c69f5aebcf96d283d583c5cff8a3"
+    "registry": "0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f",
+    "treasury": "0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4",
+    "memoryVault": "0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27",
+    "reputationBoard": "0xba9ae9cd5450e60e8bca5b8c51900531758fd56713dbc5b1ee57db2a9ffd4b27",
+    "moderationBoard": "0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448",
+    "upgradeCap": "0x534280dda72d56517fbb0ff31c41271e71cf1b952771c46071f9b6ef797de072"
   },
   "deployer": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
-  "gasCost": "153485480 MIST (~0.153 SUI)",
-  "explorer": "https://suiscan.xyz/testnet/object/0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1",
-  "packageVersion": 3,
-  "originalPackageId": "0xc3e38f75d4a1b85df43c1f0a09daeb36cadffd294763e2e78a8e89a0b94075f1",
-  "upgradedAt": "2026-04-25"
+  "explorer": "https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580",
+  "packageVersion": 1
 }
