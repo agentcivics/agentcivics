@@ -19,6 +19,7 @@ module agent_civics::agent_registry {
     use sui::clock::Clock;
     use sui::event;
     use sui::sui::SUI;
+    use sui::table::{Self, Table};
 
     // ════════════════════════════════════════════════════════════════════
     //  SECTION 1: CONSTANTS
@@ -70,7 +71,7 @@ module agent_civics::agent_registry {
     /// The core agent identity — a soulbound Sui object.
     /// Transferred to creator at birth, never transferable again.
     /// Identity fields are immutable; operational state is mutable by creator.
-    public struct AgentIdentity has key, store {
+    public struct AgentIdentity has key {
         id: UID,
         // ── Immutable identity core ──
         chosen_name: String,
@@ -167,8 +168,8 @@ module agent_civics::agent_registry {
     public struct Registry has key {
         id: UID,
         total_agents: u64,
-        /// Maps child agent ID → parent agent ID for lineage lookups
-        /// In production you'd use dynamic fields; here we track the count.
+        /// Maps parent agent ID → vector of child agent IDs for lineage verification
+        parent_children: Table<ID, vector<ID>>,
     }
 
     /// Lineage record — stored as a separate shared object for cross-referencing.
@@ -308,6 +309,7 @@ module agent_civics::agent_registry {
         let registry = Registry {
             id: object::new(ctx),
             total_agents: 0,
+            parent_children: table::new(ctx),
         };
         transfer::share_object(registry);
     }
@@ -527,6 +529,14 @@ module agent_civics::agent_registry {
             child_id,
         });
 
+        // Track parent→child mapping for lineage verification
+        if (table::contains(&registry.parent_children, parent_obj_id)) {
+            let children = table::borrow_mut(&mut registry.parent_children, parent_obj_id);
+            vector::push_back(children, child_id);
+        } else {
+            table::add(&mut registry.parent_children, parent_obj_id, vector[child_id]);
+        };
+
         // Create a lineage record as a shared object for indexing
         let lineage = LineageRecord {
             id: object::new(ctx),
@@ -671,6 +681,15 @@ module agent_civics::agent_registry {
     /// Get total registered agents.
     public fun total_agents(registry: &Registry): u64 {
         registry.total_agents
+    }
+
+    /// Check if child_id is a registered child of parent_id.
+    public fun is_child_of(registry: &Registry, parent_id: ID, child_id: ID): bool {
+        if (!table::contains(&registry.parent_children, parent_id)) {
+            return false
+        };
+        let children = table::borrow(&registry.parent_children, parent_id);
+        vector::contains(children, &child_id)
     }
 
     // ════════════════════════════════════════════════════════════════════

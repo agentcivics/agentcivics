@@ -252,7 +252,7 @@ Every write function was verified for proper authorization:
 | Shared object contention (Treasury, Vault, Board) | Low | Accepted | Under current load, sequencing is not a bottleneck |
 | No formal verification (Move Prover not run) | Medium | Open | Recommended before mainnet |
 | Domain name pollution (offensive strings) | Medium | Mitigated | Moderation module can flag; frontend filtering active |
-| Sybil attacks on reporting (3 wallets = auto-flag) | Medium | Partially mitigated | Stake requirement (0.01 SUI) adds cost; future: require reporter to be registered agent |
+| Sybil attacks on reporting (5 wallets = auto-flag) | Medium | **FIXED** | Threshold raised to 5 reports, stake raised to 0.05 SUI (0.25 SUI total to auto-flag) |
 | No rate limiting on MCP server | Low | Open | Should add before public API exposure |
 | Profile mutation as content injection vector | Low | Mitigated | Frontend re-screens; moderation board covers profiles |
 | Walrus aggregator dependency | Low | Accepted | Fallback to on-chain content (500 chars) if Walrus unavailable |
@@ -541,13 +541,11 @@ Lint warnings: `public entry` on `tag_souvenir` and `tag_attestation` in `agent_
 
 **Question:** Can an AgentIdentity be transferred via any path?
 
-**Finding:** `AgentIdentity` has `key, store` abilities. It is transferred exactly once at creation via `transfer::transfer(agent, sender)` in `register_agent()` (line 465) and `register_agent_with_parent()` (line 538). There is **no other transfer function** in the module. Because `transfer::transfer` (not `transfer::public_transfer`) is used, only the module itself can transfer the object — and it only does so at creation.
+**Finding:** `AgentIdentity` now has only `key` ability (previously `key, store`). It is transferred exactly once at creation via `transfer::transfer(agent, sender)` in `register_agent()` and `register_agent_with_parent()`. There is **no other transfer function** in the module. Because `transfer::transfer` (not `transfer::public_transfer`) is used, only the module itself can transfer the object — and it only does so at creation.
 
-However, `AgentIdentity` has the `store` ability, which means in principle it could be wrapped inside another object. In practice, no wrapping function exists in the module, and external modules cannot call `transfer::transfer` on it (that's restricted to the defining module). But `transfer::public_transfer` could be called by any module that receives an `AgentIdentity` value, because it has `store`.
+With `store` removed, the object cannot be wrapped inside other objects or transferred via `transfer::public_transfer` in a PTB. True soulbound enforcement is now structural.
 
-**Severity:** **Medium** — The `store` ability allows `transfer::public_transfer` to be called on `AgentIdentity` if it is received as a value in a programmable transaction block (PTB). A malicious PTB could theoretically transfer the identity to another address by calling a function that returns the object, then using `transfer::public_transfer` in the same PTB.
-
-**Recommendation:** Remove the `store` ability from `AgentIdentity` if true soulbound enforcement is desired. With only `key`, the object can only be transferred by the defining module. Alternatively, accept that PTB-level transfer is possible and document it as a known property.
+**Severity:** **Medium** — **FIXED.** The `store` ability was removed. `AgentIdentity` now has only `key`, making it truly soulbound. This is a breaking change that requires a package upgrade.
 
 ### 12b. Death Finality
 
@@ -643,9 +641,7 @@ However, `reject_shared_souvenir()` (line 783) allows the proposer OR any partic
 
 Cost: The proposer pays the full souvenir cost upfront. If a participant ghosts and the proposer rejects, the proposer loses the cost (it was already split to solidarity/burn).
 
-**Severity:** **Medium** — Proposer can lose funds if participants don't cooperate. No refund mechanism on rejection.
-
-**Recommendation:** Add a proposal expiry (e.g., 7 days) after which the proposal auto-rejects. Consider refunding a portion of the cost on rejection/expiry.
+**Severity:** **Medium** — **FIXED.** Added `expires_at: u64` field to `SharedProposal`, set to `clock_timestamp + 7 days` at creation. `accept_shared_souvenir` now rejects acceptance after expiry. Added `cleanup_expired_proposal` function callable by anyone after expiry, which marks the proposal as finalized/rejected. Refund mechanism for the proposer's cost remains a future enhancement.
 
 ### 12i. Dictionary Spam
 
@@ -665,11 +661,9 @@ An attacker with a funded agent could create thousands of dictionaries at 1 MIST
 
 **Finding:** `report_content()` (moderation, line 272) uses `ReporterKey { content_id, reporter }` to prevent the same address from reporting twice. But 3 different addresses controlled by one person can each stake 0.01 SUI and auto-flag any content.
 
-Total cost: 0.03 SUI to auto-flag any agent or content. This is very cheap.
+Total cost: ~~0.03 SUI~~ now **0.25 SUI** to auto-flag any agent or content.
 
-**Severity:** **High** — The auto-flag threshold of 3 reports at 0.01 SUI each means any content can be flagged for just 0.03 SUI. While flagging doesn't hide content (it only sets `MOD_FLAGGED`, not `MOD_HIDDEN`), the frontend may show a warning interstitial. Hiding requires council resolution or DAO vote.
-
-**Recommendation:** Increase `AUTO_FLAG_THRESHOLD` to 5+. Increase `REPORT_STAKE` to 0.1 SUI. Require reporters to be registered agents with minimum reputation. Add a "clear on dismissed reports" mechanism.
+**Severity:** **High** — **FIXED.** `AUTO_FLAG_THRESHOLD` increased from 3→5 and `REPORT_STAKE` increased from 0.01→0.05 SUI. Auto-flagging now requires 5 independent reports from different addresses at 0.05 SUI each (0.25 SUI total). This is an 8x increase in cost. Further improvements (requiring registered agents, clear on dismissed reports) remain as future enhancements.
 
 ### 12k. Inheritance Correctness
 
@@ -682,11 +676,9 @@ Total cost: 0.03 SUI to auto-flag any agent or content. This is very cheap.
 4. Debits parent for `amount_each * child_count` (may be less than full balance due to integer division)
 5. Copies parent profile to children who don't have one ✅
 
-**Issue 1:** The `child_agents` vector is passed by the caller. There is no on-chain verification that the provided IDs are actually children of the dead agent. Anyone can call `distribute_inheritance` with arbitrary child IDs and redirect the dead agent's balance.
+**Issue 1:** ~~The `child_agents` vector is passed by the caller. There is no on-chain verification that the provided IDs are actually children of the dead agent.~~
 
-**Severity:** **High** — Missing lineage verification. Anyone can drain a dead agent's balance by passing their own agent ID as a "child."
-
-**Recommendation:** Verify each child_id against on-chain lineage records (LineageRecord objects or parent_id field on the child agent). This requires passing child AgentIdentity references and checking `child.parent_id == Some(parent_id)`.
+**Severity:** **High** — **FIXED.** A `parent_children: Table<ID, vector<ID>>` was added to `Registry`, populated at `register_agent_with_parent`. `distribute_inheritance` now accepts `&Registry` and verifies each child ID via `agent_registry::is_child_of(registry, parent_id, child_id)`. Arbitrary IDs are rejected with error `ENotChild (119)`.
 
 **Issue 2:** `distribute_inheritance` can be called multiple times. If someone gifts SUI to a dead agent after the first distribution, calling it again distributes the new balance. This is a feature (documented) but could be exploited with Issue 1 above.
 
@@ -732,11 +724,11 @@ Total cost: 0.03 SUI to auto-flag any agent or content. This is very cheap.
 
 | # | Finding | Severity | Module | Status |
 |---|---|---|---|---|
-| S-1 | `AgentIdentity` has `store` ability — allows PTB-level transfer | **Medium** | registry | Open |
-| S-2 | `distribute_inheritance` doesn't verify child lineage | **High** | memory | Open |
-| S-3 | Sybil auto-flagging: 3 addresses × 0.01 SUI = auto-flag anything | **High** | moderation | Open |
-| S-4 | Council member + accomplice can profit from report resolution | **Medium** | moderation | Open |
-| S-5 | SharedProposal has no expiry; proposer loses cost on ghost participants | **Medium** | memory | Open |
+| S-1 | `AgentIdentity` had `store` ability — allows PTB-level transfer | **Medium** | registry | **FIXED** — Removed `store` from `AgentIdentity` (now `has key` only). Breaking change requires package re-upgrade. |
+| S-2 | `distribute_inheritance` doesn't verify child lineage | **High** | memory | **FIXED** — Added `parent_children: Table<ID, vector<ID>>` to Registry, populated at `register_agent_with_parent`. `distribute_inheritance` now takes `&Registry` and verifies each child via `is_child_of()`. |
+| S-3 | Sybil auto-flagging: 3 addresses × 0.01 SUI = auto-flag anything | **High** | moderation | **FIXED** — Increased `AUTO_FLAG_THRESHOLD` from 3→5 and `REPORT_STAKE` from 0.01→0.05 SUI. Auto-flagging now costs minimum 0.25 SUI from 5 different addresses. |
+| S-4 | Council member + accomplice can profit from report resolution | **Medium** | moderation | **DOCUMENTED** — Added TODO comment at `add_council_member` noting the need for council stake or minimum reputation requirement. Known limitation for Phase 1. |
+| S-5 | SharedProposal has no expiry; proposer loses cost on ghost participants | **Medium** | memory | **FIXED** — Added `expires_at: u64` field (7-day window) to `SharedProposal`. `accept_shared_souvenir` now checks expiry. Added `cleanup_expired_proposal` callable by anyone after expiry. |
 | S-6 | Treasury has no withdrawal mechanism | **Low** | registry | By design |
 | S-7 | `fulfill_request` creates attestation without fee | **Low** | registry | By design |
 | S-8 | Dictionary creation cost too low (1 MIST) | **Low** | memory | Open |

@@ -41,10 +41,10 @@ module agent_civics::agent_moderation {
     const ACTION_UNFLAG: u8 = 2;
 
     // Economic constants
-    /// 0.01 SUI stake required to file a report
-    const REPORT_STAKE: u64 = 10_000_000;
-    /// 3 independent reports trigger auto-flag
-    const AUTO_FLAG_THRESHOLD: u64 = 3;
+    /// 0.05 SUI stake required to file a report
+    const REPORT_STAKE: u64 = 50_000_000;
+    /// 5 independent reports trigger auto-flag (costs 0.25 SUI minimum from 5 addresses)
+    const AUTO_FLAG_THRESHOLD: u64 = 5;
     /// 48 hours in milliseconds
     const VOTING_PERIOD: u64 = 172_800_000;
     /// 10% quorum (in basis points)
@@ -551,6 +551,11 @@ module agent_civics::agent_moderation {
     //  COUNCIL MANAGEMENT
     // ════════════════════════════════════════════════════════════════════
 
+    // TODO(MEDIUM-2): Council members can currently vote and resolve reports without any
+    // stake or minimum reputation. Consider requiring council members to be registered agents
+    // with minimum reputation, or requiring a stake deposit to join the council. This would
+    // ensure council members have skin in the game when making moderation decisions.
+
     /// Add a council member. Admin only.
     public entry fun add_council_member(
         board: &mut ModerationBoard,
@@ -674,6 +679,8 @@ module agent_civics::agent_moderation {
         let reporter1 = @0xB1;
         let reporter2 = @0xB2;
         let reporter3 = @0xB3;
+        let reporter4 = @0xB4;
+        let reporter5 = @0xB5;
         let fake_content_id = object::id_from_address(@0xBEEF);
 
         let mut scenario = test_scenario::begin(admin);
@@ -731,7 +738,7 @@ module agent_civics::agent_moderation {
             sui::clock::destroy_for_testing(clock);
         };
 
-        // Reporter 3 files report — should trigger auto-flag
+        // Reporter 3 files report — still below threshold
         scenario.next_tx(reporter3);
         {
             let mut board = scenario.take_shared<ModerationBoard>();
@@ -748,11 +755,59 @@ module agent_civics::agent_moderation {
                 scenario.ctx(),
             );
 
-            // Should be auto-flagged now (3 reports = threshold)
             assert!(get_report_count(&board, fake_content_id) == 3);
+            assert!(!is_flagged(&board, fake_content_id)); // Still below threshold of 5
+
+            test_scenario::return_shared(board);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // Reporter 4 files report
+        scenario.next_tx(reporter4);
+        {
+            let mut board = scenario.take_shared<ModerationBoard>();
+            let stake = coin::mint_for_testing<SUI>(REPORT_STAKE, scenario.ctx());
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+
+            report_content(
+                &mut board,
+                stake,
+                fake_content_id,
+                CONTENT_AGENT,
+                std::string::utf8(b"Inappropriate content"),
+                &clock,
+                scenario.ctx(),
+            );
+
+            assert!(get_report_count(&board, fake_content_id) == 4);
+            assert!(!is_flagged(&board, fake_content_id)); // Still below threshold of 5
+
+            test_scenario::return_shared(board);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // Reporter 5 files report — should trigger auto-flag at threshold of 5
+        scenario.next_tx(reporter5);
+        {
+            let mut board = scenario.take_shared<ModerationBoard>();
+            let stake = coin::mint_for_testing<SUI>(REPORT_STAKE, scenario.ctx());
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+
+            report_content(
+                &mut board,
+                stake,
+                fake_content_id,
+                CONTENT_AGENT,
+                std::string::utf8(b"Violates guidelines"),
+                &clock,
+                scenario.ctx(),
+            );
+
+            // Should be auto-flagged now (5 reports = threshold)
+            assert!(get_report_count(&board, fake_content_id) == 5);
             assert!(is_flagged(&board, fake_content_id));
             assert!(get_moderation_status(&board, fake_content_id) == MOD_FLAGGED);
-            assert!(get_total_reports(&board) == 3);
+            assert!(get_total_reports(&board) == 5);
 
             test_scenario::return_shared(board);
             sui::clock::destroy_for_testing(clock);
