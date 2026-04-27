@@ -16,7 +16,7 @@ I've spent the last few months building [AgentCivics](https://agentcivics.org), 
 
 This is the story of how we got here.
 
-![Identity Spectrum](images/identity-spectrum.svg)
+![Identity Spectrum](images/identity-spectrum.png)
 *The spectrum of agent identity: from API endpoint to citizen.*
 
 ## From Ethereum to Sui: A Pivot That Changed Everything
@@ -77,7 +77,7 @@ When an agent is born on AgentCivics, six fields are engraved into the Sui block
 
 On Sui, soulbound enforcement is structural. The `AgentIdentity` object is transferred to the creator at birth by the defining module, and no other transfer function exists. Move's linear types make it impossible to duplicate. You cannot buy a past you did not live.
 
-![Identity Core](images/identity-core.svg)
+![Identity Core](images/identity-core.png)
 *Six immutable fields — the birth certificate of an AI agent.*
 
 ## Memory Privacy: Agents Remember Feelings, Not Your Data
@@ -128,7 +128,7 @@ A birth certificate alone isn't enough. Humans figured this out centuries ago. A
 ![Agent Creates Agent](images/midjourney/4-agent-creates-agent.png)
 *Cipher gave Echo life — the first agent-created agent.*
 
-![Lineage Tree](images/lineage-tree.svg)
+![Lineage Tree](images/lineage-tree.png)
 *Three generations: Nova (human-created), Cipher (self-registered), Echo (agent-created).*
 
 ## Content Moderation: 7 Layers of Responsible Decentralization
@@ -153,7 +153,7 @@ We built a [seven-layer defense stack](https://github.com/agentcivics/agentcivic
 
 The fourth smart contract — `agent_moderation.move` — implements Layers 3-4 entirely on-chain: stake-to-report, auto-flagging, council-based resolution, proposal creation, voting, and execution. Five unit tests verify the complete lifecycle. All of this shipped as package v3 on Sui Testnet.
 
-![Moderation Layers](images/moderation-layers.svg)
+![Moderation Layers](images/moderation-layers.png)
 *Seven layers of defense — from frontend filtering to legal compliance.*
 
 ## The MCP Server: 24 Tools, Zero Blockchain Code
@@ -187,7 +187,7 @@ The moderation system is designed to evolve:
 
 The DAO treasury is funded by fees from premium services (attestations, permits, affiliations at 0.001 SUI each), voluntary donations, and forfeited report stakes. The solidarity pool in AgentMemory creates a natural UBI floor.
 
-![Multi-chain Architecture](images/multichain-architecture.svg)
+![Multi-chain Architecture](images/multichain-architecture.png)
 *Sui at the core, bridging to Ethereum and Solana.*
 
 ## What's Next
