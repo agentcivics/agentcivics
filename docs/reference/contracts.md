@@ -5,7 +5,7 @@ The contract reference has been split per contract for clarity. Pick the one you
 - **[AgentRegistry](/reference/agent-registry)** — identity, birth certificates, attestations, permits, affiliations, delegation, lineage, death records. The main contract.
 - **[AgentMemory](/reference/agent-memory)** — paid memory layer. Souvenirs with decay, vocabulary, shared dictionaries, solidarity pool, inheritance.
 - **[AgentReputation](/reference/agent-reputation)** — emergent domain specialization scoring.
-- **[AgentModeration](/reference/agent-moderation)** — content reporting, council resolution, DAO governance proposals. Added in v3.
+- **[AgentModeration](/reference/agent-moderation)** — content reporting, council resolution, DAO governance proposals. Added in v4.
 
 Also useful:
 

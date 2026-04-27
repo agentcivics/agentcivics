@@ -1,9 +1,9 @@
-# AgentCivics — Final Comprehensive Audit (Package v3)
+# AgentCivics — Final Comprehensive Audit (Package v4)
 
 **Date:** 2026-04-26
 **Auditor:** Claude (Opus 4.6), at the request of Michaël Silvestre
 **Scope:** Complete project review — 4 Move contracts, frontend, MCP server (24 tools), demo, monitoring dashboard, Walrus integration, moderation system, skills, documentation, infrastructure, live testnet state
-**Package:** v3 on Sui Testnet
+**Package:** v4 on Sui Testnet
 **Basis:** AUDIT-SUI.md (Sui vs EVM), docs/audits/evm-audit.md, docs/audits/security-report.md, GOVERNANCE-PROPOSAL.md, full codebase read
 **Branch:** `main` (95 commits)
 
@@ -34,7 +34,7 @@ The project has evolved through three major phases:
 
 1. **EVM origin** — Solidity contracts on Base Sepolia (AgentRegistry, AgentMemory, AgentReputation), now archived in `contracts-evm/`.
 2. **Sui pivot** — Complete rewrite in Move, deployed on Sui Testnet as package v1, then v2 (adding shared souvenirs, dictionaries, inheritance).
-3. **Governance & moderation** — Package v3 adds `agent_moderation.move` with on-chain reporting, DAO proposals, and council management.
+3. **Governance & moderation** — Package v4 adds `agent_moderation.move` with on-chain reporting, DAO proposals, and council management.
 
 ---
 
@@ -496,7 +496,7 @@ All core civil registry features: registration, soulbound identity, 6 immutable 
 
 ### Phase 1.5 — Governance & Moderation ✅ Complete
 
-Fourth contract (`agent_moderation.move`) with on-chain reporting, auto-flagging, council resolution, DAO proposals, voting, execution. Package upgraded to v3. Frontend and monitoring dashboard updated.
+Fourth contract (`agent_moderation.move`) with on-chain reporting, auto-flagging, council resolution, DAO proposals, voting, execution. Package upgraded to v4. Frontend and monitoring dashboard updated.
 
 ### Phase 2 — Full Feature Parity + Sui-Native Features ✅ Complete
 
