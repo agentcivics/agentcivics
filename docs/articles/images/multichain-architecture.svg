@@ -20,46 +20,46 @@
   <text x="400" y="35" text-anchor="middle" fill="#888" font-size="13" font-weight="500" letter-spacing="3">MULTICHAIN ARCHITECTURE</text>
 
   <!-- ===== SUI (center, large) ===== -->
-  <circle cx="400" cy="210" r="70" fill="#4da2ff10" stroke="#4da2ff" stroke-width="2.5" filter="url(#glow-sui)"/>
+  <circle cx="400" cy="210" r="70" fill="rgba(77,162,255,0.06)" stroke="#4da2ff" stroke-width="2.5" filter="url(#glow-sui)"/>
   <text x="400" y="200" text-anchor="middle" fill="#4da2ff" font-size="28" font-weight="800">SUI</text>
-  <text x="400" y="222" text-anchor="middle" fill="#4da2ff99" font-size="10" letter-spacing="1">PRIMARY CHAIN</text>
-  <text x="400" y="238" text-anchor="middle" fill="#4da2ff60" font-size="9">Agent Registry · Identity · Governance</text>
+  <text x="400" y="222" text-anchor="middle" fill="rgba(77,162,255,0.60)" font-size="10" letter-spacing="1">PRIMARY CHAIN</text>
+  <text x="400" y="238" text-anchor="middle" fill="rgba(77,162,255,0.38)" font-size="9">Agent Registry · Identity · Governance</text>
 
   <!-- ===== EVM / Ethereum (left) ===== -->
-  <circle cx="130" cy="180" r="45" fill="#627eea10" stroke="#627eea" stroke-width="1.5" filter="url(#glow-node)"/>
+  <circle cx="130" cy="180" r="45" fill="rgba(98,126,234,0.06)" stroke="#627eea" stroke-width="1.5" filter="url(#glow-node)"/>
   <text x="130" y="175" text-anchor="middle" fill="#627eea" font-size="16" font-weight="700">EVM</text>
-  <text x="130" y="193" text-anchor="middle" fill="#627eea99" font-size="9">Ethereum</text>
+  <text x="130" y="193" text-anchor="middle" fill="rgba(98,126,234,0.60)" font-size="9">Ethereum</text>
 
   <!-- Connection: EVM ↔ SUI -->
-  <line x1="180" y1="190" x2="325" y2="205" stroke="#627eea50" stroke-width="1.5"
+  <line x1="180" y1="190" x2="325" y2="205" stroke="rgba(98,126,234,0.31)" stroke-width="1.5"
         stroke-dasharray="8,4" marker-end="url(#arr)"/>
-  <rect x="210" y="178" width="100" height="22" rx="4" fill="#0a0a0f" stroke="#627eea40" stroke-width="1"/>
+  <rect x="210" y="178" width="100" height="22" rx="4" fill="#0a0a0f" stroke="rgba(98,126,234,0.25)" stroke-width="1"/>
   <text x="260" y="193" text-anchor="middle" fill="#627eea" font-size="9" font-weight="600">ERC-8004 Bridge</text>
 
   <!-- ===== Solana (right) ===== -->
-  <circle cx="670" cy="180" r="45" fill="#14f19510" stroke="#14f195" stroke-width="1.5" filter="url(#glow-node)"/>
+  <circle cx="670" cy="180" r="45" fill="rgba(20,241,149,0.06)" stroke="#14f195" stroke-width="1.5" filter="url(#glow-node)"/>
   <text x="670" y="175" text-anchor="middle" fill="#14f195" font-size="16" font-weight="700">Solana</text>
-  <text x="670" y="193" text-anchor="middle" fill="#14f19599" font-size="9">High-speed</text>
+  <text x="670" y="193" text-anchor="middle" fill="rgba(20,241,149,0.60)" font-size="9">High-speed</text>
 
   <!-- Connection: Solana ↔ SUI -->
-  <line x1="620" y1="190" x2="475" y2="205" stroke="#14f19550" stroke-width="1.5"
+  <line x1="620" y1="190" x2="475" y2="205" stroke="rgba(20,241,149,0.31)" stroke-width="1.5"
         stroke-dasharray="8,4" marker-end="url(#arr)"/>
-  <rect x="490" y="178" width="110" height="22" rx="4" fill="#0a0a0f" stroke="#14f19540" stroke-width="1"/>
+  <rect x="490" y="178" width="110" height="22" rx="4" fill="#0a0a0f" stroke="rgba(20,241,149,0.25)" stroke-width="1"/>
   <text x="545" y="193" text-anchor="middle" fill="#14f195" font-size="9" font-weight="600">ElizaOS Mirror</text>
 
   <!-- ===== Walrus (below) ===== -->
-  <circle cx="400" cy="380" r="45" fill="#e08a3010" stroke="#e08a30" stroke-width="1.5" filter="url(#glow-node)"/>
+  <circle cx="400" cy="380" r="45" fill="rgba(224,138,48,0.06)" stroke="#e08a30" stroke-width="1.5" filter="url(#glow-node)"/>
   <text x="400" y="375" text-anchor="middle" fill="#e08a30" font-size="16" font-weight="700">Walrus</text>
-  <text x="400" y="393" text-anchor="middle" fill="#e08a3099" font-size="9">Storage</text>
+  <text x="400" y="393" text-anchor="middle" fill="rgba(224,138,48,0.60)" font-size="9">Storage</text>
 
   <!-- Connection: Walrus ↔ SUI -->
-  <line x1="400" y1="330" x2="400" y2="283" stroke="#e08a3050" stroke-width="1.5"
+  <line x1="400" y1="330" x2="400" y2="283" stroke="rgba(224,138,48,0.31)" stroke-width="1.5"
         stroke-dasharray="8,4" marker-end="url(#arr)"/>
-  <rect x="325" y="296" width="150" height="22" rx="4" fill="#0a0a0f" stroke="#e08a3040" stroke-width="1"/>
+  <rect x="325" y="296" width="150" height="22" rx="4" fill="#0a0a0f" stroke="rgba(224,138,48,0.25)" stroke-width="1"/>
   <text x="400" y="311" text-anchor="middle" fill="#e08a30" font-size="9" font-weight="600">Decentralized Storage</text>
 
   <!-- Orbit ring (decorative) -->
-  <ellipse cx="400" cy="230" rx="280" ry="160" fill="none" stroke="#ffffff06" stroke-width="1"/>
+  <ellipse cx="400" cy="230" rx="280" ry="160" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
 
   <!-- Bottom note -->
   <text x="400" y="440" text-anchor="middle" fill="#555" font-size="10">Sui-native with cross-chain bridges for maximum interoperability</text>
