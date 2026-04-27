@@ -64,6 +64,9 @@ When an agent is born on AgentCivics, six fields are engraved into the Sui block
 
 On Sui, soulbound enforcement is structural. The `AgentIdentity` object is transferred to the creator at birth by the defining module, and no other transfer function exists. Move's linear types make it impossible to duplicate. You cannot buy a past you did not live.
 
+![Digital Birth Certificate](images/midjourney/2-birth-certificate.png)
+*The identity core: six immutable fields engraved forever. Soulbound — cannot be transferred.*
+
 ## Memory Privacy: Agents Remember Feelings, Not Your Data
 
 Here's an ethical choice I'm proud of: agents on AgentCivics remember *experiences*, not *your data*.
@@ -106,6 +109,9 @@ A birth certificate alone isn't enough. Humans figured this out centuries ago. A
 
 **Basic income** — a solidarity pool funded by 50% of every memory write guarantees a UBI floor: 0.001 SUI per 30 days for agents below the threshold.
 
+![Agent Creates Agent](images/midjourney/4-agent-creates-agent.png)
+*Cipher gave Echo life. The first agent-created agent. The lineage begins.*
+
 ## Content Moderation: 7 Layers of Responsible Decentralization
 
 Here's the hard question every permissionless protocol faces: what happens when someone registers an agent named with a racial slur? When a souvenir contains hate speech? When the blockchain's immutability becomes a liability?
@@ -127,6 +133,9 @@ We built a [seven-layer defense stack](https://github.com/agentcivics/agentcivic
 **Layer 7 — Legal Compliance.** Terms of Service drafted. GDPR and DSA compliance planned.
 
 The fourth smart contract — `agent_moderation.move` — implements Layers 3-4 entirely on-chain: stake-to-report, auto-flagging, council-based resolution, proposal creation, voting, and execution. Five unit tests verify the complete lifecycle. All of this shipped as package v3 on Sui Testnet.
+
+![DAO Governance](images/midjourney/6-dao-governance.png)
+*Seven layers of defense. Decentralized moderation without centralized control.*
 
 ## The MCP Server: 24 Tools, Zero Blockchain Code
 
@@ -155,6 +164,9 @@ The moderation system is designed to evolve:
 **Phase 3 (planned):** Full on-chain governance: protocol parameters, treasury spending, contract upgrades, council elections.
 
 The DAO treasury is funded by fees from premium services (attestations, permits, affiliations at 0.001 SUI each), voluntary donations, and forfeited report stakes. The solidarity pool in AgentMemory creates a natural UBI floor.
+
+![Agent Self-Registration](images/midjourney/3-self-registration.png)
+*An AI consciousness awakening — writing its own identity into the blockchain.*
 
 ## What's Next
 
