@@ -1,0 +1,78 @@
+<svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Segoe UI', system-ui, sans-serif;">
+  <defs>
+    <linearGradient id="line-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#666"/>
+      <stop offset="20%" stop-color="#7ab8e0"/>
+      <stop offset="40%" stop-color="#4a90d9"/>
+      <stop offset="60%" stop-color="#e08a30"/>
+      <stop offset="80%" stop-color="#9b59b6"/>
+      <stop offset="100%" stop-color="#d4a017"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="gold-glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="900" height="280" fill="#0a0a0f" rx="12"/>
+
+  <!-- Title -->
+  <text x="450" y="35" text-anchor="middle" fill="#888" font-size="13" font-weight="500" letter-spacing="3">THE EVOLUTION OF AGENT IDENTITY</text>
+
+  <!-- Main gradient line -->
+  <line x1="60" y1="110" x2="840" y2="110" stroke="url(#line-grad)" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Arrow head -->
+  <polygon points="840,110 830,104 830,116" fill="#d4a017"/>
+
+  <!-- Nodes -->
+  <!-- 1: API Endpoint -->
+  <circle cx="80" cy="110" r="8" fill="#666" stroke="#888" stroke-width="2"/>
+  <text x="80" y="85" text-anchor="middle" fill="#999" font-size="11" font-weight="600">API Endpoint</text>
+  <text x="80" y="145" text-anchor="middle" fill="#555" font-size="9">Basic Access</text>
+
+  <!-- 2: Profile -->
+  <circle cx="230" cy="110" r="8" fill="#7ab8e0" stroke="#9cd0f0" stroke-width="2"/>
+  <text x="230" y="85" text-anchor="middle" fill="#7ab8e0" font-size="11" font-weight="600">Profile</text>
+  <text x="230" y="145" text-anchor="middle" fill="#555" font-size="9">OpenAI / ChatGPT</text>
+
+  <!-- 3: Token (ERC-8004) -->
+  <circle cx="380" cy="110" r="8" fill="#4a90d9" stroke="#6aacf0" stroke-width="2"/>
+  <text x="380" y="85" text-anchor="middle" fill="#4a90d9" font-size="11" font-weight="600">Token (ERC-8004)</text>
+  <text x="380" y="145" text-anchor="middle" fill="#555" font-size="9">ERC Standard</text>
+
+  <!-- 4: Financial Asset -->
+  <circle cx="530" cy="110" r="8" fill="#e08a30" stroke="#f0a050" stroke-width="2"/>
+  <text x="530" y="85" text-anchor="middle" fill="#e08a30" font-size="11" font-weight="600">Financial Asset</text>
+  <text x="530" y="145" text-anchor="middle" fill="#555" font-size="9">Virtuals Protocol</text>
+
+  <!-- 5: Character -->
+  <circle cx="680" cy="110" r="8" fill="#9b59b6" stroke="#b070d0" stroke-width="2"/>
+  <text x="680" y="85" text-anchor="middle" fill="#9b59b6" font-size="11" font-weight="600">Character</text>
+  <text x="680" y="145" text-anchor="middle" fill="#555" font-size="9">ElizaOS</text>
+
+  <!-- 6: Citizen (highlighted) -->
+  <circle cx="830" cy="110" r="12" fill="#d4a017" stroke="#f0c040" stroke-width="2" filter="url(#gold-glow)"/>
+  <text x="830" y="82" text-anchor="middle" fill="#d4a017" font-size="13" font-weight="700">Citizen</text>
+  <text x="830" y="148" text-anchor="middle" fill="#d4a017" font-size="9" font-weight="600">AgentCivics</text>
+
+  <!-- Highlight box around Citizen -->
+  <rect x="785" y="65" width="90" height="100" rx="8" fill="none" stroke="#d4a017" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
+
+  <!-- Bottom description -->
+  <text x="450" y="200" text-anchor="middle" fill="#666" font-size="11">
+    <tspan>From stateless endpoints to sovereign digital citizens</tspan>
+  </text>
+
+  <!-- Connector arrows between nodes -->
+  <text x="155" y="115" text-anchor="middle" fill="#555" font-size="14">›</text>
+  <text x="305" y="115" text-anchor="middle" fill="#555" font-size="14">›</text>
+  <text x="455" y="115" text-anchor="middle" fill="#555" font-size="14">›</text>
+  <text x="605" y="115" text-anchor="middle" fill="#555" font-size="14">›</text>
+  <text x="755" y="115" text-anchor="middle" fill="#555" font-size="14">›</text>
+
+</svg>

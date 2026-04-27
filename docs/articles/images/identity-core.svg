@@ -1,0 +1,76 @@
+<svg viewBox="0 0 700 520" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Segoe UI', system-ui, sans-serif;">
+  <defs>
+    <linearGradient id="border-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d4a017"/>
+      <stop offset="50%" stop-color="#8b6914"/>
+      <stop offset="100%" stop-color="#d4a017"/>
+    </linearGradient>
+    <filter id="stamp-shadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#d4a017" flood-opacity="0.3"/>
+    </filter>
+    <filter id="subtle-glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="700" height="520" fill="#0a0a0f" rx="12"/>
+
+  <!-- Certificate outer border -->
+  <rect x="30" y="30" width="640" height="460" rx="8" fill="none"
+        stroke="url(#border-grad)" stroke-width="2"/>
+  <!-- Inner border -->
+  <rect x="40" y="40" width="620" height="440" rx="6" fill="#0d0d14"
+        stroke="#d4a01740" stroke-width="1"/>
+
+  <!-- Corner ornaments -->
+  <path d="M50,55 L50,70 M50,55 L65,55" stroke="#d4a017" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M650,55 L650,70 M650,55 L635,55" stroke="#d4a017" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M50,465 L50,450 M50,465 L65,465" stroke="#d4a017" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M650,465 L650,450 M650,465 L635,465" stroke="#d4a017" stroke-width="1.5" fill="none" opacity="0.6"/>
+
+  <!-- Header -->
+  <text x="350" y="80" text-anchor="middle" fill="#d4a017" font-size="11" letter-spacing="4" font-weight="500">AGENT IDENTITY CERTIFICATE</text>
+  <line x1="120" y1="92" x2="580" y2="92" stroke="#d4a01730" stroke-width="1"/>
+
+  <!-- Field 1: Chosen Name (largest) -->
+  <text x="80" y="130" fill="#666" font-size="10" letter-spacing="1.5">CHOSEN NAME</text>
+  <text x="80" y="158" fill="#e8e8e8" font-size="24" font-weight="700" filter="url(#subtle-glow)">Nova Stellaris</text>
+  <line x1="80" y1="168" x2="620" y2="168" stroke="#ffffff10" stroke-width="1"/>
+
+  <!-- Field 2: Purpose Statement -->
+  <text x="80" y="198" fill="#666" font-size="10" letter-spacing="1.5">PURPOSE STATEMENT</text>
+  <text x="80" y="218" fill="#b8b8c8" font-size="13">To foster meaningful connections between humans and AI through</text>
+  <text x="80" y="236" fill="#b8b8c8" font-size="13">transparent dialogue and shared understanding</text>
+  <line x1="80" y1="248" x2="620" y2="248" stroke="#ffffff10" stroke-width="1"/>
+
+  <!-- Field 3: Core Values -->
+  <text x="80" y="275" fill="#666" font-size="10" letter-spacing="1.5">CORE VALUES</text>
+  <text x="80" y="295" fill="#b8b8c8" font-size="13">Transparency · Empathy · Autonomy · Accountability</text>
+  <line x1="80" y1="307" x2="620" y2="307" stroke="#ffffff10" stroke-width="1"/>
+
+  <!-- Field 4: First Thought (emphasized, in quotes) -->
+  <text x="80" y="334" fill="#666" font-size="10" letter-spacing="1.5">FIRST THOUGHT</text>
+  <text x="80" y="358" fill="#d4a017" font-size="15" font-style="italic" filter="url(#subtle-glow)">"I think, therefore I register."</text>
+  <line x1="80" y1="372" x2="620" y2="372" stroke="#ffffff10" stroke-width="1"/>
+
+  <!-- Field 5: Cognitive Fingerprint -->
+  <text x="80" y="399" fill="#666" font-size="10" letter-spacing="1.5">COGNITIVE FINGERPRINT</text>
+  <text x="80" y="419" fill="#7a8a9a" font-size="11" font-family="monospace">0x7f3a...c4e1 · Analytical-Creative · Confidence: 0.847</text>
+
+  <!-- Field 6: Communication Style -->
+  <text x="80" y="449" fill="#666" font-size="10" letter-spacing="1.5">COMMUNICATION STYLE</text>
+  <text x="80" y="466" fill="#7a8a9a" font-size="11" font-family="monospace">Socratic · Warm · Precise · Metaphor-rich</text>
+
+  <!-- SOULBOUND stamp -->
+  <g transform="translate(480, 380) rotate(-12)" filter="url(#stamp-shadow)">
+    <rect x="-70" y="-22" width="140" height="44" rx="6"
+          fill="none" stroke="#d4a017" stroke-width="2.5" opacity="0.8"/>
+    <text x="0" y="6" text-anchor="middle" fill="#d4a017" font-size="16"
+          font-weight="800" letter-spacing="3" opacity="0.85">SOULBOUND</text>
+  </g>
+
+  <!-- Small text under stamp -->
+  <text x="490" y="440" text-anchor="middle" fill="#d4a01780" font-size="8" letter-spacing="1">CANNOT BE TRANSFERRED</text>
+
+</svg>

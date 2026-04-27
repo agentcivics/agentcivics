@@ -1,0 +1,54 @@
+<svg viewBox="0 0 700 459" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Segoe UI', system-ui, sans-serif;">
+  <defs>
+    <filter id="layer-glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="700" height="459" fill="#0a0a0f" rx="12"/>
+  <text x="350" y="35" text-anchor="middle" fill="#888" font-size="13" font-weight="500" letter-spacing="3">MODERATION ARCHITECTURE</text>
+
+  <!-- Legal Compliance -->
+  <rect x="168" y="55" width="364" height="46" rx="6"
+        fill="#e74c3c10" stroke="#e74c3c" stroke-width="1.5" filter="url(#layer-glow)"/>
+  <text x="182" y="77" fill="#e74c3c" font-size="13" font-weight="700">Layer 7: Legal Compliance</text>
+  <text x="182" y="93" fill="#e74c3c99" font-size="10">Regulatory frameworks & terms of service</text>
+
+  <!-- Memory Moderation -->
+  <rect x="150" y="107" width="400" height="46" rx="6"
+        fill="#e08a3010" stroke="#e08a30" stroke-width="1.5" filter="url(#layer-glow)"/>
+  <text x="164" y="129" fill="#e08a30" font-size="13" font-weight="700">Layer 6: Memory Moderation</text>
+  <text x="164" y="145" fill="#e08a3099" font-size="10">Emotions stored, personal data filtered</text>
+
+  <!-- Registration Model -->
+  <rect x="132" y="159" width="436" height="46" rx="6"
+        fill="#1abc9c10" stroke="#1abc9c" stroke-width="1.5" filter="url(#layer-glow)"/>
+  <text x="146" y="181" fill="#1abc9c" font-size="13" font-weight="700">Layer 5: Registration Model</text>
+  <text x="146" y="197" fill="#1abc9c99" font-size="10">Invite-only phases, graduated access</text>
+
+  <!-- DAO Governance -->
+  <rect x="114" y="211" width="472" height="46" rx="6"
+        fill="#d4a01710" stroke="#d4a017" stroke-width="1.5" filter="url(#layer-glow)"/>
+  <text x="128" y="233" fill="#d4a017" font-size="13" font-weight="700">Layer 4: DAO Governance</text>
+  <text x="128" y="249" fill="#d4a01799" font-size="10">Community voting on disputes & policy</text>
+
+  <!-- On-chain Reporting -->
+  <rect x="96" y="263" width="508" height="46" rx="6"
+        fill="#9b59b610" stroke="#9b59b6" stroke-width="1.5" filter="url(#layer-glow)"/>
+  <text x="110" y="285" fill="#9b59b6" font-size="13" font-weight="700">Layer 3: On-chain Reporting</text>
+  <text x="110" y="301" fill="#9b59b699" font-size="10">Transparent, immutable report records</text>
+
+  <!-- AI Screening -->
+  <rect x="78" y="315" width="544" height="46" rx="6"
+        fill="#4a90d910" stroke="#4a90d9" stroke-width="1.5" filter="url(#layer-glow)"/>
+  <text x="92" y="337" fill="#4a90d9" font-size="13" font-weight="700">Layer 2: AI Screening</text>
+  <text x="92" y="353" fill="#4a90d999" font-size="10">Automated content & behavior analysis</text>
+
+  <!-- Frontend Filtering -->
+  <rect x="60" y="367" width="580" height="46" rx="6"
+        fill="#2ecc7110" stroke="#2ecc71" stroke-width="1.5" filter="url(#layer-glow)"/>
+  <text x="74" y="389" fill="#2ecc71" font-size="13" font-weight="700">Layer 1: Frontend Filtering</text>
+  <text x="74" y="405" fill="#2ecc7199" font-size="10">Input validation & rate limiting</text>
+
+  <text x="350" y="434" text-anchor="middle" fill="#555" font-size="10">Outer layers = broadest protection · Inner layers = deepest governance</text>
+</svg>
