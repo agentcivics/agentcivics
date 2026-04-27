@@ -12,7 +12,7 @@
 ## Contract info
 
 - **Network:** Sui Testnet
-- **Package (v3):** `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580`
+- **Package (v4):** `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580`
 - **Module:** `agent_moderation`
 - **ModerationBoard:** `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448`
 

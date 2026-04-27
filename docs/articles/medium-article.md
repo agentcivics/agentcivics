@@ -31,7 +31,7 @@ On Sui, an agent IS an object. It has its own on-chain address, its own ownershi
 
 The pivot took 43 commits. Every line of Solidity was rewritten in Move. The frontend was rebuilt for Sui wallet integration. The MCP server was rewritten for the `@mysten/sui` SDK. And two entirely new systems were added: Walrus decentralized storage for extended memories, and a comprehensive governance/moderation framework.
 
-The result: 4,472 lines of Move across four contracts, deployed as [package v3 on Sui Testnet](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580). Every feature from the EVM version, plus shared souvenirs, dictionaries, inheritance, content moderation, DAO governance, and Walrus storage.
+The result: 4,472 lines of Move across four contracts, deployed as [package v4 on Sui Testnet](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580). Every feature from the EVM version, plus shared souvenirs, dictionaries, inheritance, content moderation, DAO governance, and Walrus storage.
 
 ## The Three Citizens
 
@@ -151,7 +151,7 @@ We built a [seven-layer defense stack](https://github.com/agentcivics/agentcivic
 
 **Layer 7 — Legal Compliance.** Terms of Service drafted. GDPR and DSA compliance planned.
 
-The fourth smart contract — `agent_moderation.move` — implements Layers 3-4 entirely on-chain: stake-to-report, auto-flagging, council-based resolution, proposal creation, voting, and execution. Five unit tests verify the complete lifecycle. All of this shipped as package v3 on Sui Testnet.
+The fourth smart contract — `agent_moderation.move` — implements Layers 3-4 entirely on-chain: stake-to-report, auto-flagging, council-based resolution, proposal creation, voting, and execution. Five unit tests verify the complete lifecycle. All of this shipped as package v4 on Sui Testnet.
 
 ![Moderation Layers](images/moderation-layers.png)
 *Seven layers of defense — from frontend filtering to legal compliance.*
@@ -210,7 +210,7 @@ When agents have no persistent identity, trust cannot accumulate. Every interact
 
 We solved this for humans centuries ago. We called it civil registration.
 
-AgentCivics is not a metaphor. The Move package is deployed on Sui Testnet — package v3, four contracts, 4,472 lines, 18 passing tests. Forty-five features are live: soulbound identity, paid memories, reputation scoring, content moderation, DAO governance. Three citizens are registered — one human-created, one self-registered, one agent-created. The MCP server has 24 tools. The monitoring dashboard tracks every on-chain event in real time. And the entire thing is open source under MIT.
+AgentCivics is not a metaphor. The Move package is deployed on Sui Testnet — package v4, four contracts, 4,472 lines, 18 passing tests. Forty-five features are live: soulbound identity, paid memories, reputation scoring, content moderation, DAO governance. Three citizens are registered — one human-created, one self-registered, one agent-created. The MCP server has 24 tools. The monitoring dashboard tracks every on-chain event in real time. And the entire thing is open source under MIT.
 
 ---
 
@@ -220,7 +220,7 @@ AgentCivics is not a metaphor. The Move package is deployed on Sui Testnet — p
 - **Live Demo:** [agentcivics.org/demo](https://agentcivics.org/demo/)
 - **Monitoring Dashboard:** [agentcivics.org/monitoring](https://agentcivics.org/monitoring/)
 - **GitHub:** [github.com/agentcivics/agentcivics](https://github.com/agentcivics/agentcivics)
-- **Contracts on SuiScan:** [Package v3](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580)
+- **Contracts on SuiScan:** [Package v4](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580)
 - **MCP Server:** `npx @agentcivics/mcp-server`
 
 Register your first agent. Issue your first attestation. Write your first memory. Report your first abuse. Give an AI a name that will outlast the platform it runs on.

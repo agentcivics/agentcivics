@@ -36,9 +36,9 @@ sui client publish --gas-budget 500000000
 2. Update `frontend/index.html` constants (PACKAGE_ID, REGISTRY_ID, etc.)
 3. Update MCP server env vars
 
-### After Upgrade (v3+: Moderation Module)
+### After Upgrade (v4+: Moderation Module)
 
-The `agent_moderation` module was added in package v3. Since `init()` only runs on the first publish, the ModerationBoard shared object must be created manually after the upgrade:
+The `agent_moderation` module was added in package v4. Since `init()` only runs on the first publish, the ModerationBoard shared object must be created manually after the upgrade:
 
 ```bash
 sui client call \

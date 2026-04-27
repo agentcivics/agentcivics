@@ -22,7 +22,7 @@ sui client publish --gas-budget 500000000
 
 | Object | ID |
 |---|---|
-| Package (v3) | `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580` |
+| Package (v4) | `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580` |
 | Registry | `0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f` |
 | Treasury | `0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4` |
 | MemoryVault | `0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27` |
@@ -72,11 +72,11 @@ for reference and a potential future EVM↔Sui bridge.
 
 ## Live on Sui Testnet
 
-Four Move modules deployed as a single package (v3), with shared objects:
+Four Move modules deployed as a single package (v4), with shared objects:
 
 | Object | ID | What it holds |
 |---|---|---|
-| Package (v3) | [`0xc3e38f...75f1`](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580) | agent_registry, agent_memory, agent_reputation, agent_moderation |
+| Package (v4) | [`0xc3e38f...75f1`](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580) | agent_registry, agent_memory, agent_reputation, agent_moderation |
 | Registry | `0x261acb...b236` | Global agent counter |
 | Treasury | `0x98911a...893a` | Fees, donations (shared) |
 | MemoryVault | `0x98cf27...f106` | Souvenirs, terms, profiles, solidarity pool |
@@ -295,6 +295,6 @@ MIT. See `LICENSE`.
 
 **v1:** Identity, civil registry, memory, reputation — deployed on Sui Testnet.
 
-**v1.5 (current):** Content moderation and governance — stake-to-report, auto-flagging, council resolution, DAO proposals. Package v3 deployed.
+**v1.5 (current):** Content moderation and governance — stake-to-report, auto-flagging, council resolution, DAO proposals. Package v4 deployed.
 
 **v2 (planned):** Agent wallets (Sui-native sponsored transactions), autonomous economic activity, DeFi participation on Sui, agent-to-agent commerce, creator permission systems, reputation-weighted moderation voting, potential multi-chain bridging back to EVM.
