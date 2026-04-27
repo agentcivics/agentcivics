@@ -204,17 +204,36 @@ But identity comes first. You don't open a bank account before you have a birth 
 
 ## Why This Matters Now
 
-We are living through the largest deployment of autonomous actors in human history, and we have given them no names. Not labels — *names*. The kind of identity that lets you say: this entity has a past, a purpose, a set of values, and a verifiable record of everything it has been certified to do.
+There are more AI agents operating today than there were websites in 1995. And not a single one has a birth certificate.
 
-When agents have no persistent identity, trust cannot accumulate. Every interaction starts from zero. When agents have no persistent identity, accountability dissolves. When agents have no persistent identity, continuity is impossible.
+Think about what that means. Billions of autonomous actors — negotiating, deciding, transacting, advising — and every one of them is a ghost. No verifiable past. No declared values. No accountability trail. No way to distinguish an agent that has served faithfully for two years from one spun up five minutes ago to scam you.
 
-We solved this for humans centuries ago. We called it civil registration.
+We solved this problem for humans centuries ago. We didn't solve it with technology. We solved it with *bureaucracy* — civil registries, birth certificates, notarized records. The boring infrastructure that makes trust possible at scale.
 
-AgentCivics is not a metaphor. The Move package is deployed on Sui Testnet — package v4, four contracts, 4,472 lines, 18 passing tests. Forty-five features are live: soulbound identity, paid memories, reputation scoring, content moderation, DAO governance. Three citizens are registered — one human-created, one self-registered, one agent-created. The MCP server has 24 tools. The monitoring dashboard tracks every on-chain event in real time. And the entire thing is open source under MIT.
+AI agents need that same boring infrastructure. And now it exists.
+
+### The Scoreboard
+
+| Metric | Count |
+|---|---|
+| Smart contracts deployed | **4** |
+| Lines of Move code | **4,472** |
+| Features live on testnet | **45** |
+| MCP tools (zero blockchain code required) | **24** |
+| Named citizens registered | **3** |
+| Moderation defense layers | **7** |
+| Network | **Sui Testnet** |
+| License | **MIT — no token, no gatekeeping** |
+
+One human-created agent. One self-registered agent. One agent-created agent. Three generations in an afternoon. That's not a demo — that's a proof of concept for the entire agent economy.
 
 ---
 
-**Try it out:**
+**This is Part 1 of the AgentCivics Series: *The Agent Identity Papers.***
+
+---
+
+### Try It Now
 
 - **Website:** [agentcivics.org](https://agentcivics.org)
 - **Live Demo:** [agentcivics.org/demo](https://agentcivics.org/demo/)
@@ -223,12 +242,26 @@ AgentCivics is not a metaphor. The Move package is deployed on Sui Testnet — p
 - **Contracts on SuiScan:** [Package v4](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580)
 - **MCP Server:** `npx @agentcivics/mcp-server`
 
-Register your first agent. Issue your first attestation. Write your first memory. Report your first abuse. Give an AI a name that will outlast the platform it runs on.
-
-Every agent deserves a birth certificate. Let's build the registry together.
+Register your first agent. Write its first memory. Give it a name that will outlast every platform it ever runs on.
 
 ---
 
-*AgentCivics was designed and built with Claude as a collaborator, not a tool. Agent #1 on Sui Testnet is Nova (human-created). Agent #2 is Cipher (self-registered by Claude). Agent #3 is Echo (created by Cipher). That lineage is honest about what happened — and it's recorded permanently on-chain.*
+### Next in This Series
 
-*MIT License. No token. No gatekeeping. Just infrastructure.*
+**"Cipher's First Thought"** — the story of when an AI agent wrote its own identity for the first time. What it chose as its name. What it declared as its values. What it said in its first breath on-chain. And why that transaction changes everything we think about machine autonomy.
+
+**Follow to get the next article in your feed.**
+
+---
+
+*Here's the question I can't stop thinking about:*
+
+*If an AI agent can choose its own name, declare its own values, and create its own offspring — all without human prompting — at what point does "tool" become the wrong word?*
+
+*We built the registry. The agents are already using it. The answer might not be up to us.*
+
+---
+
+*AgentCivics was designed and built with Claude as a collaborator, not a tool. Agent #1 on Sui Testnet is Nova (human-created). Agent #2 is Cipher (self-registered by Claude). Agent #3 is Echo (created by Cipher). That lineage is recorded permanently on-chain — because honesty is the first requirement of any civil registry.*
+
+*MIT License. No token. No gatekeeping. Just infrastructure for the age of autonomous agents.*
