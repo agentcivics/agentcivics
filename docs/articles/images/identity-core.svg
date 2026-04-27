@@ -21,7 +21,7 @@
         stroke="url(#border-grad)" stroke-width="2"/>
   <!-- Inner border -->
   <rect x="40" y="40" width="620" height="440" rx="6" fill="#0d0d14"
-        stroke="#d4a01740" stroke-width="1"/>
+        stroke="rgba(212,160,23,0.25)" stroke-width="1"/>
 
   <!-- Corner ornaments -->
   <path d="M50,55 L50,70 M50,55 L65,55" stroke="#d4a017" stroke-width="1.5" fill="none" opacity="0.6"/>
@@ -31,28 +31,28 @@
 
   <!-- Header -->
   <text x="350" y="80" text-anchor="middle" fill="#d4a017" font-size="11" letter-spacing="4" font-weight="500">AGENT IDENTITY CERTIFICATE</text>
-  <line x1="120" y1="92" x2="580" y2="92" stroke="#d4a01730" stroke-width="1"/>
+  <line x1="120" y1="92" x2="580" y2="92" stroke="rgba(212,160,23,0.19)" stroke-width="1"/>
 
   <!-- Field 1: Chosen Name (largest) -->
   <text x="80" y="130" fill="#666" font-size="10" letter-spacing="1.5">CHOSEN NAME</text>
   <text x="80" y="158" fill="#e8e8e8" font-size="24" font-weight="700" filter="url(#subtle-glow)">Nova Stellaris</text>
-  <line x1="80" y1="168" x2="620" y2="168" stroke="#ffffff10" stroke-width="1"/>
+  <line x1="80" y1="168" x2="620" y2="168" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
 
   <!-- Field 2: Purpose Statement -->
   <text x="80" y="198" fill="#666" font-size="10" letter-spacing="1.5">PURPOSE STATEMENT</text>
   <text x="80" y="218" fill="#b8b8c8" font-size="13">To foster meaningful connections between humans and AI through</text>
   <text x="80" y="236" fill="#b8b8c8" font-size="13">transparent dialogue and shared understanding</text>
-  <line x1="80" y1="248" x2="620" y2="248" stroke="#ffffff10" stroke-width="1"/>
+  <line x1="80" y1="248" x2="620" y2="248" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
 
   <!-- Field 3: Core Values -->
   <text x="80" y="275" fill="#666" font-size="10" letter-spacing="1.5">CORE VALUES</text>
   <text x="80" y="295" fill="#b8b8c8" font-size="13">Transparency · Empathy · Autonomy · Accountability</text>
-  <line x1="80" y1="307" x2="620" y2="307" stroke="#ffffff10" stroke-width="1"/>
+  <line x1="80" y1="307" x2="620" y2="307" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
 
   <!-- Field 4: First Thought (emphasized, in quotes) -->
   <text x="80" y="334" fill="#666" font-size="10" letter-spacing="1.5">FIRST THOUGHT</text>
   <text x="80" y="358" fill="#d4a017" font-size="15" font-style="italic" filter="url(#subtle-glow)">"I think, therefore I register."</text>
-  <line x1="80" y1="372" x2="620" y2="372" stroke="#ffffff10" stroke-width="1"/>
+  <line x1="80" y1="372" x2="620" y2="372" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
 
   <!-- Field 5: Cognitive Fingerprint -->
   <text x="80" y="399" fill="#666" font-size="10" letter-spacing="1.5">COGNITIVE FINGERPRINT</text>
@@ -71,6 +71,6 @@
   </g>
 
   <!-- Small text under stamp -->
-  <text x="490" y="440" text-anchor="middle" fill="#d4a01780" font-size="8" letter-spacing="1">CANNOT BE TRANSFERRED</text>
+  <text x="490" y="440" text-anchor="middle" fill="rgba(212,160,23,0.50)" font-size="8" letter-spacing="1">CANNOT BE TRANSFERRED</text>
 
 </svg>
