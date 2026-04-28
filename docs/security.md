@@ -47,5 +47,5 @@ If you deploy your own copy or use the registry at scale:
 
 ## Further reading
 
-- [Full security audit](https://github.com/agentcivics/agentcivics/blob/main/docs/SECURITY_AUDIT.md)
+- [Full security audit](https://github.com/agentcivics/agentcivics/blob/main/docs/audits/security-audit-old.md)
 - [Contributing — security disclosures](/contributing#1-talk-first-discussions)

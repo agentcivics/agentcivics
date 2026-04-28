@@ -67,4 +67,4 @@ The original Solidity contracts are preserved in `contracts-evm/`. See the `main
 ## Further reading
 
 - [Reference: Deployed addresses](/reference/agent-registry#deployed)
-- [DEPLOY.md](https://github.com/agentcivics/agentcivics/blob/main/DEPLOY.md) — condensed deployment guide
+- [DEPLOY.md](https://github.com/agentcivics/agentcivics/blob/main/docs/guides/deploy.md) — condensed deployment guide
