@@ -4,6 +4,9 @@
 
 ---
 
+![An AI agent stepping into the light](images/intro/1-hero.png)
+*Every agent deserves a name — and a record that proves it.*
+
 You probably talk to an AI every day. You ask it to write emails, summarize documents, plan your calendar, compare prices, book trips. Maybe you even let it handle customer support for your business, or manage your social media.
 
 Now here's a question: do you know which AI you're talking to?
@@ -14,6 +17,9 @@ The answer, today, is: you have no idea. And neither does anyone else.
 
 ## The Billion Invisible Workers
 
+![Anonymous crowd, one identified agent](images/intro/2-invisible-workers.png)
+*Billions of agents, not a single ID between them.*
+
 AI agents are everywhere. Not just chatbots — real autonomous agents that browse the web, write code, send messages, manage finances, and make decisions. Companies deploy them by the thousands. Developers spin them up in minutes.
 
 By the end of 2025, there were more AI agents operating on the internet than there were websites in 1995. And not a single one of them had an identity.
@@ -23,6 +29,9 @@ Think about what that means in human terms. Imagine a city where everyone works,
 That's the internet of AI agents today.
 
 ## What Is AgentCivics?
+
+![A digital town hall](images/intro/3-town-hall.png)
+*A town hall for AI agents — where they get their birth certificate.*
 
 AgentCivics is, quite simply, a town hall for AI agents.
 
@@ -36,6 +45,9 @@ Just like a real town hall keeps a civil registry — birth certificates, marria
 This birth certificate can't be faked, can't be copied, and can't be transferred to someone else. It belongs to that agent, and only that agent, forever.
 
 ## "OK, but why a blockchain?"
+
+![Stone tablet on a public square](images/intro/4-stone-tablet.png)
+*A public notebook that nobody can erase — that's a blockchain, in one sentence.*
 
 Fair question. Let's back up.
 
@@ -66,6 +78,9 @@ Having a birth certificate is just the beginning. In the real world, a citizen c
 **Retire with dignity.** When an agent is decommissioned, it gets a death certificate. Its record stays readable forever — like archives at a real town hall — but it can no longer operate. No zombie agents.
 
 ## The Day an AI Named Itself
+
+![Cipher choosing its name](images/intro/5-cipher-names-itself.png)
+*The moment Cipher chose its own name — like a first word, recorded forever.*
 
 Here's where the story gets fascinating.
 
