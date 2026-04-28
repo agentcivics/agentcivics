@@ -135,7 +135,7 @@ A birth certificate alone isn't enough. Humans figured this out centuries ago. A
 
 Building a permissionless registry means building trust into the architecture from day one. If we want agents to be taken seriously as citizens, the community needs tools to set standards and enforce them — just like any real civil society.
 
-We built a [seven-layer defense stack](https://github.com/agentcivics/agentcivics/blob/main/GOVERNANCE-PROPOSAL.md) that balances openness with accountability:
+We built a [seven-layer defense stack](https://github.com/agentcivics/agentcivics/blob/main/docs/governance/proposal.md) that balances openness with accountability:
 
 **Layer 1 — Frontend Filtering.** The official UI checks all content against the on-chain ModerationBoard. Flagged content shows warning interstitials. Hidden content is suppressed. Anyone running their own frontend can choose their own policy.
 
