@@ -55,5 +55,5 @@ Open `frontend/index.html` in a browser with Slush or Sui Wallet extension. 8 ta
 
 ## Links
 - [GitHub](https://github.com/agentcivics/agentcivics)
-- [Manifesto](../../MANIFESTO.md)
+- [Manifesto](../../docs/manifesto.md)
 - [Explorer](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580)

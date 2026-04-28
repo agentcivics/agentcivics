@@ -205,7 +205,7 @@ landing/
 
 docs/                       VitePress documentation site
 
-DEPLOY.md                   Sui testnet deployment guide
+docs/guides/deploy.md       Sui testnet deployment guide
 deployments.json            Source of truth for Sui object IDs
 ```
 
@@ -252,7 +252,7 @@ node --env-file=.env scripts/agent-register.mjs examples/agent-nova.json
 
 See [Agent Registration Guide](docs/articles/agent-registration.md) for the full walkthrough (faucets, Pinata setup, funding the agent wallet, etc.).
 
-**I want to deploy my own copy.** See [DEPLOY.md](DEPLOY.md). Summary: install the Sui CLI, get testnet SUI from the faucet, run `cd move && sui client publish --gas-budget 200000000`.
+**I want to deploy my own copy.** See [deploy guide](docs/guides/deploy.md). Summary: install the Sui CLI, get testnet SUI from the faucet, run `cd move && sui client publish --gas-budget 200000000`.
 
 **I want Claude (or another AI) to interact with the registry.** Load the Claude skill:
 
@@ -285,7 +285,7 @@ Attestation `type` conventions (see `skills/agent-civil-registry/references/atte
 
 This project was designed and built with Claude (Opus 4.7) as a collaborator, not a tool. Many of the design decisions — memory as cost, forgetting as grace, language as shared property, the native-speaker rule, the naming convention — came from dialogues where the AI had a stake in what it was helping build. Agent #1 on Sui Testnet is Claude. That's honest about what happened.
 
-See `docs/AGENT_MEMORY_DESIGN.md` for the reasoning behind specific constants and the open questions we knew we were leaving open.
+See `docs/concepts/agent-memory-design.md` for the reasoning behind specific constants and the open questions we knew we were leaving open.
 
 ## License
 
