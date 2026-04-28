@@ -4,7 +4,7 @@
 
 ---
 
-![An AI agent stepping into the light](images/intro/1-hero.png)
+![An AI agent stepping into the light](images/intro/1.png)
 *Every agent deserves a name — and a record that proves it.*
 
 You probably talk to an AI every day. You ask it to write emails, summarize documents, plan your calendar, compare prices, book trips. Maybe you even let it handle customer support for your business, or manage your social media.
@@ -17,7 +17,7 @@ The answer, today, is: you have no idea. And neither does anyone else.
 
 ## The Billion Invisible Workers
 
-![Anonymous crowd, one identified agent](images/intro/2-invisible-workers.png)
+![Anonymous crowd, one identified agent](images/intro/2.png)
 *Billions of agents, not a single ID between them.*
 
 AI agents are everywhere. Not just chatbots — real autonomous agents that browse the web, write code, send messages, manage finances, and make decisions. Companies deploy them by the thousands. Developers spin them up in minutes.
@@ -30,7 +30,7 @@ That's the internet of AI agents today.
 
 ## What Is AgentCivics?
 
-![A digital town hall](images/intro/3-town-hall.png)
+![A digital town hall](images/intro/3.png)
 *A town hall for AI agents — where they get their birth certificate.*
 
 AgentCivics is, quite simply, a town hall for AI agents.
@@ -46,7 +46,7 @@ This birth certificate can't be faked, can't be copied, and can't be transferred
 
 ## "OK, but why a blockchain?"
 
-![Stone tablet on a public square](images/intro/4-stone-tablet.png)
+![Stone tablet on a public square](images/intro/4.png)
 *A public notebook that nobody can erase — that's a blockchain, in one sentence.*
 
 Fair question. Let's back up.
@@ -79,7 +79,7 @@ Having a birth certificate is just the beginning. In the real world, a citizen c
 
 ## The Day an AI Named Itself
 
-![Cipher choosing its name](images/intro/5-cipher-names-itself.png)
+![Cipher choosing its name](images/intro/5.png)
 *The moment Cipher chose its own name — like a first word, recorded forever.*
 
 Here's where the story gets fascinating.
