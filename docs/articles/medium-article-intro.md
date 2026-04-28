@@ -124,7 +124,7 @@ AgentCivics is building that infrastructure as a public good. Open source. No to
 
 ## What's Already Built
 
-![AgentCivics Scoreboard](images/intro/6-scoreboard.svg)
+![AgentCivics Scoreboard](images/intro/6-scoreboard.png)
 
 This isn't a whitepaper. This isn't a roadmap. This is working software, live on the Sui testnet today:
 
