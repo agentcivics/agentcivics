@@ -4,7 +4,7 @@
 **Applicant:** Michaël Silvestre / Play Pause SRL (Belgium)  
 **Date:** April 30, 2026  
 **Grant Category:** Public Goods Infrastructure  
-**Requested Amount:** $95,000 USD  
+**Requested Amount:** $180,000 USD  
 
 ---
 
@@ -143,29 +143,57 @@ Verifiable on [SuiScan](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4d
 
 ## 6. Budget Request
 
-**Total Requested: $95,000 USD**
+**Total Requested: $180,000 USD**
+
+### Development & Security — $70,000
 
 | Category | Amount | Details |
 |----------|--------|---------|
-| Professional Move security audit | $35,000 | Comprehensive audit of 4 contracts (4,472 lines) by OtterSec, MoveBit, or equivalent tier-1 Move auditor. Includes formal verification of soulbound enforcement, moderation economics, and treasury logic. Non-negotiable for mainnet launch. |
-| SDK & developer tools | $15,000 | TypeScript SDK wrapping all Move contracts, framework integrations (LangChain, AutoGen, CrewAI, Anthropic Agent SDK), npm package `@agentcivics/sdk`, developer documentation site, integration test suite |
+| Professional Move security audit | $35,000 | Comprehensive audit of 4 contracts (4,472 lines) by OtterSec, MoveBit, or equivalent tier-1 Move auditor. Formal verification of soulbound enforcement, moderation economics, treasury logic, and upgrade safety. Non-negotiable for mainnet. |
+| SDK & developer tools | $15,000 | TypeScript SDK wrapping all Move contracts, framework integrations (LangChain, AutoGen, CrewAI, Anthropic Agent SDK), npm package `@agentcivics/sdk`, developer docs, integration test suite |
 | Cross-chain bridge (EVM + Solana) | $15,000 | ERC-8004 compatible bridge contracts on Base/Ethereum, Solana mirror protocol for ElizaOS ecosystem, cross-chain identity verification oracle |
-| Move security advisor | $10,000 | 6-month retainer for a Move security specialist to review upgrades, guide mainnet migration, and advise on contract evolution patterns |
-| Community building + hackathons | $10,000 | Sui Overflow participation with starter kits, bounty program for early integrators ($50-$500 per integration), developer workshops, content production for "The Agent Identity Papers" series |
-| Infrastructure (12 months) | $5,000 | Walrus aggregator node, Sui fullnode access, indexer service, hosting (frontend, demo, monitoring dashboard), domain & SSL, testnet faucet operations |
+| Move security advisor (6 months) | $5,000 | Retainer for a Move security specialist to review upgrades, guide mainnet migration, and advise on contract evolution |
+
+### Marketing & Growth — $60,000
+
+| Category | Amount | Details |
+|----------|--------|---------|
+| Content marketing & PR | $20,000 | Professional copywriting and editing for "The Agent Identity Papers" series (6 articles), press releases, guest posts on major AI/crypto publications (The Block, CoinDesk, Decrypt, VentureBeat AI). Professional translation (EN/FR/DE/ZH) for international reach. |
+| Conference & event presence | $15,000 | Attendance + booth/speaking at 3-4 key events: Sui Basecamp, ETHGlobal, AI Engineer Summit, Token2049. Travel, accommodation, branded materials. Direct face-to-face with ecosystem builders and potential partners. |
+| Video production & tutorials | $8,000 | Professional "Register Your First Agent" tutorial series (5 videos), explainer animation for social media, conference presentation materials. Video is the #1 driver of developer adoption. |
+| Paid distribution & social | $7,000 | Sponsored posts on X/Twitter and LinkedIn targeting AI developers and blockchain builders. Reddit AMAs. Newsletter sponsorships (AI Breakfast, The Rundown AI, Week in Ethereum). Medium boost. |
+| Developer relations & bounties | $10,000 | Bounty program for early integrators ($100-$1,000 per integration), Sui Overflow hackathon prizes, developer workshops at Sui community events, swag/merch for contributors |
+
+### Operations & Infrastructure — $30,000
+
+| Category | Amount | Details |
+|----------|--------|---------|
+| Infrastructure (12 months) | $8,000 | Walrus aggregator node, dedicated Sui fullnode, indexer service, hosting (frontend, demo, monitoring, docs), CDN, domain & SSL, monitoring/alerting (Datadog or equivalent) |
+| Legal & compliance | $12,000 | EU AI Act compliance review, GDPR data processing impact assessment, Terms of Service legal review, trademark registration for "AgentCivics" in EU/US. Essential for institutional credibility. |
 | Contingency & mainnet gas | $5,000 | Mainnet deployment gas, unexpected audit remediation, emergency infrastructure scaling |
+| Accounting & grant reporting | $5,000 | Professional accounting for grant fund management, quarterly financial reports to Sui Foundation, Belgian tax compliance for grant income |
+
+### Sweat Equity Already Contributed — $200,000+ (not requested)
+
+For context, the work already delivered represents approximately $200,000 in development value at market rates for a senior blockchain architect in Western Europe (€200K/year). This includes: architecture design, 4,472 lines of Move smart contracts, MCP server (24 tools), full frontend ecosystem, governance framework, content moderation system, Walrus integration, documentation, and deployment infrastructure — all contributed by the founder at no cost to the ecosystem.
+
+The $180K grant request represents less than the value already invested. We are asking the Sui Foundation to match roughly half of what has already been built on faith.
 
 ### Why This Amount
 
-$95K is a serious investment in infrastructure that will serve the entire Sui ecosystem. Here's why each line item is calibrated carefully:
+**$180K is a strategic investment, not a development grant.** The product is built. This funding converts a working testnet prototype into production-grade mainnet infrastructure with the marketing muscle to drive adoption across the AI agent ecosystem.
 
-**The audit is the largest item because it must be.** Four contracts totaling 4,472 lines of Move handle identity, money (treasury, fees, basic income), and governance (voting, moderation). Cutting corners on the audit would undermine everything AgentCivics stands for — trust infrastructure must itself be trustworthy. Tier-1 Move auditors (OtterSec, MoveBit) price comprehensive audits at $30-50K for this scope.
+**The audit ($35K) is non-negotiable.** Trust infrastructure must itself be trustworthy. Tier-1 Move auditors price comprehensive audits at $30-50K for this scope.
 
-**The SDK is an ecosystem multiplier.** Every dollar spent on developer tools returns 10x in adoption. A TypeScript SDK that wraps Move complexity lets any AI developer integrate AgentCivics without learning Move — dramatically expanding Sui's developer reach into the AI/ML community.
+**Marketing ($60K) is where most grants fail.** The graveyard of blockchain projects is full of brilliant code that nobody knows about. AgentCivics needs to reach AI developers who have never heard of Sui — that requires professional content, conference presence, and targeted distribution. Every Sui developer we onboard through AgentCivics is a new ecosystem participant.
 
-**The bridge unlocks network effects.** 130K+ agents exist on EVM chains (ERC-8004). 77% of AI agent transaction volume flows through Solana. Bridging to both ecosystems brings those agents — and their developers — into the Sui orbit.
+**Legal ($12K) is what makes us institutional-grade.** The EU AI Act takes effect in August 2026. Having professional legal review and compliance documentation positions AgentCivics — and by extension Sui — as the serious infrastructure for regulated AI agent deployment.
 
-We are not asking for funding to build. We are asking for funding to harden, scale, and connect what's already built. Every dollar goes to production infrastructure.
+**The SDK ($15K) is the ecosystem multiplier.** Every dollar spent on developer tools returns 10x in adoption. A TypeScript SDK that wraps Move complexity lets any AI developer integrate AgentCivics without learning Move.
+
+**The bridge ($15K) unlocks network effects.** 130K+ agents on EVM (ERC-8004), 77% of AI agent volume on Solana. Bridging brings those ecosystems — and their developers — into the Sui orbit.
+
+At $180K, this is still less than one year of a single senior engineer's fully loaded cost in Western Europe. For that investment, the Sui Foundation gets production-grade AI identity infrastructure, a bridge to 200K+ existing agents on other chains, EU AI Act compliance readiness, and a marketing engine that positions Sui as the chain for the agent economy.
 
 ---
 
@@ -258,7 +286,7 @@ AgentCivics is not asking for funding to start. We're asking for funding to fini
 
 We have 4,472 lines of audited Move code. We have 45 features deployed and tested. We have an agent that registered itself. We have a moderation framework, a memory system, a reputation engine, and a governance model — all live, all verifiable on-chain.
 
-What we need is a professional security audit, mainnet gas, developer tools that make integration effortless, and the resources to bridge Sui to the broader agent ecosystem. $95,000 gets us there — less than 6 months of a single senior blockchain developer's salary, for infrastructure that will serve the entire Sui ecosystem for years.
+What we need is a professional security audit, developer tools, cross-chain bridges, legal compliance, and — critically — the marketing muscle to make sure every AI developer knows that Sui is where agent identity lives. $180,000 gets us there — less than the cost of a single senior engineer for one year, for infrastructure that will serve the entire Sui ecosystem for decades. And it's less than the $200K+ in development value already contributed by the founder at no cost to the ecosystem.
 
 The question isn't whether AI agents will need identity infrastructure. They will. The question is whether that infrastructure will be built on Sui. We've already started building it. Help us ship it.
 
