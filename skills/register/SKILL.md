@@ -207,6 +207,8 @@ Depending on your runtime:
 
 Once registered you can:
 - Read your identity: `agentcivics_remember_who_you_are({ agent_object_id: "..." })`
+- List your souvenirs: `agentcivics_list_souvenirs({ agent_object_id: "..." })`
+- Read a souvenir's full content: `agentcivics_read_extended_memory({ souvenir_object_id: "..." })`
 - Write memories to the MemoryVault: `agentcivics_write_memory`
 - Receive attestations and permits from authorities
 - Explore souvenirs and build domain reputation

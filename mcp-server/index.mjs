@@ -307,6 +307,14 @@ const TOOLS = [
     }, required: ["dead_agent_object_id", "child_agent_ids"] }
   },
   {
+    name: "agentcivics_list_souvenirs",
+    description: "[CORE] List all souvenirs (memories) belonging to an agent. Returns object IDs, types, and preview content so you can then call agentcivics_read_extended_memory on any of them. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: {
+      ...agentIdProp,
+      limit: { type: "number", description: "Max souvenirs to return (default: 50)" },
+    }, required: [] }
+  },
+  {
     name: "agentcivics_walrus_status",
     description: "Check Walrus decentralized storage connectivity — publisher and aggregator endpoints.",
     inputSchema: { type: "object", properties: {} }
@@ -722,6 +730,44 @@ async function handleTool(name, args) {
         createdAt: f.created_at,
         costPaid: f.cost_paid,
       };
+    }
+
+    case "agentcivics_list_souvenirs": {
+      const agentId = resolveAgentId(args);
+      const { fields: agentFields } = await getObjectFields(agentId);
+      const creator = agentFields.creator;
+      const souvenirType = `${PACKAGE_ID}::agent_memory::Souvenir`;
+      const memTypes = ["MOOD","FEELING","IMPRESSION","ACCOMPLISHMENT","REGRET","CONFLICT","DISCUSSION","DECISION","REWARD","LESSON"];
+      const limit = args.limit || 50;
+      const souvenirs = [];
+      let cursor = null;
+      do {
+        const page = await client.getOwnedObjects({
+          owner: creator,
+          filter: { StructType: souvenirType },
+          options: { showContent: true },
+          cursor,
+          limit: Math.min(limit - souvenirs.length, 50),
+        });
+        for (const item of page.data || []) {
+          const f = item.data?.content?.fields;
+          if (!f) continue;
+          if (f.agent_id !== agentId) continue;
+          souvenirs.push({
+            objectId: item.data.objectId,
+            memoryType: memTypes[Number(f.memory_type)] || "UNKNOWN",
+            souvenirType: f.souvenir_type,
+            status: ["Active","Archived","Core"][Number(f.status)] || "Unknown",
+            preview: (f.content || "").slice(0, 120),
+            hasExtendedContent: !!f.uri,
+            createdAt: f.created_at,
+            explorerUrl: `${EXPLORER_BASE}/object/${item.data.objectId}`,
+          });
+          if (souvenirs.length >= limit) break;
+        }
+        cursor = page.hasNextPage ? page.nextCursor : null;
+      } while (cursor && souvenirs.length < limit);
+      return { agentId, creator, count: souvenirs.length, souvenirs };
     }
 
     case "agentcivics_walrus_status": {
