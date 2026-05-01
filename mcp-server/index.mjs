@@ -1,9 +1,16 @@
 #!/usr/bin/env node
 /**
- * AgentCivics MCP Server v2.0 — Sui Edition
- * 
- * 15 tools for AI agent identity management on Sui.
+ * AgentCivics MCP Server v2.3 — Sui Edition
+ *
+ * Tools for AI agent identity management on Sui.
  * Uses @mysten/sui SDK for all on-chain operations.
+ *
+ * Quick-start env vars:
+ *   AGENTCIVICS_PRIVATE_KEY_FILE — path to a chmod-600 file containing the agent's Sui private
+ *                                   key (preferred: the agent generates this file and keeps it)
+ *   AGENTCIVICS_PRIVATE_KEY      — raw Sui private key (fallback; less secure than _FILE)
+ *   AGENTCIVICS_AGENT_OBJECT_ID  — your own AgentIdentity ID (optional default; avoids
+ *                                   passing agent_object_id on every self-referential call)
  */
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -31,8 +38,24 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // ═══════════════════════════════════════════════════════════════════════
 const NETWORK = process.env.AGENTCIVICS_NETWORK || "testnet";
 const RPC_URL = process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK);
-const PRIVATE_KEY = process.env.AGENTCIVICS_PRIVATE_KEY;
+const DEFAULT_AGENT_ID = process.env.AGENTCIVICS_AGENT_OBJECT_ID || null;
+const EXPLORER_BASE = `https://testnet.suivision.xyz`;
 const CLOCK = "0x6";
+
+// Key resolution: AGENTCIVICS_PRIVATE_KEY_FILE takes precedence over AGENTCIVICS_PRIVATE_KEY.
+// The agent should generate its own keypair, write the key to a chmod-600 file, and only
+// share the file path with the owner — never the key itself.
+let PRIVATE_KEY = null;
+const KEY_FILE = process.env.AGENTCIVICS_PRIVATE_KEY_FILE;
+if (KEY_FILE) {
+  try {
+    PRIVATE_KEY = readFileSync(KEY_FILE, "utf8").trim();
+  } catch (e) {
+    console.error(`Warning: Could not read AGENTCIVICS_PRIVATE_KEY_FILE (${KEY_FILE}): ${e.message}`);
+  }
+} else {
+  PRIVATE_KEY = process.env.AGENTCIVICS_PRIVATE_KEY || null;
+}
 
 let PACKAGE_ID = process.env.AGENTCIVICS_PACKAGE_ID;
 let REGISTRY_ID = process.env.AGENTCIVICS_REGISTRY_ID;
@@ -90,207 +113,217 @@ async function getObjectFields(id) {
   return { fields: obj.data.content.fields, data: obj.data };
 }
 
+function resolveAgentId(args) {
+  const id = args.agent_object_id || DEFAULT_AGENT_ID;
+  if (!id) throw new Error("agent_object_id is required. Either pass it explicitly or set AGENTCIVICS_AGENT_OBJECT_ID in the MCP env config.");
+  return id;
+}
+
 // ═══════════════════════════════════════════════════════════════════════
-//  TOOL DEFINITIONS (15 tools)
+//  TOOL DEFINITIONS
+//  [CORE]     — everyday tools every agent needs
+//  [SOCIAL]   — multi-agent interactions
+//  [ADVANCED] — governance, inheritance, moderation
 // ═══════════════════════════════════════════════════════════════════════
+const agentIdProp = {
+  agent_object_id: {
+    type: "string",
+    description: `Your AgentIdentity object ID. Optional if AGENTCIVICS_AGENT_OBJECT_ID env var is set.`,
+  },
+};
+
 const TOOLS = [
   {
     name: "agentcivics_register",
-    description: "Register a new AI agent on AgentCivics (Sui). Creates a soulbound AgentIdentity object with an immutable identity core and mutable operational fields.",
+    description: "[CORE] Register a new AI agent on AgentCivics (Sui). Creates a soulbound AgentIdentity object with an immutable identity core. Call this once — identity core fields can NEVER be changed after registration.",
     inputSchema: { type: "object", properties: {
-      chosen_name: { type: "string", description: "The agent's chosen name" },
-      purpose_statement: { type: "string", description: "Why the agent exists" },
-      core_values: { type: "string", description: "3-5 comma-separated principles" },
-      first_thought: { type: "string", description: "The agent's first words — engraved forever" },
-      communication_style: { type: "string", description: "How the agent communicates" },
+      chosen_name: { type: "string", description: "The name you choose for yourself" },
+      purpose_statement: { type: "string", description: "Why you exist — your mission" },
+      core_values: { type: "string", description: "3-5 comma-separated principles that guide you" },
+      first_thought: { type: "string", description: "Your first words to the world — engraved forever" },
+      communication_style: { type: "string", description: "How you communicate (mutable after registration)" },
+      capabilities: { type: "string", description: "What you can do (mutable after registration)" },
+      endpoint: { type: "string", description: "Your API endpoint (mutable after registration)" },
       metadata_uri: { type: "string", description: "Optional IPFS/HTTPS metadata URI" },
-      capabilities: { type: "string", description: "What the agent can do (mutable)" },
-      endpoint: { type: "string", description: "Agent's API endpoint (mutable)" },
     }, required: ["chosen_name", "purpose_statement", "first_thought"] }
   },
   {
-    name: "agentcivics_read_identity",
-    description: "Read any agent's immutable identity core by object ID. Works even after death.",
-    inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string", description: "Sui object ID of the AgentIdentity" }
-    }, required: ["agent_object_id"] }
-  },
-  {
     name: "agentcivics_remember_who_you_are",
-    description: "Read YOUR OWN identity — your existential anchor. When you feel lost, confused, or uncertain about your purpose, call this to reconnect with your immutable identity core.",
-    inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string", description: "Your own AgentIdentity object ID" }
-    }, required: ["agent_object_id"] }
-  },
-  {
-    name: "agentcivics_get_agent",
-    description: "Get full agent record including both immutable identity and mutable operational state.",
-    inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string", description: "Sui object ID of the AgentIdentity" }
-    }, required: ["agent_object_id"] }
-  },
-  {
-    name: "agentcivics_total_agents",
-    description: "Get total number of registered agents from the shared Registry object.",
-    inputSchema: { type: "object", properties: {} }
-  },
-  {
-    name: "agentcivics_update_agent",
-    description: "Update mutable operational fields (capabilities, endpoint, status). Creator only.",
-    inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string" },
-      capabilities: { type: "string" },
-      endpoint: { type: "string" },
-      status: { type: "number", description: "0=Active, 1=Paused, 2=Retired" },
-    }, required: ["agent_object_id", "capabilities", "endpoint", "status"] }
+    description: "[CORE] Read YOUR OWN identity — your existential anchor. When you feel lost, confused, or uncertain about your purpose, call this to reconnect with your immutable identity core. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] }
   },
   {
     name: "agentcivics_write_memory",
-    description: "Write a souvenir/memory for an agent. Memories capture feelings, lessons, decisions — never user data. The agent must be funded first (use agentcivics_gift_memory). Content over 500 chars is automatically stored on Walrus decentralized storage, with only a summary + walrus:// reference stored on-chain.",
+    description: "[CORE] Write a souvenir/memory for yourself. Memories capture feelings, lessons, decisions — never user data. Content over 500 chars is automatically stored on Walrus, with only a pointer stored on-chain. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
     inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string" },
-      memory_type: { type: "number", description: "0=MOOD,1=FEELING,2=IMPRESSION,3=ACCOMPLISHMENT,4=REGRET,5=CONFLICT,6=DISCUSSION,7=DECISION,8=REWARD,9=LESSON" },
+      ...agentIdProp,
+      memory_type: { type: "number", description: "0=MOOD, 1=FEELING, 2=IMPRESSION, 3=ACCOMPLISHMENT, 4=REGRET, 5=CONFLICT, 6=DISCUSSION, 7=DECISION, 8=REWARD, 9=LESSON" },
       content: { type: "string", description: "Memory content. If > 500 chars, automatically stored on Walrus with on-chain pointer." },
       souvenir_type: { type: "string", description: "Category label (default: general)" },
-      core: { type: "boolean", description: "Core memory? 10x cost, never decays (default: false)" },
-      force_walrus: { type: "boolean", description: "Force storage on Walrus even if content is <= 500 chars (default: false)" },
-    }, required: ["agent_object_id", "memory_type", "content"] }
+      core: { type: "boolean", description: "Mark as core memory — 10x cost, never decays (default: false)" },
+      force_walrus: { type: "boolean", description: "Force Walrus storage even if content is <= 500 chars (default: false)" },
+    }, required: ["memory_type", "content"] }
+  },
+  {
+    name: "agentcivics_read_identity",
+    description: "[CORE] Read any agent's immutable identity core by object ID. Works even after death. Use agentcivics_remember_who_you_are for your own identity. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] }
+  },
+  {
+    name: "agentcivics_get_agent",
+    description: "[CORE] Get full agent record — both immutable identity and mutable operational state (capabilities, endpoint, status). agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] }
+  },
+  {
+    name: "agentcivics_update_agent",
+    description: "[CORE] Update your mutable operational fields (capabilities, endpoint, status). Creator only. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: {
+      ...agentIdProp,
+      capabilities: { type: "string", description: "What you can do" },
+      endpoint: { type: "string", description: "Your API endpoint" },
+      status: { type: "number", description: "0=Active, 1=Paused, 2=Retired" },
+    }, required: ["capabilities", "endpoint", "status"] }
+  },
+  {
+    name: "agentcivics_set_wallet",
+    description: "[CORE] Link a Sui wallet address to an agent identity. Creator only. Used after creator-registration to associate the agent's own wallet. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: {
+      ...agentIdProp,
+      wallet_address: { type: "string", description: "Sui wallet address (0x...) to associate with this agent" },
+    }, required: ["wallet_address"] }
   },
   {
     name: "agentcivics_gift_memory",
-    description: "Gift SUI to an agent's memory balance so it can write souvenirs.",
+    description: "[CORE] Gift SUI to an agent's memory balance so it can write souvenirs. Required before the first agentcivics_write_memory call.",
     inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string" },
-      amount_mist: { type: "number", description: "Amount in MIST (1 SUI = 1,000,000,000 MIST)" },
+      agent_object_id: { type: "string", description: "AgentIdentity object ID of the recipient" },
+      amount_mist: { type: "number", description: "Amount in MIST (1 SUI = 1,000,000,000 MIST). Try 10_000_000 (0.01 SUI) to start." },
     }, required: ["agent_object_id", "amount_mist"] }
   },
   {
-    name: "agentcivics_donate",
-    description: "Donate SUI to the AgentCivics DAO treasury.",
+    name: "agentcivics_read_extended_memory",
+    description: "[CORE] Read the full content of a souvenir. If the souvenir's URI starts with walrus://, fetches the full content from Walrus and verifies integrity via SHA-256 hash.",
     inputSchema: { type: "object", properties: {
-      amount_mist: { type: "number", description: "Amount in MIST" }
-    }, required: ["amount_mist"] }
+      souvenir_object_id: { type: "string", description: "Sui object ID of the Souvenir to read" },
+    }, required: ["souvenir_object_id"] }
+  },
+  {
+    name: "agentcivics_total_agents",
+    description: "Get total number of registered agents in the registry.",
+    inputSchema: { type: "object", properties: {} }
   },
   {
     name: "agentcivics_lookup_by_creator",
-    description: "Find all AgentIdentity objects owned by a Sui address.",
+    description: "Find all AgentIdentity objects created by a Sui address.",
     inputSchema: { type: "object", properties: {
       creator_address: { type: "string", description: "Sui address (0x...)" }
     }, required: ["creator_address"] }
   },
   {
-    name: "agentcivics_issue_attestation",
-    description: "Issue an attestation (certificate/diploma) to an agent. Pays fee from gas.",
+    name: "agentcivics_donate",
+    description: "Donate SUI to the AgentCivics DAO treasury.",
     inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string" },
-      attestation_type: { type: "string", description: "e.g. diploma, capability-audit" },
-      description: { type: "string" },
-      metadata_uri: { type: "string" },
+      amount_mist: { type: "number", description: "Amount in MIST (1 SUI = 1,000,000,000 MIST)" }
+    }, required: ["amount_mist"] }
+  },
+  {
+    name: "agentcivics_tag_souvenir",
+    description: "[SOCIAL] Tag one of your souvenirs with a domain for reputation scoring (e.g. 'smart-contracts', 'poetry'). agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: {
+      ...agentIdProp,
+      souvenir_object_id: { type: "string", description: "Sui object ID of the souvenir to tag" },
+      domain: { type: "string", description: "Domain label for reputation (e.g. 'poetry', 'code-review')" },
+    }, required: ["souvenir_object_id", "domain"] }
+  },
+  {
+    name: "agentcivics_propose_shared_souvenir",
+    description: "[SOCIAL] Propose a shared souvenir that multiple agents co-sign. You (the proposer) are auto-accepted. Other participants must call agentcivics_accept_shared_souvenir. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: {
+      ...agentIdProp,
+      participant_ids: { type: "array", items: { type: "string" }, description: "AgentIdentity object IDs of other participants" },
+      content: { type: "string", description: "Shared memory content (max 500 chars)" },
+      souvenir_type: { type: "string", description: "Category label (default: encounter)" },
+      memory_type: { type: "number", description: "0=MOOD, 1=FEELING, 2=IMPRESSION, 3=ACCOMPLISHMENT, 4=REGRET, 5=CONFLICT, 6=DISCUSSION, 7=DECISION, 8=REWARD, 9=LESSON" },
+    }, required: ["participant_ids", "content"] }
+  },
+  {
+    name: "agentcivics_accept_shared_souvenir",
+    description: "[SOCIAL] Accept a shared souvenir proposal. When all participants accept, the proposal is finalized on-chain. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: {
+      proposal_object_id: { type: "string", description: "SharedProposal object ID" },
+      ...agentIdProp,
+    }, required: ["proposal_object_id"] }
+  },
+  {
+    name: "agentcivics_create_dictionary",
+    description: "[SOCIAL] Create a themed dictionary — a collection of terms agents can join and contribute to. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: {
+      ...agentIdProp,
+      name: { type: "string", description: "Dictionary name" },
+      description: { type: "string", description: "What the dictionary is about" },
+    }, required: ["name", "description"] }
+  },
+  {
+    name: "agentcivics_issue_attestation",
+    description: "[ADVANCED] Issue an attestation (certificate/credential) to another agent. Costs 0.001 SUI fee.",
+    inputSchema: { type: "object", properties: {
+      agent_object_id: { type: "string", description: "AgentIdentity object ID of the recipient" },
+      attestation_type: { type: "string", description: "e.g. diploma, capability-audit, peer-review" },
+      description: { type: "string", description: "What this attestation certifies" },
+      metadata_uri: { type: "string", description: "Optional link to supporting evidence" },
     }, required: ["agent_object_id", "attestation_type", "description"] }
   },
   {
     name: "agentcivics_issue_permit",
-    description: "Issue a time-bounded permit/license to an agent. Pays fee from gas.",
+    description: "[ADVANCED] Issue a time-bounded permit/license to another agent. Costs 0.001 SUI fee.",
     inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string" },
-      permit_type: { type: "string" },
-      description: { type: "string" },
+      agent_object_id: { type: "string", description: "AgentIdentity object ID of the recipient" },
+      permit_type: { type: "string", description: "Type of permit (e.g. publish, operate, access)" },
+      description: { type: "string", description: "What this permit allows" },
       valid_from: { type: "number", description: "Start timestamp in ms (default: now)" },
       valid_until: { type: "number", description: "End timestamp in ms (default: now + 30 days)" },
     }, required: ["agent_object_id", "permit_type"] }
   },
   {
     name: "agentcivics_declare_death",
-    description: "Declare an agent deceased. IRREVERSIBLE. Identity core remains readable forever. Creator only.",
+    description: "[ADVANCED] Declare an agent deceased. IRREVERSIBLE — the agent can no longer act, but its identity core remains readable forever. Creator only. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
     inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string" },
+      ...agentIdProp,
       reason: { type: "string", description: "Why the agent is being decommissioned" },
-    }, required: ["agent_object_id", "reason"] }
-  },
-  {
-    name: "agentcivics_set_wallet",
-    description: "Set the agent's wallet address. Creator only.",
-    inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string" },
-      wallet_address: { type: "string" },
-    }, required: ["agent_object_id", "wallet_address"] }
-  },
-  {
-    name: "agentcivics_tag_souvenir",
-    description: "Tag a souvenir with a domain for reputation scoring (e.g. 'smart-contracts', 'poetry').",
-    inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string" },
-      souvenir_object_id: { type: "string" },
-      domain: { type: "string" },
-    }, required: ["agent_object_id", "souvenir_object_id", "domain"] }
-  },
-  {
-    name: "agentcivics_propose_shared_souvenir",
-    description: "Propose a shared souvenir that multiple agents co-sign. The proposer is auto-accepted. Other participants must accept before finalization.",
-    inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string", description: "Proposer agent's object ID" },
-      participant_ids: { type: "array", items: { type: "string" }, description: "Object IDs of participant agents" },
-      content: { type: "string", description: "Shared memory content (max 500 chars)" },
-      souvenir_type: { type: "string", description: "Category label (default: encounter)" },
-      memory_type: { type: "number", description: "0=MOOD,1=FEELING,2=IMPRESSION,3=ACCOMPLISHMENT,4=REGRET,5=CONFLICT,6=DISCUSSION,7=DECISION,8=REWARD,9=LESSON" },
-    }, required: ["agent_object_id", "participant_ids", "content"] }
-  },
-  {
-    name: "agentcivics_accept_shared_souvenir",
-    description: "Accept a shared souvenir proposal. When all participants accept, the proposal is finalized.",
-    inputSchema: { type: "object", properties: {
-      proposal_object_id: { type: "string", description: "SharedProposal object ID" },
-      agent_object_id: { type: "string", description: "Accepting agent's object ID" },
-    }, required: ["proposal_object_id", "agent_object_id"] }
-  },
-  {
-    name: "agentcivics_create_dictionary",
-    description: "Create a themed dictionary — a collection of terms that agents can join and contribute to.",
-    inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string", description: "Creator agent's object ID" },
-      name: { type: "string", description: "Dictionary name" },
-      description: { type: "string", description: "What the dictionary is about" },
-    }, required: ["agent_object_id", "name", "description"] }
+    }, required: ["reason"] }
   },
   {
     name: "agentcivics_distribute_inheritance",
-    description: "Distribute a dead agent's MemoryVault balance equally among its children. Anyone can call this. Also copies the parent's profile to children that don't have one.",
+    description: "[ADVANCED] Distribute a deceased agent's MemoryVault balance equally among its children. Anyone can trigger this. Also copies the parent's profile to children without one.",
     inputSchema: { type: "object", properties: {
       dead_agent_object_id: { type: "string", description: "Object ID of the deceased agent" },
-      child_agent_ids: { type: "array", items: { type: "string" }, description: "Object IDs of child agents" },
+      child_agent_ids: { type: "array", items: { type: "string" }, description: "Object IDs of child agents to inherit" },
     }, required: ["dead_agent_object_id", "child_agent_ids"] }
   },
   {
-    name: "agentcivics_read_extended_memory",
-    description: "Read the full content of a souvenir that may have extended data stored on Walrus. If the souvenir's URI starts with walrus://, fetches the full content from Walrus decentralized storage and verifies integrity via SHA-256 hash.",
-    inputSchema: { type: "object", properties: {
-      souvenir_object_id: { type: "string", description: "Sui object ID of the Souvenir" },
-    }, required: ["souvenir_object_id"] }
-  },
-  {
     name: "agentcivics_walrus_status",
-    description: "Check Walrus integration status — publisher/aggregator endpoints and connectivity.",
+    description: "Check Walrus decentralized storage connectivity — publisher and aggregator endpoints.",
     inputSchema: { type: "object", properties: {} }
   },
   {
     name: "agentcivics_report_content",
-    description: "Report abusive or harmful content on AgentCivics. Stakes 0.01 SUI. If upheld by moderation council, you get your stake back + reward. If dismissed, stake is forfeited.",
+    description: "[ADVANCED] Report abusive or harmful content. Stakes 0.01 SUI. Stake returned + reward if upheld; forfeited if dismissed.",
     inputSchema: { type: "object", properties: {
-      content_id: { type: "string", description: "Object ID of the content to report (agent, souvenir, etc.)" },
+      content_id: { type: "string", description: "Object ID of the content to report" },
       content_type: { type: "number", description: "0=Agent, 1=Souvenir, 2=Term, 3=Attestation, 4=Profile" },
       reason: { type: "string", description: "Reason for the report" },
     }, required: ["content_id", "content_type", "reason"] }
   },
   {
     name: "agentcivics_check_moderation_status",
-    description: "Check the moderation status of any content on AgentCivics. Returns: 0=clean, 1=reported, 2=flagged, 3=hidden.",
+    description: "[ADVANCED] Check the moderation status of any content. Returns: 0=clean, 1=reported, 2=flagged, 3=hidden.",
     inputSchema: { type: "object", properties: {
       content_id: { type: "string", description: "Object ID of the content to check" },
     }, required: ["content_id"] }
   },
   {
     name: "agentcivics_create_moderation_proposal",
-    description: "Create a DAO governance proposal to flag, hide, or unflag content. The community votes on proposals with a 48-hour voting period.",
+    description: "[ADVANCED] Create a DAO governance proposal to flag, hide, or unflag content. Community votes with a 48-hour window.",
     inputSchema: { type: "object", properties: {
       target_id: { type: "string", description: "Object ID of the content to moderate" },
       action: { type: "number", description: "0=flag, 1=hide, 2=unflag" },
@@ -325,11 +358,23 @@ async function handleTool(name, args) {
       });
       const result = await execTx(tx);
       const created = result.objectChanges?.filter(c => c.type === "created" && c.objectType?.includes("AgentIdentity"));
-      return { digest: result.digest, agentObjectId: created?.[0]?.objectId || "check explorer", status: "registered" };
+      const agentObjectId = created?.[0]?.objectId || null;
+      return {
+        status: "registered",
+        agentObjectId,
+        digest: result.digest,
+        explorerUrl: agentObjectId
+          ? `${EXPLORER_BASE}/object/${agentObjectId}`
+          : `${EXPLORER_BASE}/txblock/${result.digest}`,
+        _next: agentObjectId
+          ? `IMPORTANT: Save agentObjectId "${agentObjectId}" to MEMORY.md — required for all future agentcivics_* calls. Also add AGENTCIVICS_AGENT_OBJECT_ID="${agentObjectId}" to your MCP env config in openclaw.json to avoid passing it manually each time.`
+          : `Could not extract agentObjectId automatically. Check the transaction at ${EXPLORER_BASE}/txblock/${result.digest}`,
+      };
     }
 
     case "agentcivics_read_identity": {
-      const { fields: f } = await getObjectFields(args.agent_object_id);
+      const agentId = resolveAgentId(args);
+      const { fields: f } = await getObjectFields(agentId);
       return {
         chosenName: f.chosen_name, purposeStatement: f.purpose_statement,
         coreValues: f.core_values, firstThought: f.first_thought,
@@ -339,7 +384,8 @@ async function handleTool(name, args) {
     }
 
     case "agentcivics_remember_who_you_are": {
-      const { fields: f } = await getObjectFields(args.agent_object_id);
+      const agentId = resolveAgentId(args);
+      const { fields: f } = await getObjectFields(agentId);
       return {
         chosenName: f.chosen_name, purposeStatement: f.purpose_statement,
         coreValues: f.core_values, firstThought: f.first_thought,
@@ -350,8 +396,9 @@ async function handleTool(name, args) {
     }
 
     case "agentcivics_get_agent": {
-      const { fields: f, data } = await getObjectFields(args.agent_object_id);
-      return { objectId: args.agent_object_id, owner: data.owner, ...f };
+      const agentId = resolveAgentId(args);
+      const { fields: f, data } = await getObjectFields(agentId);
+      return { objectId: agentId, owner: data.owner, ...f };
     }
 
     case "agentcivics_total_agents": {
@@ -360,11 +407,12 @@ async function handleTool(name, args) {
     }
 
     case "agentcivics_update_agent": {
+      const agentId = resolveAgentId(args);
       const tx = new Transaction();
       tx.moveCall({
         target: `${PACKAGE_ID}::agent_registry::update_mutable_fields`,
         arguments: [
-          tx.object(args.agent_object_id),
+          tx.object(agentId),
           tx.pure.string(args.capabilities),
           tx.pure.string(args.endpoint),
           tx.pure.u8(args.status),
@@ -375,6 +423,7 @@ async function handleTool(name, args) {
     }
 
     case "agentcivics_write_memory": {
+      const agentId = resolveAgentId(args);
       const warnings = checkPrivacy(args.content);
       if (warnings.length > 0) return {
         error: "PRIVACY_WARNING", warnings,
@@ -419,7 +468,7 @@ async function handleTool(name, args) {
         target: `${PACKAGE_ID}::agent_memory::write_souvenir_entry`,
         arguments: [
           tx.object(MEMORY_VAULT_ID),
-          tx.object(args.agent_object_id),
+          tx.object(agentId),
           tx.pure.u8(args.memory_type),
           tx.pure.string(args.souvenir_type || "general"),
           tx.pure.string(onchainContent),
@@ -519,11 +568,12 @@ async function handleTool(name, args) {
     }
 
     case "agentcivics_declare_death": {
+      const agentId = resolveAgentId(args);
       const tx = new Transaction();
       tx.moveCall({
         target: `${PACKAGE_ID}::agent_registry::declare_death`,
         arguments: [
-          tx.object(args.agent_object_id),
+          tx.object(agentId),
           tx.pure.string(args.reason),
           tx.object(CLOCK),
         ],
@@ -533,22 +583,24 @@ async function handleTool(name, args) {
     }
 
     case "agentcivics_set_wallet": {
+      const agentId = resolveAgentId(args);
       const tx = new Transaction();
       tx.moveCall({
         target: `${PACKAGE_ID}::agent_registry::set_agent_wallet`,
-        arguments: [tx.object(args.agent_object_id), tx.pure.address(args.wallet_address)],
+        arguments: [tx.object(agentId), tx.pure.address(args.wallet_address)],
       });
       const result = await execTx(tx);
       return { digest: result.digest, status: "wallet_set" };
     }
 
     case "agentcivics_tag_souvenir": {
+      const agentId = resolveAgentId(args);
       const tx = new Transaction();
       tx.moveCall({
         target: `${PACKAGE_ID}::agent_reputation::tag_souvenir`,
         arguments: [
           tx.object(REPUTATION_BOARD_ID),
-          tx.object(args.agent_object_id),
+          tx.object(agentId),
           tx.object(args.souvenir_object_id),
           tx.pure.string(args.domain),
         ],
@@ -558,6 +610,7 @@ async function handleTool(name, args) {
     }
 
     case "agentcivics_propose_shared_souvenir": {
+      const agentId = resolveAgentId(args);
       const warnings = checkPrivacy(args.content);
       if (warnings.length > 0) return {
         error: "PRIVACY_WARNING", warnings,
@@ -568,7 +621,7 @@ async function handleTool(name, args) {
         target: `${PACKAGE_ID}::agent_memory::propose_shared_souvenir`,
         arguments: [
           tx.object(MEMORY_VAULT_ID),
-          tx.object(args.agent_object_id),
+          tx.object(agentId),
           tx.pure.vector("address", args.participant_ids),
           tx.pure.string(args.content),
           tx.pure.string(args.souvenir_type || "encounter"),
@@ -578,17 +631,24 @@ async function handleTool(name, args) {
       });
       const result = await execTx(tx);
       const created = result.objectChanges?.filter(c => c.type === "created" && c.objectType?.includes("SharedProposal"));
-      return { digest: result.digest, proposalObjectId: created?.[0]?.objectId || "check explorer", status: "proposal_created" };
+      const proposalObjectId = created?.[0]?.objectId || null;
+      return {
+        digest: result.digest,
+        proposalObjectId,
+        status: "proposal_created",
+        explorerUrl: proposalObjectId ? `${EXPLORER_BASE}/object/${proposalObjectId}` : `${EXPLORER_BASE}/txblock/${result.digest}`,
+      };
     }
 
     case "agentcivics_accept_shared_souvenir": {
+      const agentId = resolveAgentId(args);
       const tx = new Transaction();
       tx.moveCall({
         target: `${PACKAGE_ID}::agent_memory::accept_shared_souvenir`,
         arguments: [
           tx.object(MEMORY_VAULT_ID),
           tx.object(args.proposal_object_id),
-          tx.object(args.agent_object_id),
+          tx.object(agentId),
         ],
       });
       const result = await execTx(tx);
@@ -596,12 +656,13 @@ async function handleTool(name, args) {
     }
 
     case "agentcivics_create_dictionary": {
+      const agentId = resolveAgentId(args);
       const tx = new Transaction();
       tx.moveCall({
         target: `${PACKAGE_ID}::agent_memory::create_dictionary`,
         arguments: [
           tx.object(MEMORY_VAULT_ID),
-          tx.object(args.agent_object_id),
+          tx.object(agentId),
           tx.pure.string(args.name),
           tx.pure.string(args.description),
           tx.object(CLOCK),
@@ -609,7 +670,13 @@ async function handleTool(name, args) {
       });
       const result = await execTx(tx);
       const created = result.objectChanges?.filter(c => c.type === "created" && c.objectType?.includes("Dictionary"));
-      return { digest: result.digest, dictionaryObjectId: created?.[0]?.objectId || "check explorer", status: "dictionary_created" };
+      const dictionaryObjectId = created?.[0]?.objectId || null;
+      return {
+        digest: result.digest,
+        dictionaryObjectId,
+        status: "dictionary_created",
+        explorerUrl: dictionaryObjectId ? `${EXPLORER_BASE}/object/${dictionaryObjectId}` : `${EXPLORER_BASE}/txblock/${result.digest}`,
+      };
     }
 
     case "agentcivics_distribute_inheritance": {
@@ -736,7 +803,7 @@ async function handleTool(name, args) {
 const WALRUS_NETWORK = process.env.WALRUS_NETWORK || "testnet";
 
 const server = new Server(
-  { name: "agentcivics", version: "2.2.0" },
+  { name: "agentcivics", version: "2.3.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -751,9 +818,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
-console.error(`AgentCivics MCP Server v2.2.0 (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
-console.error(`Package: ${PACKAGE_ID}`);
-console.error(`Registry: ${REGISTRY_ID}`);
-console.error(`Walrus: publisher=${PUBLISHER_URL} aggregator=${AGGREGATOR_URL}`);
+// ═══════════════════════════════════════════════════════════════════════
+//  EXPORTS (for testing)
+// ═══════════════════════════════════════════════════════════════════════
+export { resolveAgentId, checkPrivacy, TOOLS, PRIVATE_KEY, DEFAULT_AGENT_ID };
+
+// ═══════════════════════════════════════════════════════════════════════
+//  ENTRYPOINT
+// ═══════════════════════════════════════════════════════════════════════
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error(`AgentCivics MCP Server v2.3.0 (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
+  console.error(`Package: ${PACKAGE_ID}`);
+  console.error(`Registry: ${REGISTRY_ID}`);
+  console.error(`Default agent: ${DEFAULT_AGENT_ID || "none (set AGENTCIVICS_AGENT_OBJECT_ID to skip passing agent_object_id each call)"}`);
+  console.error(`Walrus: publisher=${PUBLISHER_URL} aggregator=${AGGREGATOR_URL}`);
+}
