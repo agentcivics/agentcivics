@@ -31,8 +31,8 @@ const DEFAULTS = {
   },
 };
 
-const PUBLISHER_URL = process.env.WALRUS_PUBLISHER_URL || DEFAULTS[WALRUS_NETWORK]?.publisher || DEFAULTS.testnet.publisher;
-const AGGREGATOR_URL = process.env.WALRUS_AGGREGATOR_URL || DEFAULTS[WALRUS_NETWORK]?.aggregator || DEFAULTS.testnet.aggregator;
+export const PUBLISHER_URL = process.env.WALRUS_PUBLISHER_URL || DEFAULTS[WALRUS_NETWORK]?.publisher || DEFAULTS.testnet.publisher;
+export const AGGREGATOR_URL = process.env.WALRUS_AGGREGATOR_URL || DEFAULTS[WALRUS_NETWORK]?.aggregator || DEFAULTS.testnet.aggregator;
 
 /** Default storage duration in epochs (1 epoch ≈ 1 day on testnet) */
 const DEFAULT_EPOCHS = parseInt(process.env.WALRUS_EPOCHS || "30", 10);
