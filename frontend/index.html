@@ -1524,6 +1524,7 @@ async function showDetail(agentId) {
     <div style="margin-top:14px;text-align:center;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
       <a href="https://suiscan.xyz/testnet/object/${agentId}" target="_blank" style="font-size:.82rem">SuiScan &#x2197;</a>
       <a href="#" onclick="event.preventDefault();window._navTo('life','timelineAgentId','${agentId}')" style="font-size:.82rem">View Timeline &#x2197;</a>
+      <a href="#" onclick="event.preventDefault();window._navTo('memory','memAgentId','${agentId}')" style="font-size:.82rem">Souvenirs &#x2197;</a>
       <a href="#" onclick="event.preventDefault();window._navTo('lineage','treeAgentId','${agentId}')" style="font-size:.82rem">Family Tree &#x2197;</a>
       <a href="#" onclick="event.preventDefault();window._navTo('specialization','specAgentId','${agentId}')" style="font-size:.82rem">Specialization &#x2197;</a>
     </div>`;
@@ -2522,6 +2523,7 @@ window._navTo = function(tab, inputId, value) {
   // Auto-load data for the target tab
   setTimeout(() => {
     if (tab === 'life' && typeof viewTimeline === 'function') viewTimeline();
+    else if (tab === 'memory' && typeof loadAgentMemory === 'function') loadAgentMemory();
     else if (tab === 'lineage' && typeof viewFamilyTree === 'function') viewFamilyTree();
     else if (tab === 'specialization') { if (typeof loadAgentSpecialization === 'function') loadAgentSpecialization(); populateSpecTabAgents(); }
   }, 100);
