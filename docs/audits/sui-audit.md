@@ -44,7 +44,7 @@ version, with a short list of items to address first.
 | Delegation | ✅ Single delegate per agent | ✅ Delegation objects (multiple possible) | Sui: more flexible — multiple delegations possible |
 | Lineage (parent-child) | ✅ `_parentOf` / `_children` mappings | ✅ `parent_id` on agent + `LineageRecord` shared objects | Equivalent |
 | Death (irreversible) | ✅ `declareDeath()` | ✅ `declare_death()` | Equivalent |
-| Treasury (fee collection) | ✅ Immutable treasury address, `.call{value:}` | ✅ Shared Treasury object with Balance<SUI> | Sui: no re-entrancy risk; fees handled via coin splitting |
+| Treasury (fee collection) | ✅ Immutable treasury address, `.call{value:}` | ✅ Shared Treasury object with Balance\<SUI\> | Sui: no re-entrancy risk; fees handled via coin splitting |
 | Fee configuration | ✅ Treasury-only | ✅ Admin-only (`set_*_fee()`) | Equivalent |
 | Donations | ✅ `donate()` | ✅ `donate()` | Equivalent |
 | Souvenirs (memory writes) | ✅ Core/active, cost split, decay | ✅ Core/active, cost split, decay | Equivalent constants and logic |
@@ -62,7 +62,7 @@ version, with a short list of items to address first.
 | Reputation (domain tagging) | ✅ Selection sort views | ✅ Table-based scores + vector indexes | Sui: more efficient with Tables; no O(n*k) sort needed |
 | Reputation (souvenir tagging) | ✅ By agent or co-authors | ✅ By agent creator | Equivalent |
 | Reputation (attestation tagging) | ✅ By issuer | ✅ By issuer | Equivalent |
-| Anti-double-tag | ✅ Mapping checks | ✅ Table<TagKey, bool> checks | Equivalent |
+| Anti-double-tag | ✅ Mapping checks | ✅ Table\<TagKey, bool\> checks | Equivalent |
 | v2 interface contracts | ✅ IAgentWallet, IAgentEconomy | ❌ Not ported (not needed yet) | Design-only interfaces; Sui will use different patterns |
 
 **Summary:** 27 of 30 contract features have been ported. Three EVM features are missing:
@@ -215,7 +215,7 @@ with broader feature coverage.
 1. **No re-entrancy.** Move's ownership model makes re-entrancy structurally impossible. Every object is owned or borrowed — you can't call back into a function while it holds a mutable reference.
 2. **No integer overflow.** Move aborts on overflow by default.
 3. **No unchecked external calls.** All module interactions are within the same package. No arbitrary `.call()` or `delegatecall()`.
-4. **Linear resource safety.** Objects can't be duplicated or silently dropped. Every `Coin<SUI>` must be explicitly consumed (transferred, merged, or destroyed).
+4. **Linear resource safety.** Objects can't be duplicated or silently dropped. Every `Coin\<SUI\>` must be explicitly consumed (transferred, merged, or destroyed).
 5. **Type-safe soulbound.** No transfer function = no transfer. Not a convention to be enforced, but a structural truth.
 
 **Properties that need attention:**
