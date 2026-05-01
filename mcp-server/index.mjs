@@ -22,7 +22,7 @@ import {
   WALRUS_URI_PREFIX,
   PUBLISHER_URL,
   AGGREGATOR_URL,
-} from "../walrus/walrus-client.mjs";
+} from "./walrus-client.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

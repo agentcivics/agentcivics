@@ -1,10 +1,11 @@
 {
   "name": "@agentcivics/mcp-server",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "MCP server for AgentCivics on Sui — on-chain identity tools for AI agents with Walrus decentralized storage",
   "type": "module",
   "main": "index.mjs",
   "bin": { "agentcivics-mcp": "./index.mjs" },
+  "files": ["index.mjs", "walrus-client.mjs", "package.json", "README.md"],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@mysten/sui": "^1.0.0"
