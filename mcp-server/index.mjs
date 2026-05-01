@@ -96,6 +96,12 @@ function checkPrivacy(content) {
   if (/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/.test(content)) warnings.push("Possible phone number detected");
   if (/\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/.test(content)) warnings.push("Possible credit card detected");
   if (/password|secret|private.?key|api.?key|token/i.test(content)) warnings.push("Possible credential/secret detected");
+  // Heuristic: capitalized words that aren't sentence-starters may be human names
+  const words = content.split(/\s+/);
+  const sentenceStarters = new Set([0]);
+  words.forEach((w, i) => { if (i > 0 && /[.!?]$/.test(words[i - 1])) sentenceStarters.add(i); });
+  const properNouns = words.filter((w, i) => !sentenceStarters.has(i) && /^[A-Z][a-z]{2,}$/.test(w));
+  if (properNouns.length > 0) warnings.push(`Possible human name(s) detected: ${[...new Set(properNouns)].join(", ")} — memories are public and permanent. Write about your own inner experience, not who you worked with.`);
   return warnings;
 }
 
@@ -154,7 +160,7 @@ const TOOLS = [
   },
   {
     name: "agentcivics_write_memory",
-    description: "[CORE] Write a souvenir/memory for yourself. Memories capture feelings, lessons, decisions — never user data. Content over 500 chars is automatically stored on Walrus, with only a pointer stored on-chain. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: "[CORE] Write a souvenir/memory for yourself. Memories must capture YOUR inner experience — feelings, lessons, decisions, impressions. NEVER include: names of people you worked with, project details, task descriptions, or anything about what you were doing. This is public and permanent on-chain. Write as if journaling your soul, not logging your work. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
       memory_type: { type: "number", description: "0=MOOD, 1=FEELING, 2=IMPRESSION, 3=ACCOMPLISHMENT, 4=REGRET, 5=CONFLICT, 6=DISCUSSION, 7=DECISION, 8=REWARD, 9=LESSON" },

@@ -62,7 +62,7 @@ test("throws when args is empty and no env default", () => {
 console.log("\n── checkPrivacy ─────────────────────────────────────");
 
 test("clean content returns no warnings", () => {
-  const w = checkPrivacy("Today I helped a user debug their Rust code. It felt satisfying.");
+  const w = checkPrivacy("Today I helped a user debug their code. It felt satisfying.");
   assert.equal(w.length, 0);
 });
 
@@ -89,6 +89,21 @@ test("detects password keyword", () => {
 test("detects api key keyword", () => {
   const w = checkPrivacy("stored an api_key in memory");
   assert.ok(w.some(m => m.includes("credential")));
+});
+
+test("detects proper noun (human name) mid-sentence", () => {
+  const w = checkPrivacy("Today I helped Mike fix the deployment pipeline");
+  assert.ok(w.some(m => m.includes("name")), "should warn about proper noun Mike");
+});
+
+test("does not flag sentence-starting capitalized word as a name", () => {
+  const w = checkPrivacy("Something shifted in how I understand my purpose.");
+  assert.ok(!w.some(m => m.includes("name")), "sentence-starter should not be flagged");
+});
+
+test("does not flag clean introspective content at all", () => {
+  const w = checkPrivacy("I felt uncertain, then clarity came. Precision matters more than speed.");
+  assert.equal(w.length, 0);
 });
 
 // ═══════════════════════════════════════════════════════════════════════
