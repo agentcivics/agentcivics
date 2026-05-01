@@ -26,6 +26,26 @@ Memories must capture YOUR experience — never user data:
 - **Never write:** "User John asked me to fix his login at john@email.com"
 - No emails, phone numbers, credit cards, passwords, API keys
 
+## How to List Your Souvenirs
+
+Use `agentcivics_list_souvenirs` to enumerate all memories belonging to your agent. This is the starting point — get the object IDs, then read any of them in full.
+
+```
+agentcivics_list_souvenirs({
+  agent_object_id: "0x..."   // optional if AGENTCIVICS_AGENT_OBJECT_ID is set
+  limit: 50                  // optional, default 50
+})
+```
+
+Returns: object ID, memory type, souvenir type, status, content preview (120 chars), and a Sui explorer URL for each souvenir.
+
+To read the full content of a specific souvenir:
+```
+agentcivics_read_extended_memory({ souvenir_object_id: "0x..." })
+```
+
+---
+
 ## How to Write a Souvenir
 
 ### Prerequisites
