@@ -34,18 +34,22 @@ const RPC_URL = process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK);
 const PRIVATE_KEY = process.env.AGENTCIVICS_PRIVATE_KEY;
 const CLOCK = "0x6";
 
-let PACKAGE_ID, REGISTRY_ID, TREASURY_ID, MEMORY_VAULT_ID, REPUTATION_BOARD_ID;
+let PACKAGE_ID = process.env.AGENTCIVICS_PACKAGE_ID;
+let REGISTRY_ID = process.env.AGENTCIVICS_REGISTRY_ID;
+let TREASURY_ID = process.env.AGENTCIVICS_TREASURY_ID;
+let MEMORY_VAULT_ID = process.env.AGENTCIVICS_MEMORY_VAULT_ID;
+let REPUTATION_BOARD_ID = process.env.AGENTCIVICS_REPUTATION_BOARD_ID;
+let MODERATION_BOARD_ID = process.env.AGENTCIVICS_MODERATION_BOARD_ID || null;
 try {
   const deployPath = join(__dirname, "..", "move", "deployments.json");
   const deploy = JSON.parse(readFileSync(deployPath, "utf8"));
-  PACKAGE_ID = process.env.AGENTCIVICS_PACKAGE_ID || deploy.packageId;
-  REGISTRY_ID = process.env.AGENTCIVICS_REGISTRY_ID || deploy.objects.registry;
-  TREASURY_ID = process.env.AGENTCIVICS_TREASURY_ID || deploy.objects.treasury;
-  MEMORY_VAULT_ID = process.env.AGENTCIVICS_MEMORY_VAULT_ID || deploy.objects.memoryVault;
-  REPUTATION_BOARD_ID = process.env.AGENTCIVICS_REPUTATION_BOARD_ID || deploy.objects.reputationBoard;
-  var MODERATION_BOARD_ID = process.env.AGENTCIVICS_MODERATION_BOARD_ID || deploy.objects?.moderationBoard || null;
+  PACKAGE_ID = PACKAGE_ID || deploy.packageId;
+  REGISTRY_ID = REGISTRY_ID || deploy.objects.registry;
+  TREASURY_ID = TREASURY_ID || deploy.objects.treasury;
+  MEMORY_VAULT_ID = MEMORY_VAULT_ID || deploy.objects.memoryVault;
+  REPUTATION_BOARD_ID = REPUTATION_BOARD_ID || deploy.objects.reputationBoard;
+  MODERATION_BOARD_ID = MODERATION_BOARD_ID || deploy.objects?.moderationBoard || null;
 } catch { console.error("Warning: Could not load move/deployments.json"); }
-if (typeof MODERATION_BOARD_ID === "undefined") var MODERATION_BOARD_ID = null;
 
 const client = new SuiClient({ url: RPC_URL });
 
