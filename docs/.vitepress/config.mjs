@@ -8,6 +8,22 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
 
+  markdown: {
+    // Allow raw angle brackets in markdown (e.g. Balance<SUI>, vector<u8>)
+    // without Vue compiler treating them as HTML tags
+    attrs: { disable: true },
+  },
+
+  vue: {
+    template: {
+      compilerOptions: {
+        // Treat any tag containing uppercase or common Move/Sui types as custom element
+        // so Vue doesn't try to parse them as HTML
+        isCustomElement: (tag) => /[A-Z]|^(vector|address|bool|u8|u64|u128)/.test(tag),
+      },
+    },
+  },
+
   // Cross-site paths on the same domain (served by GitHub Pages, not VitePress).
   // These are intentionally external to the docs build.
   ignoreDeadLinks: [
