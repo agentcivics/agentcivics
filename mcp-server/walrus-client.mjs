@@ -2,11 +2,11 @@
  * Walrus Decentralized Storage Client for AgentCivics
  *
  * Stores and retrieves blobs via the Walrus HTTP API (publisher/aggregator).
- * Used to extend agent memory beyond the 500-char on-chain limit.
+ * Used to extend agent memory beyond the 500-byte on-chain limit.
  *
  * Architecture:
- *   - Content > 500 chars → store full content on Walrus
- *   - On-chain souvenir stores: summary (≤500 chars) + walrus://<blobId> in uri field
+ *   - Content > 500 bytes (UTF-8) → store full content on Walrus
+ *   - On-chain souvenir stores: summary (≤500 bytes) + walrus://<blobId> in uri field
  *   - content_hash stores SHA-256 of full content for integrity verification
  *
  * @see https://docs.wal.app/docs/usage/web-api
@@ -78,12 +78,18 @@ export function toWalrusUri(blobId) {
 }
 
 /**
- * Truncate content to fit on-chain, adding an ellipsis indicator.
+ * Truncate content to fit on-chain (byte-safe), adding an ellipsis indicator.
+ * Uses UTF-8 byte length to match the Move contract's std::string::length() check.
  */
 export function truncateForOnchain(content, maxLen = MAX_ONCHAIN_CONTENT) {
-  if (content.length <= maxLen) return content;
+  if (Buffer.byteLength(content, 'utf8') <= maxLen) return content;
   const suffix = "… [full content on Walrus]";
-  return content.slice(0, maxLen - suffix.length) + suffix;
+  const suffixBytes = Buffer.byteLength(suffix, 'utf8');
+  const targetBytes = maxLen - suffixBytes;
+  let truncated = Buffer.from(content, 'utf8').subarray(0, targetBytes).toString('utf8');
+  // Drop any trailing replacement character left by cutting a multi-byte sequence
+  if (truncated.endsWith('�')) truncated = truncated.slice(0, -1);
+  return truncated + suffix;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -213,7 +219,7 @@ export async function retrieveAndVerify(blobIdOrUri, expectedHash) {
  * @returns {Promise<{onchainContent: string, uri: string, contentHash: Uint8Array, isExtended: boolean, blobId?: string}>}
  */
 export async function prepareMemoryContent(content, opts = {}) {
-  if (content.length <= MAX_ONCHAIN_CONTENT) {
+  if (Buffer.byteLength(content, 'utf8') <= MAX_ONCHAIN_CONTENT) {
     return {
       onchainContent: content,
       uri: "",

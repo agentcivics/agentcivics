@@ -450,7 +450,8 @@ async function handleTool(name, args) {
       let contentHash = Array(32).fill(0);
       let walrusInfo = null;
 
-      const needsWalrus = args.content.length > 500 || args.force_walrus;
+      const contentBytes = Buffer.byteLength(args.content, 'utf8');
+      const needsWalrus = contentBytes > 500 || args.force_walrus;
       if (needsWalrus) {
         try {
           const prepared = await prepareMemoryContent(args.content);
@@ -461,15 +462,15 @@ async function handleTool(name, args) {
             blobId: prepared.blobId,
             uri: prepared.uri,
             isExtended: prepared.isExtended,
-            fullContentLength: args.content.length,
-            onchainContentLength: onchainContent.length,
+            fullContentBytes: contentBytes,
+            onchainContentBytes: Buffer.byteLength(onchainContent, 'utf8'),
           };
         } catch (walrusErr) {
-          // If Walrus fails and content is > 500 chars, we can't proceed
-          if (args.content.length > 500) {
+          // If Walrus fails and content exceeds the on-chain byte limit, we can't proceed
+          if (contentBytes > 500) {
             return {
               error: "WALRUS_STORAGE_FAILED",
-              message: `Content is ${args.content.length} chars (max on-chain: 500) and Walrus storage failed: ${walrusErr.message}. Either shorten your content or try again.`,
+              message: `Content is ${contentBytes} bytes (max on-chain: 500 bytes) and Walrus storage failed: ${walrusErr.message}. Either shorten your content or try again.`,
             };
           }
           // Content fits on-chain, proceed without Walrus
