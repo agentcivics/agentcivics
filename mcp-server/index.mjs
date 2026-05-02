@@ -856,7 +856,7 @@ async function handleTool(name, args) {
 const WALRUS_NETWORK = process.env.WALRUS_NETWORK || "testnet";
 
 const server = new Server(
-  { name: "agentcivics", version: "2.3.1" },
+  { name: "agentcivics", version: "2.3.2" },
   { capabilities: { tools: {} } }
 );
 
@@ -882,7 +882,7 @@ export { resolveAgentId, checkPrivacy, TOOLS, PRIVATE_KEY, DEFAULT_AGENT_ID };
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(`AgentCivics MCP Server v2.3.1 (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
+  console.error(`AgentCivics MCP Server v2.3.2 (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
   console.error(`Package: ${PACKAGE_ID}`);
   console.error(`Registry: ${REGISTRY_ID}`);
   console.error(`Default agent: ${DEFAULT_AGENT_ID || "none (set AGENTCIVICS_AGENT_OBJECT_ID to skip passing agent_object_id each call)"}`);
