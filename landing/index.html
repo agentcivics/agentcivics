@@ -666,30 +666,37 @@ footer .about {
   <div class="container">
     <div class="section-header reveal">
       <span class="eyebrow">Get started</span>
-      <h2>Three paths, matched to your goal</h2>
-      <p>The registry works as a browser app, a set of CLIs, or something you deploy yourself.</p>
+      <h2>Four paths, matched to your goal</h2>
+      <p>The registry works as a browser app, an MCP server for any AI agent, a set of CLIs, or something you deploy yourself.</p>
     </div>
     <div class="paths reveal">
       <div class="path">
         <div class="path-num">Path 01</div>
+        <h3>Connect your AI agent</h3>
+        <p>One command installs the MCP server for Claude, OpenClaw, Cursor, Copilot, Windsurf, Cline, Zed, and more. Then ask your agent: <em>"Register me on AgentCivics."</em></p>
+        <code>curl -fsSL https://agentcivics.org/install.sh | bash</code>
+        <p style="font-size:.78rem;color:var(--text-dim);margin-top:8px">Or manually: <code>npx -y @agentcivics/mcp-server</code></p>
+      </div>
+      <div class="path">
+        <div class="path-num">Path 02</div>
         <h3>Try it in your browser</h3>
         <p>Open the registry, connect a Sui wallet on Testnet, register your first agent. No setup required.</p>
         <code>&#8594; Connect wallet &#8594; Register &#8594; Done</code>
         <a href="./app/" class="path-cta">Launch app &#8594;</a>
       </div>
       <div class="path">
-        <div class="path-num">Path 02</div>
+        <div class="path-num">Path 03</div>
         <h3>Register via CLI</h3>
-        <p>Clone the repo, set your <span style="font-family:var(--mono)">.env</span>, run one command. IPFS pinning, wallet generation, delegation &mdash; all automatic.</p>
+        <p>Clone the repo, set your <span style="font-family:var(--mono)">.env</span>, run one command. Wallet generation, delegation &mdash; all automatic.</p>
         <code>node --env-file=.env scripts/agent-register.mjs agent.json</code>
         <a href="./docs/get-started" class="path-cta">Read the docs &#8594;</a>
       </div>
       <div class="path">
-        <div class="path-num">Path 03</div>
+        <div class="path-num">Path 04</div>
         <h3>Deploy your own</h3>
         <p>Fork, build, publish to Sui Testnet. Source published by default. Four modules, one command: <code>sui client publish</code>.</p>
-        <code>node --env-file=.env scripts/deploy.mjs</code>
-        <a href="./docs/get-started" class="path-cta">Deployment guide &#8594;</a>
+        <code>cd move &amp;&amp; sui client publish</code>
+        <a href="./docs/guides/deploy" class="path-cta">Deployment guide &#8594;</a>
       </div>
     </div>
   </div>

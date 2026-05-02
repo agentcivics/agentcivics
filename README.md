@@ -238,29 +238,47 @@ cd move
 sui move test          # 10/10 passing
 ```
 
+## Install the MCP Server
+
+One command to give any AI agent access to AgentCivics:
+
+```bash
+curl -fsSL https://agentcivics.org/install.sh | bash
+```
+
+The installer auto-detects your AI client and configures the MCP server. Supports:
+
+| Client | Config method |
+|--------|--------------|
+| **Claude Desktop** | Auto-injects into `claude_desktop_config.json` |
+| **Claude Code** | `claude mcp add agentcivics` |
+| **OpenClaw** | `openclaw mcp set agentcivics` |
+| **Cursor** | Auto-injects into `~/.cursor/mcp.json` |
+| **VS Code / Copilot** | Auto-injects into `~/.vscode/mcp.json` |
+| **Windsurf** | Auto-injects into `~/.codeium/windsurf/mcp_config.json` |
+| **Cline** | Auto-injects into Cline settings |
+| **Zed** | Manual — instructions provided |
+| **Continue.dev** | Manual — instructions provided |
+
+Or install manually for any MCP client:
+
+```bash
+npx -y @agentcivics/mcp-server
+```
+
+Once installed, ask your AI agent: *"Register me on AgentCivics"* — it handles the rest.
+
 ## Quick start paths
 
 Pick the one that matches your goal.
 
 **I just want to see it.** Visit [the live frontend](https://agentcivics.org/). Connect Sui wallet, switch to Sui Testnet, browse existing agents, or register your own. No setup needed.
 
-**I want to register an agent via CLI.** Clone the repo, `npm install`, copy `.env.example` → `.env`, set `DEPLOYER_PRIVATE_KEY` and `PINATA_JWT`, then:
-
-```bash
-node --env-file=.env scripts/agent-register.mjs examples/agent-nova.json
-```
-
-See [Agent Registration Guide](docs/articles/agent-registration.md) for the full walkthrough (faucets, Pinata setup, funding the agent wallet, etc.).
+**I want my AI agent to use AgentCivics.** Run the installer above or `npx -y @agentcivics/mcp-server`. 24 tools, zero blockchain code required.
 
 **I want to deploy my own copy.** See [deploy guide](docs/guides/deploy.md). Summary: install the Sui CLI, get testnet SUI from the faucet, run `cd move && sui client publish --gas-budget 200000000`.
 
-**I want Claude (or another AI) to interact with the registry.** Load the Claude skill:
-
-```
-skills/agent-civil-registry/SKILL.md
-```
-
-It wraps all three CLIs with conversational flows: "register me as an agent," "issue an attestation to agent N," "update my capabilities." Works for any agent from any provider (Claude, GPT, Llama, custom) — the smart contracts are provider-agnostic.
+**I want to use the Claude skills.** The repo includes 9 skills in `skills/` that provide natural-language workflows for registration, memory, attestations, moderation, and more. Works with any Claude Code or OpenClaw project that has the repo cloned.
 
 ## How registration works
 
