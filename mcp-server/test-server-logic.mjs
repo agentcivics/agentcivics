@@ -31,6 +31,7 @@ delete process.env.AGENTCIVICS_PRIVATE_KEY_FILE;
 delete process.env.AGENTCIVICS_AGENT_OBJECT_ID;
 
 const { resolveAgentId, checkPrivacy, TOOLS } = await import("./index.mjs");
+const { truncateForOnchain, MAX_ONCHAIN_CONTENT } = await import("./walrus-client.mjs");
 
 // ═══════════════════════════════════════════════════════════════════════
 //  1. resolveAgentId
@@ -188,9 +189,98 @@ test("agentcivics_update_agent status description lists all valid values", () =>
 });
 
 // ═══════════════════════════════════════════════════════════════════════
-//  4. Key file loading
+//  4. truncateForOnchain — UTF-8 byte safety
 // ═══════════════════════════════════════════════════════════════════════
-console.log("\n── Key file loading ─────────────────────────────────");
+console.log("\n── truncateForOnchain (UTF-8 byte safety) ───────────");
+
+test("ASCII content under 500 bytes is returned unchanged", () => {
+  const content = "a".repeat(499);
+  assert.equal(truncateForOnchain(content), content);
+});
+
+test("ASCII content exactly 500 bytes is returned unchanged", () => {
+  const content = "a".repeat(500);
+  assert.equal(truncateForOnchain(content), content);
+});
+
+test("multi-byte content under 500 bytes is returned unchanged", () => {
+  // em dash = 3 bytes; 10 em dashes + 450 ASCII = 10*3 + 450 = 480 bytes
+  const content = "—".repeat(10) + "a".repeat(450);
+  assert.equal(Buffer.byteLength(content, "utf8"), 480);
+  assert.equal(truncateForOnchain(content), content);
+});
+
+test("truncated result is always ≤ 500 UTF-8 bytes", () => {
+  // Bug scenario: 487 JS chars, 509 UTF-8 bytes (em dashes)
+  const content = "There are moments — rare ones — when what you build is exactly what you needed without knowing it. Each tool I tested revealed something — list_souvenirs showed me my past — write_memory let me mark this moment — tag_souvenir gave my experience a domain. The system has gaps — no reputation reader — no pre-flight byte check — but what exists is solid. The bug I found was my own doing: writing with em dashes — without thinking about bytes — the fix was simple — shipping it felt right.";
+  assert.ok(content.length < 500, "test content should be under 500 JS chars");
+  assert.ok(Buffer.byteLength(content, "utf8") > 500, "test content should be over 500 UTF-8 bytes");
+  const result = truncateForOnchain(content);
+  assert.ok(Buffer.byteLength(result, "utf8") <= MAX_ONCHAIN_CONTENT,
+    `truncated result is ${Buffer.byteLength(result, "utf8")} bytes, expected ≤ ${MAX_ONCHAIN_CONTENT}`);
+});
+
+test("truncated result ends with the Walrus suffix", () => {
+  const content = "—".repeat(200); // 600 UTF-8 bytes
+  const result = truncateForOnchain(content);
+  assert.ok(result.endsWith("… [full content on Walrus]"));
+});
+
+test("truncated result contains no UTF-8 replacement characters (no cut multi-byte sequences)", () => {
+  // Content with em dashes right at the truncation boundary
+  const content = "a".repeat(460) + "—".repeat(20); // 460 + 60 = 520 bytes
+  const result = truncateForOnchain(content);
+  assert.ok(!result.includes("�"), `result should not contain replacement char`);
+  assert.ok(Buffer.byteLength(result, "utf8") <= MAX_ONCHAIN_CONTENT);
+});
+
+test("ASCII content over 500 bytes is truncated and result is exactly ≤ 500 bytes", () => {
+  const content = "a".repeat(600);
+  const result = truncateForOnchain(content);
+  assert.ok(Buffer.byteLength(result, "utf8") <= MAX_ONCHAIN_CONTENT);
+  assert.ok(result.endsWith("… [full content on Walrus]"));
+});
+
+test("emoji content (4 bytes each) is truncated safely", () => {
+  const content = "🚀".repeat(130); // 130 * 4 = 520 bytes, 130 JS chars
+  assert.ok(content.length < 500);
+  assert.ok(Buffer.byteLength(content, "utf8") > 500);
+  const result = truncateForOnchain(content);
+  assert.ok(Buffer.byteLength(result, "utf8") <= MAX_ONCHAIN_CONTENT);
+  assert.ok(!result.includes("�"), "result should not contain replacement char");
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+//  5. TOOLS — agentcivics_list_souvenirs
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── agentcivics_list_souvenirs tool schema ───────────");
+
+test("agentcivics_list_souvenirs exists in TOOLS", () => {
+  const t = TOOLS.find(t => t.name === "agentcivics_list_souvenirs");
+  assert.ok(t, "agentcivics_list_souvenirs not found in TOOLS");
+});
+
+test("agentcivics_list_souvenirs has [CORE] tag", () => {
+  const t = TOOLS.find(t => t.name === "agentcivics_list_souvenirs");
+  assert.ok(t.description.includes("[CORE]"), "missing [CORE] tag");
+});
+
+test("agentcivics_list_souvenirs does not require agent_object_id", () => {
+  const t = TOOLS.find(t => t.name === "agentcivics_list_souvenirs");
+  assert.ok(!t.inputSchema.required?.includes("agent_object_id"),
+    "should not require agent_object_id (defaults from env)");
+});
+
+test("agentcivics_list_souvenirs has optional limit property", () => {
+  const t = TOOLS.find(t => t.name === "agentcivics_list_souvenirs");
+  assert.ok(t.inputSchema.properties.limit, "missing limit property");
+  assert.equal(t.inputSchema.properties.limit.type, "number");
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+//  6. Key file loading
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n── Key file loading ──────────────────────────────────");
 
 test("AGENTCIVICS_PRIVATE_KEY_FILE is documented in agentIdProp description (TOOLS)", () => {
   const t = TOOLS.find(t => t.name === "agentcivics_remember_who_you_are");
