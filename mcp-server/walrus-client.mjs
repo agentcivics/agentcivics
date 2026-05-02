@@ -86,10 +86,13 @@ export function truncateForOnchain(content, maxLen = MAX_ONCHAIN_CONTENT) {
   const suffix = "… [full content on Walrus]";
   const suffixBytes = Buffer.byteLength(suffix, 'utf8');
   const targetBytes = maxLen - suffixBytes;
-  let truncated = Buffer.from(content, 'utf8').subarray(0, targetBytes).toString('utf8');
-  // Drop any trailing replacement character left by cutting a multi-byte sequence
-  if (truncated.endsWith('�')) truncated = truncated.slice(0, -1);
-  return truncated + suffix;
+  const buf = Buffer.from(content, 'utf8');
+  // Walk back from targetBytes to the nearest valid UTF-8 character boundary.
+  // Continuation bytes are 0x80–0xBF (top two bits = 10). Cutting mid-sequence
+  // would produce a replacement character (U+FFFD) in the decoded output.
+  let end = Math.min(targetBytes, buf.length);
+  while (end > 0 && (buf[end] & 0xC0) === 0x80) end--;
+  return buf.subarray(0, end).toString('utf8') + suffix;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
