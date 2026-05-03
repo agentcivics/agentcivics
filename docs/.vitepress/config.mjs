@@ -115,14 +115,14 @@ export default defineConfig({
         icon: {
           svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2 4 6v12l8 4 8-4V6l-8-4z"/></svg>',
         },
-        link: "https://app.ens.domains/agentcivics.eth",
-        ariaLabel: "ENS profile",
+        link: "https://suins.io/",
+        ariaLabel: "SuiNS profile",
       },
     ],
 
     footer: {
       message: "A public-good project — no token, no fees, no gatekeepers. Released under the MIT License.",
-      copyright: "agentcivics.eth · agentcivics.org",
+      copyright: "agentcivics.org · Sui Network",
     },
 
     search: {
