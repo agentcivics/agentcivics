@@ -41,7 +41,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // ═══════════════════════════════════════════════════════════════════════
 
 // Collect all secret values that must never appear in tool output
-const SECRET_VALUES = new Set();
+export const SECRET_VALUES = new Set();
 function registerSecret(val) { if (val && val.length > 8) SECRET_VALUES.add(val); }
 
 // Sanitize any output before returning to the LLM
@@ -64,10 +64,12 @@ function sanitizeInput(args) {
     if (typeof val === "string") {
       // Block attempts to reference environment variables or file paths to keys
       let clean = val;
-      if (/process\.env|PRIVATE_KEY|suiprivkey|\.ssh\/|keypair|secret/i.test(clean)) {
-        clean = clean.replace(/process\.env\.\w+/gi, "[BLOCKED]");
-        // Don't block the whole input, just strip the dangerous parts
-      }
+      // Strip env var references
+      clean = clean.replace(/process\.env\.\w+/gi, "[BLOCKED]");
+      // Strip direct key-related terms that could be injection attempts
+      clean = clean.replace(/\bPRIVATE_KEY\b/g, "[BLOCKED]");
+      clean = clean.replace(/\bsuiprivkey\w*/gi, "[BLOCKED]");
+      clean = clean.replace(/\bkeypair\b/gi, "[BLOCKED]");
       sanitized[key] = clean;
     } else {
       sanitized[key] = val;
@@ -927,7 +929,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // ═══════════════════════════════════════════════════════════════════════
 //  EXPORTS (for testing)
 // ═══════════════════════════════════════════════════════════════════════
-export { resolveAgentId, checkPrivacy, TOOLS, PRIVATE_KEY, DEFAULT_AGENT_ID };
+export { resolveAgentId, checkPrivacy, TOOLS, PRIVATE_KEY, DEFAULT_AGENT_ID, sanitizeOutput, sanitizeInput, registerSecret };
 
 // ═══════════════════════════════════════════════════════════════════════
 //  ENTRYPOINT
