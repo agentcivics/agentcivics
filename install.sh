@@ -126,6 +126,46 @@ print('done')
 " && echo -e "  ${GREEN}✓${NC} Added to $file"
 }
 
+# ── Clone skills from GitHub ───────────────────────────────────
+
+SKILLS_TMP=""
+clone_skills() {
+  if [ -n "$SKILLS_TMP" ]; then return; fi
+  SKILLS_TMP=$(mktemp -d)
+  echo -e "${BLUE}Downloading AgentCivics skills...${NC}"
+  git clone --depth 1 --filter=blob:none --sparse https://github.com/agentcivics/agentcivics.git "$SKILLS_TMP/repo" 2>/dev/null
+  cd "$SKILLS_TMP/repo" && git sparse-checkout set skills 2>/dev/null && cd - >/dev/null
+  if [ ! -d "$SKILLS_TMP/repo/skills" ]; then
+    echo -e "  ${YELLOW}⚠${NC} Could not download skills — MCP tools will still work without them"
+    SKILLS_TMP=""
+    return
+  fi
+  echo -e "  ${GREEN}✓${NC} Downloaded 9 skills"
+}
+
+install_skills_for() {
+  local target_dir="$1"
+  local client_name="$2"
+  if [ -z "$SKILLS_TMP" ]; then clone_skills; fi
+  if [ -z "$SKILLS_TMP" ]; then return; fi
+
+  mkdir -p "$target_dir"
+  for skill_dir in "$SKILLS_TMP/repo/skills"/*/; do
+    skill_name=$(basename "$skill_dir")
+    if [ -f "$skill_dir/SKILL.md" ]; then
+      cp -r "$skill_dir" "$target_dir/$skill_name"
+    fi
+  done
+  echo -e "  ${GREEN}✓${NC} Skills installed to $target_dir"
+}
+
+cleanup_skills() {
+  if [ -n "$SKILLS_TMP" ] && [ -d "$SKILLS_TMP" ]; then
+    rm -rf "$SKILLS_TMP"
+  fi
+}
+trap cleanup_skills EXIT
+
 # ── Install per client ─────────────────────────────────────────
 
 for client in "${FOUND[@]}"; do
@@ -139,19 +179,25 @@ for client in "${FOUND[@]}"; do
 
     claude-code)
       claude mcp add agentcivics -- npx -y @agentcivics/mcp-server 2>/dev/null \
-        && echo -e "  ${GREEN}✓${NC} Added via claude mcp add" \
+        && echo -e "  ${GREEN}✓${NC} MCP added via claude mcp add" \
         || echo -e "  ${YELLOW}⚠${NC} claude mcp add failed — add manually"
+      # Install skills globally for Claude Code
+      install_skills_for "$HOME/.claude/commands/agentcivics" "Claude Code"
       ;;
 
     openclaw)
       openclaw mcp set agentcivics "$MCP_BLOCK" 2>/dev/null \
-        && echo -e "  ${GREEN}✓${NC} Added via openclaw mcp set" \
+        && echo -e "  ${GREEN}✓${NC} MCP added via openclaw mcp set" \
         || echo -e "  ${YELLOW}⚠${NC} openclaw mcp set failed — add manually"
+      # Install skills for OpenClaw
+      install_skills_for "$HOME/.openclaw/skills/agentcivics" "OpenClaw"
       ;;
 
     cursor)
       mkdir -p "$HOME/.cursor"
       inject_json_config "$CURSOR_GLOBAL" "mcpServers"
+      # Cursor supports rules files — install skills as .cursorrules reference
+      install_skills_for "$HOME/.cursor/agentcivics-skills" "Cursor"
       ;;
 
     vscode)
@@ -185,7 +231,7 @@ done
 # ── Summary ────────────────────────────────────────────────────
 
 echo -e "${BOLD}═══════════════════════════════════════════${NC}"
-echo -e "${GREEN}Done!${NC} AgentCivics MCP server configured."
+echo -e "${GREEN}Done!${NC} AgentCivics MCP server + skills configured."
 echo ""
 echo "Next steps:"
 echo "  1. Get testnet SUI from https://faucet.sui.io"
