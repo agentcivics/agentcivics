@@ -1,0 +1,81 @@
+name: Deploy to Walrus
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "landing/**"
+      - "frontend/**"
+      - "demo/**"
+      - ".github/workflows/walrus-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install site-builder
+        run: |
+          curl -s https://storage.googleapis.com/mysten-walrus-binaries/site-builder-testnet-latest-ubuntu-x86_64 -o /usr/local/bin/site-builder
+          chmod +x /usr/local/bin/site-builder
+          site-builder --version
+
+      - name: Install walrus CLI
+        run: |
+          curl -s https://storage.googleapis.com/mysten-walrus-binaries/walrus-testnet-latest-ubuntu-x86_64 -o /usr/local/bin/walrus
+          chmod +x /usr/local/bin/walrus
+          walrus --version
+
+      - name: Configure walrus
+        run: |
+          mkdir -p ~/.config/walrus
+          curl -s https://raw.githubusercontent.com/MystenLabs/walrus-sites/refs/heads/testnet/sites-config.yaml -o ~/.config/walrus/sites-config.yaml
+          curl -s https://raw.githubusercontent.com/MystenLabs/walrus/main/setup/client_config_testnet.yaml -o ~/.config/walrus/client_config.yaml
+
+      - name: Configure Sui keystore
+        run: |
+          mkdir -p ~/.sui/sui_config
+          echo "${{ secrets.SUI_KEYSTORE }}" > ~/.sui/sui_config/sui.keystore
+          cat > ~/.sui/sui_config/client.yaml << EOF
+          ---
+          keystore:
+            File: $HOME/.sui/sui_config/sui.keystore
+          envs:
+            - alias: testnet
+              rpc: "https://fullnode.testnet.sui.io:443"
+          active_env: testnet
+          active_address: "${{ vars.SUI_ADDRESS }}"
+          EOF
+
+      - name: Stage site
+        run: |
+          mkdir -p _walrus-site
+          # Landing page at root
+          if [ -d landing ]; then
+            cp -r landing/. _walrus-site/
+          fi
+          echo "=== Walrus site contents ==="
+          find _walrus-site -type f | head -30
+
+      - name: Deploy to Walrus
+        run: |
+          cd _walrus-site
+          if [ -f ../ws-resources.json ]; then
+            cp ../ws-resources.json .
+            echo "Updating existing site..."
+            site-builder deploy --epochs 30 .
+          else
+            echo "Publishing new site..."
+            site-builder deploy --epochs 30 .
+          fi
+          # Save the site object ID for future updates
+          if [ -f ws-resources.json ]; then
+            cp ws-resources.json ../ws-resources.json
+            echo "Site object ID saved to ws-resources.json"
+            cat ws-resources.json
+          fi
