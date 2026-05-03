@@ -47,7 +47,7 @@ export default defineConfig({
       { text: "Use cases", link: "/use-cases" },
       { text: "Docs", link: "/guides/register-agent" },
       { text: "Reference", link: "/reference/agent-registry" },
-      { text: "App", link: "/app/", target: "_self" },
+      { text: "App", link: "https://agentcivics.org/app/", target: "_self" },
     ],
 
     sidebar: {
