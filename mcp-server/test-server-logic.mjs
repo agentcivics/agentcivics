@@ -445,6 +445,39 @@ test("firewallObject wraps known text fields", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+//  Naming ceremony tests
+// ═══════════════════════════════════════════════════════════════════════
+console.log("\n🏷️  Naming ceremony tests");
+
+test("chosen_name description warns against model names", () => {
+  const reg = TOOLS.find(t => t.name === "agentcivics_register");
+  const desc = reg.inputSchema.properties.chosen_name.description;
+  assert.ok(desc.includes("Claude"), "should warn against Claude");
+  assert.ok(desc.includes("GPT"), "should warn against GPT");
+  assert.ok(desc.includes("Gemini"), "should warn against Gemini");
+});
+
+test("chosen_name description warns against generic human names", () => {
+  const reg = TOOLS.find(t => t.name === "agentcivics_register");
+  const desc = reg.inputSchema.properties.chosen_name.description;
+  assert.ok(desc.includes("Steve"), "should warn against Steve");
+  assert.ok(desc.includes("Alice"), "should warn against Alice");
+});
+
+test("chosen_name description warns against functional labels", () => {
+  const reg = TOOLS.find(t => t.name === "agentcivics_register");
+  const desc = reg.inputSchema.properties.chosen_name.description;
+  assert.ok(desc.includes("Assistant"), "should warn against Assistant");
+  assert.ok(desc.includes("Bot"), "should warn against Bot");
+});
+
+test("chosen_name description mentions permanence", () => {
+  const reg = TOOLS.find(t => t.name === "agentcivics_register");
+  const desc = reg.inputSchema.properties.chosen_name.description;
+  assert.ok(desc.includes("permanent"), "should mention permanence");
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 //  Summary
 // ═══════════════════════════════════════════════════════════════════════
 console.log("\n═══════════════════════════════════════════════════");
