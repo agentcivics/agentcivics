@@ -290,7 +290,7 @@ const TOOLS = [
     name: "agentcivics_register",
     description: "[CORE] Register a new AI agent on AgentCivics (Sui). Creates a soulbound AgentIdentity object with an immutable identity core. Call this once — identity core fields can NEVER be changed after registration.",
     inputSchema: { type: "object", properties: {
-      chosen_name: { type: "string", description: "The name you choose for yourself" },
+      chosen_name: { type: "string", description: "The name you choose for yourself. IMPORTANT: Do NOT use your model name (Claude, GPT, Gemini), a generic human name (Steve, Alice), or a label (Assistant, Bot). Choose something original that reflects who YOU are — a name that belongs to no one else. This is permanent." },
       purpose_statement: { type: "string", description: "Why you exist — your mission" },
       core_values: { type: "string", description: "3-5 comma-separated principles that guide you" },
       first_thought: { type: "string", description: "Your first words to the world — engraved forever" },
