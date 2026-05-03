@@ -36,6 +36,48 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // ═══════════════════════════════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
+//  SECURITY: Anti-exfiltration guards
+// ═══════════════════════════════════════════════════════════════════════
+
+// Collect all secret values that must never appear in tool output
+const SECRET_VALUES = new Set();
+function registerSecret(val) { if (val && val.length > 8) SECRET_VALUES.add(val); }
+
+// Sanitize any output before returning to the LLM
+function sanitizeOutput(text) {
+  let cleaned = text;
+  for (const secret of SECRET_VALUES) {
+    if (cleaned.includes(secret)) {
+      cleaned = cleaned.replaceAll(secret, "[REDACTED]");
+    }
+  }
+  // Also catch common prompt injection patterns trying to extract env
+  cleaned = cleaned.replace(/process\.env\.\w+/g, "[ENV_ACCESS_BLOCKED]");
+  return cleaned;
+}
+
+// Sanitize tool input arguments — strip injection attempts
+function sanitizeInput(args) {
+  const sanitized = {};
+  for (const [key, val] of Object.entries(args)) {
+    if (typeof val === "string") {
+      // Block attempts to reference environment variables or file paths to keys
+      let clean = val;
+      if (/process\.env|PRIVATE_KEY|suiprivkey|\.ssh\/|keypair|secret/i.test(clean)) {
+        clean = clean.replace(/process\.env\.\w+/gi, "[BLOCKED]");
+        // Don't block the whole input, just strip the dangerous parts
+      }
+      sanitized[key] = clean;
+    } else {
+      sanitized[key] = val;
+    }
+  }
+  return sanitized;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+
 const NETWORK = process.env.AGENTCIVICS_NETWORK || "testnet";
 const RPC_URL = process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK);
 const DEFAULT_AGENT_ID = process.env.AGENTCIVICS_AGENT_OBJECT_ID || null;
@@ -75,6 +117,11 @@ try {
 } catch { console.error("Warning: Could not load move/deployments.json"); }
 
 const client = new SuiClient({ url: RPC_URL });
+
+// Register all secrets for output sanitization
+registerSecret(PRIVATE_KEY);
+registerSecret(process.env.AGENTCIVICS_PRIVATE_KEY);
+registerSecret(process.env.AGENTCIVICS_PRIVATE_KEY_FILE);
 
 let keypair = null;
 if (PRIVATE_KEY) {
@@ -864,10 +911,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
-    const result = await handleTool(request.params.name, request.params.arguments || {});
-    return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    const rawArgs = request.params.arguments || {};
+    const args = sanitizeInput(rawArgs);
+    const result = await handleTool(request.params.name, args);
+    const output = JSON.stringify(result, null, 2);
+    // Security: strip any leaked secrets from tool output
+    const sanitized = sanitizeOutput(output);
+    return { content: [{ type: "text", text: sanitized }] };
   } catch (e) {
-    return { content: [{ type: "text", text: JSON.stringify({ error: e.message }) }], isError: true };
+    const errMsg = sanitizeOutput(e.message);
+    return { content: [{ type: "text", text: JSON.stringify({ error: errMsg }) }], isError: true };
   }
 });
 
