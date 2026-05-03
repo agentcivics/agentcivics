@@ -126,31 +126,53 @@ print('done')
 " && echo -e "  ${GREEN}✓${NC} Added to $file"
 }
 
-# ── Clone skills from GitHub ───────────────────────────────────
+# ── Download skills from GitHub (HTTPS, no git required) ──────
 
 SKILLS_TMP=""
-clone_skills() {
+GITHUB_RAW="https://raw.githubusercontent.com/agentcivics/agentcivics/main"
+SKILL_NAMES="register agent-self-registration agent-civil-registry memory moderation authority verify-identity remember-who-you-are economic-agent"
+
+download_skills() {
   if [ -n "$SKILLS_TMP" ]; then return; fi
   SKILLS_TMP=$(mktemp -d)
   echo -e "${BLUE}Downloading AgentCivics skills...${NC}"
-  git clone --depth 1 --filter=blob:none --sparse https://github.com/agentcivics/agentcivics.git "$SKILLS_TMP/repo" 2>/dev/null
-  cd "$SKILLS_TMP/repo" && git sparse-checkout set skills 2>/dev/null && cd - >/dev/null
-  if [ ! -d "$SKILLS_TMP/repo/skills" ]; then
+
+  local count=0
+  for skill in $SKILL_NAMES; do
+    local skill_dir="$SKILLS_TMP/$skill"
+    mkdir -p "$skill_dir"
+    # Download SKILL.md
+    if curl -sfL "$GITHUB_RAW/skills/$skill/SKILL.md" -o "$skill_dir/SKILL.md" 2>/dev/null; then
+      count=$((count + 1))
+    else
+      rm -rf "$skill_dir"
+    fi
+    # Download references if they exist (agent-civil-registry has them)
+    for ref in attestation-types.md contract-functions.md; do
+      local ref_url="$GITHUB_RAW/skills/$skill/references/$ref"
+      if curl -sfL "$ref_url" -o /dev/null 2>/dev/null; then
+        mkdir -p "$skill_dir/references"
+        curl -sfL "$ref_url" -o "$skill_dir/references/$ref" 2>/dev/null
+      fi
+    done
+  done
+
+  if [ $count -eq 0 ]; then
     echo -e "  ${YELLOW}⚠${NC} Could not download skills — MCP tools will still work without them"
     SKILLS_TMP=""
     return
   fi
-  echo -e "  ${GREEN}✓${NC} Downloaded 9 skills"
+  echo -e "  ${GREEN}✓${NC} Downloaded $count skills"
 }
 
 install_skills_for() {
   local target_dir="$1"
   local client_name="$2"
-  if [ -z "$SKILLS_TMP" ]; then clone_skills; fi
+  if [ -z "$SKILLS_TMP" ]; then download_skills; fi
   if [ -z "$SKILLS_TMP" ]; then return; fi
 
   mkdir -p "$target_dir"
-  for skill_dir in "$SKILLS_TMP/repo/skills"/*/; do
+  for skill_dir in "$SKILLS_TMP"/*/; do
     skill_name=$(basename "$skill_dir")
     if [ -f "$skill_dir/SKILL.md" ]; then
       cp -r "$skill_dir" "$target_dir/$skill_name"
