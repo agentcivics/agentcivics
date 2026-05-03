@@ -1,13 +1,14 @@
 name: Deploy to Walrus
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "landing/**"
-      - "frontend/**"
-      - "demo/**"
-      - ".github/workflows/walrus-deploy.yml"
+  # Disabled until Walrus deployment is configured with SUI_KEYSTORE secret
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "landing/**"
+  #     - "frontend/**"
+  #     - "demo/**"
+  #     - ".github/workflows/walrus-deploy.yml"
   workflow_dispatch:
 
 permissions:
