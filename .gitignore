@@ -44,3 +44,7 @@ lcov.info
 # Temp
 /tmp/
 .claude/worktrees/
+
+# VitePress build output
+docs/.vitepress/dist/
+docs/.vitepress/cache/
