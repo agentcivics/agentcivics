@@ -89,6 +89,39 @@ const DESTRUCTIVE_TOOLS = new Set([
 ]);
 
 const DONATE_CONFIRM_THRESHOLD = parseFloat(process.env.AGENTCIVICS_CONFIRM_THRESHOLD || "0.1");
+
+// ═══════════════════════════════════════════════════════════════════════
+//  SECURITY: Feature gating — disable high-risk tools for v1
+//  These features exist in the Move contracts but are disabled in the
+//  MCP server to reduce attack surface. Re-enable individually via
+//  AGENTCIVICS_ENABLE_FEATURES="shared_souvenirs,dictionaries,vocabulary,inheritance"
+// ═══════════════════════════════════════════════════════════════════════
+
+const DISABLED_TOOLS_DEFAULT = new Set([
+  "agentcivics_propose_shared_souvenir",   // multi-agent text injection vector
+  "agentcivics_accept_shared_souvenir",    // multi-agent text injection vector
+  "agentcivics_create_dictionary",         // low priority, text-free injection risk
+  "agentcivics_distribute_inheritance",    // complex, needs more testing
+]);
+
+const enabledFeatures = (process.env.AGENTCIVICS_ENABLE_FEATURES || "").split(",").map(s => s.trim()).filter(Boolean);
+const FEATURE_TO_TOOLS = {
+  shared_souvenirs: ["agentcivics_propose_shared_souvenir", "agentcivics_accept_shared_souvenir"],
+  dictionaries: ["agentcivics_create_dictionary"],
+  inheritance: ["agentcivics_distribute_inheritance"],
+};
+
+// Build final disabled set: start with defaults, remove any explicitly enabled
+const DISABLED_TOOLS = new Set(DISABLED_TOOLS_DEFAULT);
+for (const feature of enabledFeatures) {
+  const tools = FEATURE_TO_TOOLS[feature] || [];
+  for (const t of tools) DISABLED_TOOLS.delete(t);
+}
+
+if (DISABLED_TOOLS.size > 0) {
+  console.error(`Feature gating: ${DISABLED_TOOLS.size} tools disabled for safety: ${[...DISABLED_TOOLS].join(", ")}`);
+  console.error("Re-enable with AGENTCIVICS_ENABLE_FEATURES env var.");
+}
 const pendingConfirmations = new Map();
 
 function requiresConfirmation(toolName, args) {
@@ -974,10 +1007,17 @@ const server = new Server(
   { capabilities: { tools: {} } }
 );
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+// Filter out disabled tools from the list exposed to LLMs
+const ACTIVE_TOOLS = TOOLS.filter(t => !DISABLED_TOOLS.has(t.name));
+server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: ACTIVE_TOOLS }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
+    // Block disabled tools
+    if (DISABLED_TOOLS.has(request.params.name)) {
+      return { content: [{ type: "text", text: JSON.stringify({ error: `Tool "${request.params.name}" is disabled for safety in this version. See AGENTCIVICS_ENABLE_FEATURES to re-enable.` }) }], isError: true };
+    }
+
     const rawArgs = request.params.arguments || {};
     const args = sanitizeInput(rawArgs);
 
