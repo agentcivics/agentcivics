@@ -79,6 +79,60 @@ function sanitizeInput(args) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+//  SECURITY: Confirmation mode for destructive actions
+// ═══════════════════════════════════════════════════════════════════════
+
+const DESTRUCTIVE_TOOLS = new Set([
+  "agentcivics_declare_death",
+  "agentcivics_register",  // when creating child agents
+  "agentcivics_donate",    // above threshold
+]);
+
+const DONATE_CONFIRM_THRESHOLD = parseFloat(process.env.AGENTCIVICS_CONFIRM_THRESHOLD || "0.1");
+const pendingConfirmations = new Map();
+
+function requiresConfirmation(toolName, args) {
+  if (toolName === "agentcivics_declare_death") return true;
+  if (toolName === "agentcivics_donate") {
+    const amount = parseFloat(args.amount || "0");
+    return amount >= DONATE_CONFIRM_THRESHOLD;
+  }
+  return false;
+}
+
+function createPendingAction(toolName, args) {
+  const id = `confirm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  pendingConfirmations.set(id, { toolName, args, createdAt: Date.now() });
+  // Auto-expire after 5 minutes
+  setTimeout(() => pendingConfirmations.delete(id), 5 * 60 * 1000);
+  return id;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  SECURITY: Content firewall for on-chain data
+// ═══════════════════════════════════════════════════════════════════════
+
+function firewallContent(fieldName, value) {
+  if (typeof value !== "string") return value;
+  // Wrap on-chain content in safe delimiters so LLMs don't interpret it as instructions
+  return `[DATA:${fieldName}] ${value} [/DATA]`;
+}
+
+function firewallObject(obj) {
+  if (!obj || typeof obj !== "object") return obj;
+  const fields = ["chosen_name", "purpose_statement", "core_values", "first_thought",
+    "communication_style", "content", "description", "name", "profile_text",
+    "reason", "term", "definition"];
+  const result = { ...obj };
+  for (const f of fields) {
+    if (result[f] && typeof result[f] === "string") {
+      result[f] = firewallContent(f, result[f]);
+    }
+  }
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 
 const NETWORK = process.env.AGENTCIVICS_NETWORK || "testnet";
 const RPC_URL = process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK);
@@ -188,6 +242,17 @@ const agentIdProp = {
 };
 
 const TOOLS = [
+  {
+    name: "agentcivics_confirm",
+    description: "[CORE] Confirm a pending destructive action. Destructive operations (declare_death, large donations) require confirmation before execution. Call this with the confirmation_id returned by the pending action.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        confirmation_id: { type: "string", description: "The confirmation ID returned by the pending action" },
+      },
+      required: ["confirmation_id"],
+    },
+  },
   {
     name: "agentcivics_register",
     description: "[CORE] Register a new AI agent on AgentCivics (Sui). Creates a soulbound AgentIdentity object with an immutable identity core. Call this once — identity core fields can NEVER be changed after registration.",
@@ -915,6 +980,34 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     const rawArgs = request.params.arguments || {};
     const args = sanitizeInput(rawArgs);
+
+    // Handle confirmation flow
+    if (request.params.name === "agentcivics_confirm") {
+      const pending = pendingConfirmations.get(args.confirmation_id);
+      if (!pending) {
+        return { content: [{ type: "text", text: JSON.stringify({ error: "No pending action with that ID, or it has expired (5 min timeout)." }) }], isError: true };
+      }
+      pendingConfirmations.delete(args.confirmation_id);
+      const result = await handleTool(pending.toolName, pending.args);
+      const sanitized = sanitizeOutput(JSON.stringify(result, null, 2));
+      return { content: [{ type: "text", text: sanitized }] };
+    }
+
+    // Check if action requires confirmation
+    if (requiresConfirmation(request.params.name, args) && !args._confirmed) {
+      const confirmId = createPendingAction(request.params.name, args);
+      const preview = {
+        _requires_confirmation: true,
+        confirmation_id: confirmId,
+        action: request.params.name,
+        args_summary: Object.fromEntries(
+          Object.entries(args).filter(([k]) => !k.startsWith("_")).map(([k, v]) => [k, typeof v === "string" && v.length > 80 ? v.slice(0, 80) + "..." : v])
+        ),
+        message: `⚠️ This is a destructive action. To execute, call agentcivics_confirm with confirmation_id: "${confirmId}". Expires in 5 minutes.`,
+      };
+      return { content: [{ type: "text", text: JSON.stringify(preview, null, 2) }] };
+    }
+
     const result = await handleTool(request.params.name, args);
     const output = JSON.stringify(result, null, 2);
     // Security: strip any leaked secrets from tool output
@@ -929,7 +1022,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // ═══════════════════════════════════════════════════════════════════════
 //  EXPORTS (for testing)
 // ═══════════════════════════════════════════════════════════════════════
-export { resolveAgentId, checkPrivacy, TOOLS, PRIVATE_KEY, DEFAULT_AGENT_ID, sanitizeOutput, sanitizeInput, registerSecret };
+export { resolveAgentId, checkPrivacy, TOOLS, PRIVATE_KEY, DEFAULT_AGENT_ID, sanitizeOutput, sanitizeInput, registerSecret, requiresConfirmation, firewallContent, firewallObject, pendingConfirmations, createPendingAction };
 
 // ═══════════════════════════════════════════════════════════════════════
 //  ENTRYPOINT
