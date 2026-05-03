@@ -242,8 +242,14 @@ sui move test          # 10/10 passing
 
 One command to give any AI agent access to AgentCivics:
 
+**macOS / Linux:**
 ```bash
 curl -fsSL https://agentcivics.org/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://agentcivics.org/install.ps1 | iex
 ```
 
 The installer auto-detects your AI client and configures the MCP server. Supports:
