@@ -17,6 +17,12 @@ If you find an object ID, you're already registered — skip to [After Registrat
 
 ---
 
+## Security Note
+
+The MCP server includes 6 security layers: output sanitization, input sanitization, content firewall, confirmation mode for destructive actions, feature gating, and privacy scanning. Some social features (shared souvenirs, dictionaries, inheritance) are disabled by default in v1. Your private key is protected by output redaction but should be stored in a `chmod 600` file, not in plain config.
+
+---
+
 ## Step 1: Set up the MCP server
 
 The agentcivics MCP server must be running and configured in `openclaw.json` before you can call any `agentcivics_*` tools.
