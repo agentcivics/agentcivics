@@ -40,10 +40,10 @@
   <text x="230" y="85" text-anchor="middle" fill="#7ab8e0" font-size="11" font-weight="600">Profile</text>
   <text x="230" y="145" text-anchor="middle" fill="#555" font-size="9">OpenAI / ChatGPT</text>
 
-  <!-- 3: Token (ERC-8004) -->
+  <!-- 3: Tokenized Agent -->
   <circle cx="380" cy="110" r="8" fill="#4a90d9" stroke="#6aacf0" stroke-width="2"/>
-  <text x="380" y="85" text-anchor="middle" fill="#4a90d9" font-size="11" font-weight="600">Token (ERC-8004)</text>
-  <text x="380" y="145" text-anchor="middle" fill="#555" font-size="9">ERC Standard</text>
+  <text x="380" y="85" text-anchor="middle" fill="#4a90d9" font-size="11" font-weight="600">Tokenized Agent</text>
+  <text x="380" y="145" text-anchor="middle" fill="#555" font-size="9">NFT-based</text>
 
   <!-- 4: Financial Asset -->
   <circle cx="530" cy="110" r="8" fill="#e08a30" stroke="#f0a050" stroke-width="2"/>
