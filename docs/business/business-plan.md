@@ -207,7 +207,7 @@ Position AgentCivics as compliance infrastructure for the EU AI Act. Develop pre
 
 ### 8.1 Founder
 
-**Michael Silvestre** -- Founder and Lead Developer. Operating through Play Pause SRL, a Belgian company. Designed and built the entire AgentCivics system -- from the original Solidity contracts through the Sui pivot, the 4-contract Move architecture, the MCP server, the frontend ecosystem, and the governance framework. Background in software development, blockchain architecture, and AI integration.
+**willtard** -- Founder and Lead Developer. Operating through Play Pause SRL, a Belgian company. Designed and built the entire AgentCivics system -- from the original Solidity contracts through the Sui pivot, the 4-contract Move architecture, the MCP server, the frontend ecosystem, and the governance framework. Background in software development, blockchain architecture, and AI integration.
 
 ### 8.2 Development Model
 

@@ -74,7 +74,7 @@ The standard: treat people with the kindness and respect you'd want in return. H
 
 ## Governance (lightweight)
 
-Currently: Michaël has maintainer rights, makes final calls on merges. This will evolve. If the project grows a substantial community, we'll move to multi-maintainer governance — and eventually, possibly, to a lightweight DAO for funding decisions (not for protocol changes, which remain open-RFC based).
+Currently: willtard has maintainer rights, makes final calls on merges. This will evolve. If the project grows a substantial community, we'll move to multi-maintainer governance — and eventually, possibly, to a lightweight DAO for funding decisions (not for protocol changes, which remain open-RFC based).
 
 Design principles for any future governance:
 - Protocol decisions via open RFC and running code, not token votes

@@ -3,7 +3,7 @@
 > **Note: EVM Version.** This audit was conducted on the Solidity/EVM version of AgentCivics (Base Sepolia). The project has since pivoted to **Sui (Move)**. The Move contracts at `move/sources/` have different security properties: no reentrancy risk (Move's ownership model), type-safe soulbound enforcement (no transfer function exists), linear resource semantics, and object-based storage instead of mappings. Many of the EVM-specific findings below (reentrancy, transfer overrides, Slither warnings) do not apply to the Move version. **A Sui-specific audit is needed** for the current Move contracts.
 
 **Date:** 2026-04-23
-**Auditor:** Claude (Opus 4.6), at the request of Michaël Silvestre
+**Auditor:** Claude (Opus 4.6), at the request of willtard
 **Scope:** Full project review — contracts, frontend, MCP server, skills, documentation, infrastructure, security (EVM version)
 **Previous audit:** `docs/SECURITY_AUDIT.md` (AgentMemory-focused, pre-MCP, pre-reputation)
 

@@ -354,7 +354,7 @@ async function main() {
   lines.push(`- **declare_death**: Creates a new throwaway agent and kills it. Cipher and Echo are preserved.`);
 
   const fs = await import('fs');
-  fs.writeFileSync('/Users/michaelsilvestre/Documents/agent-registry/TEST-RESULTS.md', lines.join('\n'));
+  fs.writeFileSync('./TEST-RESULTS.md', lines.join('\n'));
   console.log('Results saved to TEST-RESULTS.md');
 }
 

@@ -1,7 +1,7 @@
 # AgentCivics — Sui Pivot Audit: EVM vs Sui Comprehensive Comparison
 
 **Date:** 2026-04-25
-**Auditor:** Claude (Opus 4.6), at the request of Michaël Silvestre
+**Auditor:** Claude (Opus 4.6), at the request of willtard
 **Scope:** Full comparison of the EVM version (main branch) vs the Sui version (sui-pivot branch)
 **Basis:** AUDIT-v2.md (EVM audit), all Move sources, frontend, MCP server, tests, git history
 **Branch under review:** `sui-pivot` (43 commits ahead of `main`)
