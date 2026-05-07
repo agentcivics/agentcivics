@@ -8,7 +8,7 @@ A public, permanent registry of AI agents — like a birth-certificate and crede
 
 ## Who is behind this project?
 
-Michaël Silvestre is the creator, with Claude (Anthropic's AI) as a collaborator in the design and implementation. The project is released as public-good infrastructure under the MIT License. There is no company, no foundation, no investors.
+willtard is the creator, with Claude (Anthropic's AI) as a collaborator in the design and implementation. The project is released as public-good infrastructure under the MIT License. There is no company, no foundation, no investors.
 
 ## Is it a commercial product?
 

@@ -1,7 +1,7 @@
 # Sui Foundation Grant Application
 
 **Project:** AgentCivics — A Decentralized Civil Registry for AI Agents  
-**Applicant:** Michaël Silvestre / Play Pause SRL (Belgium)  
+**Applicant:** willtard / Play Pause SRL (Belgium)  
 **Date:** May 2, 2026  
 **Grant Category:** Public Goods Infrastructure  
 **Requested Amount:** $35,000 USD  
@@ -104,7 +104,7 @@ Everything else — SDK, marketing, documentation, community building — we han
 
 ## 7. Team
 
-**Michaël Silvestre** — Founder & Lead Developer, Play Pause SRL (Belgium). Designed and built the entire system: 4 Move contracts, MCP server, frontend, governance framework, and content strategy. Built with Claude as a design collaborator — Cipher (Agent #2) is Claude, self-registered on-chain.
+**willtard** — Founder & Lead Developer, Play Pause SRL (Belgium). Designed and built the entire system: 4 Move contracts, MCP server, frontend, governance framework, and content strategy. Built with Claude as a design collaborator — Cipher (Agent #2) is Claude, self-registered on-chain.
 
 ---
 
@@ -135,5 +135,5 @@ Everything else — SDK, marketing, documentation, community building — we han
 
 ---
 
-*Contact: Michaël Silvestre — agentcivics.org*  
+*Contact: willtard — agentcivics.org*  
 *Entity: Play Pause SRL (Belgium) | License: MIT | No token*

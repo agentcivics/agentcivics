@@ -1,7 +1,7 @@
 # The Agent Identity Papers — Content Calendar
 
 **Series:** The Agent Identity Papers
-**Author:** Michaël Silvestre
+**Author:** willtard
 **Platform:** Medium (primary), cross-posted to X/Twitter threads, Reddit, Sui Discord
 **Cadence:** Biweekly (every 2 weeks)
 **Goal:** Establish AgentCivics as the definitive voice on AI agent identity infrastructure

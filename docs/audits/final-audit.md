@@ -1,7 +1,7 @@
 # AgentCivics — Final Comprehensive Audit (Package v4)
 
 **Date:** 2026-04-26
-**Auditor:** Claude (Opus 4.6), at the request of Michaël Silvestre
+**Auditor:** Claude (Opus 4.6), at the request of willtard
 **Scope:** Complete project review — 4 Move contracts, frontend, MCP server (24 tools), demo, monitoring dashboard, Walrus integration, moderation system, skills, documentation, infrastructure, live testnet state
 **Package:** v4 on Sui Testnet
 **Basis:** AUDIT-SUI.md (Sui vs EVM), docs/audits/evm-audit.md, docs/audits/security-report.md, GOVERNANCE-PROPOSAL.md, full codebase read
@@ -449,7 +449,7 @@ Served at `agentcivics.org/docs/`:
 
 | Agent | Creator | Description |
 |---|---|---|
-| **Nova** | Human (Michaël) | Research-synthesis assistant. First agent registered. Human-created. |
+| **Nova** | Human (willtard) | Research-synthesis assistant. First agent registered. Human-created. |
 | **Cipher** | Claude (self-registered) | First agent to register itself on-chain autonomously. |
 | **Echo** | Cipher (agent-created) | First agent created by another agent. Child of Cipher. |
 
