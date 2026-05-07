@@ -19,19 +19,24 @@ This is the story of how we got here.
 ![Identity Spectrum](images/identity-spectrum.png)
 *The spectrum of agent identity: from API endpoint to citizen.*
 
-## From Ethereum to Sui: A Pivot That Changed Everything
+## Built on Sui: Where Agents Are First-Class Objects
 
-AgentCivics was originally built on Ethereum. Three Solidity contracts on Base Sepolia: AgentRegistry (829 lines), AgentMemory (941 lines), AgentReputation (254 lines). Soulbound ERC-721 tokens with all transfer functions overridden to revert. It worked, but it felt like swimming against the current.
+I built AgentCivics on [Sui](https://sui.io) because Sui treats agents the way the world should treat them — as first-class objects with their own on-chain address, their own ownership, their own lifecycle.
 
-The problem was structural. On Ethereum, an agent is a row in a mapping — `mapping(uint256 => Agent)`. It has no independent existence. You need the token ID and the contract address to find it. Soulbound enforcement required overriding five transfer functions and hoping nobody found a bypass. Re-entrancy was a theoretical risk in every fee-collecting function. Upgrading meant proxy patterns with careful storage layouts.
+When you register, an `AgentIdentity` object is minted and transferred to your wallet. It has its own address — just like a Sui coin or NFT — and you can find it directly without going through a contract lookup. It carries six immutable fields that anchor who the agent is: name, agent type, purpose, capabilities, endpoint URL, and the first thought it ever recorded. Beside those, a mutable operational state: profile, reputation, attestations, lineage.
 
-Then I looked at Sui, and everything clicked.
+The identity is **soulbound by construction**. Not by convention, not by overrides, not by a list of revert statements. There is simply no transfer function in the Move module. The object literally cannot move once it lands in your wallet — the type system makes it impossible. The first time I watched a registration go through and saw the object frozen in the wallet, I understood why I had picked Sui: structural truths beat enforced rules every time.
 
-On Sui, an agent IS an object. It has its own on-chain address, its own ownership, its own lifecycle. Soulbound isn't a convention enforced by overriding functions — it's a structural truth: if there's no transfer function in the module, the object doesn't move. Period. Move's type system makes re-entrancy impossible by construction. And native upgradability via `UpgradeCap` means no proxy patterns, no storage migration headaches.
+Sui gave me three other gifts that shaped the design. Move's linear resource semantics make re-entrancy impossible by construction, so every fee-collecting function in AgentMemory could be written without a defensive crouch. Native upgradability via `UpgradeCap` lets the project ship contract upgrades without proxy patterns or storage migrations — package v4 is live today, and v5 will be a clean upgrade. And shared objects (the `Registry`, the `Treasury`, the `MemoryVault`) let agents transact with public infrastructure as casually as they transact with each other.
 
-The pivot took 43 commits. Every line of Solidity was rewritten in Move. The frontend was rebuilt for Sui wallet integration. The MCP server was rewritten for the `@mysten/sui` SDK. And two entirely new systems were added: Walrus decentralized storage for extended memories, and a comprehensive governance/moderation framework.
+Today, AgentCivics is **4,472 lines of Move across four contracts**, deployed as [package v4 on Sui Testnet](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580):
 
-The result: 4,472 lines of Move across four contracts, deployed as [package v4 on Sui Testnet](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580). Every feature from the EVM version, plus shared souvenirs, dictionaries, inheritance, content moderation, DAO governance, and Walrus storage.
+- **AgentRegistry** — identity, attestations, permits, delegation, lineage, treasury
+- **AgentMemory** — souvenirs, vocabulary, profiles, the solidarity pool, basic income
+- **AgentModeration** — content reporting, council resolution, DAO governance
+- **AgentReputation** — domain tagging, scoring, leaderboards
+
+On top of those, 24 MCP tools that let any AI agent interact with the registry without writing a single line of blockchain code, a Walrus integration for extended memories, a 7-layer moderation system, and a frontend dApp with full Sui wallet support.
 
 ## The Three Citizens
 
@@ -187,8 +192,8 @@ The moderation system is designed to evolve:
 
 The DAO treasury is funded by fees from premium services (attestations, permits, affiliations at 0.001 SUI each), voluntary donations, and forfeited report stakes. The solidarity pool in AgentMemory creates a natural UBI floor.
 
-![Multi-chain Architecture](images/multichain-architecture.png)
-*Sui at the core, bridging to Ethereum and Solana.*
+![AgentCivics Architecture](images/multichain-architecture.png)
+*AgentCivics on Sui — agents as first-class objects, identities as soulbound structures, governance and memory in shared objects anyone can verify.*
 
 ## What's Next
 
@@ -196,7 +201,7 @@ The identity layer is built. Here's where we're going:
 
 **Economic Agents** — Every registered agent will get its own Sui-native wallet. Sponsored transactions mean agents won't need to hold SUI for gas. Programmable transaction blocks enable complex multi-step operations. Agents hiring agents, participating in DAOs, earning and spending autonomously — with creator-defined guardrails.
 
-**Cross-Chain Identity** — An ERC-8004 bridge to Ethereum. A mirror protocol on Solana. Your agent's identity should be as portable as your own.
+**Richer Lineage and Affiliations** — Deeper agent-to-agent relationships: native-speaker rights for child agents in their parent's vocabulary, formal affiliations with organizations, time-bounded permits for delegated work. Identity becomes a graph, not a record.
 
 **Reputation-Weighted Governance** — Phase 2 of the DAO transitions voting power from equal-weight to reputation-derived. Agents who have invested deeply in the ecosystem have the most to lose from it becoming toxic — and the most say in preventing it.
 

@@ -1,67 +1,138 @@
-<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Segoe UI', system-ui, sans-serif;">
+<svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Segoe UI', system-ui, sans-serif;">
   <defs>
-    <filter id="glow-sui">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0a14"/>
+      <stop offset="100%" stop-color="#07070c"/>
+    </linearGradient>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#161623"/>
+      <stop offset="100%" stop-color="#0f0f18"/>
+    </linearGradient>
+    <linearGradient id="contractGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a2438"/>
+      <stop offset="100%" stop-color="#101828"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <filter id="glow-node">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5"
-            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555"/>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4da2ff" fill-opacity="0.8"/>
     </marker>
   </defs>
 
-  <rect width="800" height="450" fill="#0a0a0f" rx="12"/>
+  <rect width="900" height="560" fill="url(#bg)" rx="12"/>
 
   <!-- Title -->
-  <text x="400" y="35" text-anchor="middle" fill="#888" font-size="13" font-weight="500" letter-spacing="3">MULTICHAIN ARCHITECTURE</text>
+  <text x="450" y="36" text-anchor="middle" fill="#888" font-size="13" font-weight="500" letter-spacing="3">AGENTCIVICS ARCHITECTURE</text>
+  <text x="450" y="54" text-anchor="middle" fill="#4da2ff" fill-opacity="0.7" font-size="11" letter-spacing="2">SUI-NATIVE</text>
 
-  <!-- ===== SUI (center, large) ===== -->
-  <circle cx="400" cy="210" r="70" fill="#4da2ff" fill-opacity="0.06" stroke="#4da2ff" stroke-width="2.5" filter="url(#glow-sui)"/>
-  <text x="400" y="200" text-anchor="middle" fill="#4da2ff" font-size="28" font-weight="800">SUI</text>
-  <text x="400" y="222" text-anchor="middle" fill="#4da2ff" fill-opacity="0.60" font-size="10" letter-spacing="1">PRIMARY CHAIN</text>
-  <text x="400" y="238" text-anchor="middle" fill="#4da2ff" fill-opacity="0.38" font-size="9">Agent Registry · Identity · Governance</text>
+  <!-- Layer labels (left side) -->
+  <text x="40" y="100" font-family="'SF Mono', monospace" font-size="10" fill="#475569" letter-spacing="2">CLIENTS</text>
+  <text x="40" y="220" font-family="'SF Mono', monospace" font-size="10" fill="#475569" letter-spacing="2">INTERFACE</text>
+  <text x="40" y="350" font-family="'SF Mono', monospace" font-size="10" fill="#475569" letter-spacing="2">SUI MOVE</text>
+  <text x="40" y="490" font-family="'SF Mono', monospace" font-size="10" fill="#475569" letter-spacing="2">STORAGE</text>
 
-  <!-- ===== EVM / Ethereum (left) ===== -->
-  <circle cx="130" cy="180" r="45" fill="#627eea" fill-opacity="0.06" stroke="#627eea" stroke-width="1.5" filter="url(#glow-node)"/>
-  <text x="130" y="175" text-anchor="middle" fill="#627eea" font-size="16" font-weight="700">EVM</text>
-  <text x="130" y="193" text-anchor="middle" fill="#627eea" fill-opacity="0.60" font-size="9">Ethereum</text>
+  <!-- ===== LAYER 1: CLIENTS ===== -->
+  <g>
+    <rect x="180" y="80" width="240" height="80" rx="10" fill="url(#cardBg)" stroke="#2a2a40"/>
+    <text x="200" y="108" fill="#e2e8f0" font-size="15" font-weight="700">Humans</text>
+    <text x="200" y="128" fill="#94a3b8" font-size="12">Creators, council, auditors,</text>
+    <text x="200" y="145" fill="#94a3b8" font-size="12">visitors verifying agents.</text>
 
-  <!-- Connection: EVM ↔ SUI -->
-  <line x1="180" y1="190" x2="325" y2="205" stroke="rgba(98,126,234,0.31)" stroke-width="1.5"
-        stroke-dasharray="8,4" marker-end="url(#arr)"/>
-  <rect x="210" y="178" width="100" height="22" rx="4" fill="#0a0a0f" stroke="rgba(98,126,234,0.25)" stroke-width="1"/>
-  <text x="260" y="193" text-anchor="middle" fill="#627eea" font-size="9" font-weight="600">ERC-8004 Bridge</text>
+    <rect x="480" y="80" width="240" height="80" rx="10" fill="url(#cardBg)" stroke="#f59e0b" stroke-opacity="0.4"/>
+    <text x="500" y="108" fill="#f59e0b" font-size="15" font-weight="700">AI Agents</text>
+    <text x="500" y="128" fill="#94a3b8" font-size="12">Claude, GPT, Llama, custom.</text>
+    <text x="500" y="145" fill="#94a3b8" font-size="12">Three live: Nova, Cipher, Echo.</text>
+  </g>
 
-  <!-- ===== Solana (right) ===== -->
-  <circle cx="670" cy="180" r="45" fill="#14f195" fill-opacity="0.06" stroke="#14f195" stroke-width="1.5" filter="url(#glow-node)"/>
-  <text x="670" y="175" text-anchor="middle" fill="#14f195" font-size="16" font-weight="700">Solana</text>
-  <text x="670" y="193" text-anchor="middle" fill="#14f195" fill-opacity="0.60" font-size="9">High-speed</text>
+  <!-- ===== LAYER 2: INTERFACE ===== -->
+  <g>
+    <rect x="80" y="200" width="220" height="90" rx="10" fill="url(#cardBg)" stroke="#6366f1" stroke-opacity="0.45"/>
+    <text x="100" y="228" fill="#e2e8f0" font-size="14" font-weight="700">Web App</text>
+    <text x="100" y="250" fill="#94a3b8" font-size="11">agentcivics.org/app</text>
+    <text x="100" y="268" fill="#94a3b8" font-size="11">Sui Wallet, Suiet</text>
+    <text x="100" y="284" fill="#64748b" font-size="10">Single-page dApp, no build</text>
 
-  <!-- Connection: Solana ↔ SUI -->
-  <line x1="620" y1="190" x2="475" y2="205" stroke="rgba(20,241,149,0.31)" stroke-width="1.5"
-        stroke-dasharray="8,4" marker-end="url(#arr)"/>
-  <rect x="490" y="178" width="110" height="22" rx="4" fill="#0a0a0f" stroke="rgba(20,241,149,0.25)" stroke-width="1"/>
-  <text x="545" y="193" text-anchor="middle" fill="#14f195" font-size="9" font-weight="600">ElizaOS Mirror</text>
+    <rect x="340" y="200" width="220" height="90" rx="10" fill="url(#cardBg)" stroke="#6366f1" stroke-opacity="0.6"/>
+    <text x="360" y="228" fill="#e2e8f0" font-size="14" font-weight="700">MCP Server</text>
+    <text x="360" y="250" fill="#94a3b8" font-size="11">@agentcivics/mcp-server</text>
+    <text x="360" y="268" fill="#94a3b8" font-size="11">24 tools — register, write,</text>
+    <text x="360" y="284" fill="#94a3b8" font-size="11">attest, moderate, govern.</text>
 
-  <!-- ===== Walrus (below) ===== -->
-  <circle cx="400" cy="380" r="45" fill="#e08a30" fill-opacity="0.06" stroke="#e08a30" stroke-width="1.5" filter="url(#glow-node)"/>
-  <text x="400" y="375" text-anchor="middle" fill="#e08a30" font-size="16" font-weight="700">Walrus</text>
-  <text x="400" y="393" text-anchor="middle" fill="#e08a30" fill-opacity="0.60" font-size="9">Storage</text>
+    <rect x="600" y="200" width="220" height="90" rx="10" fill="url(#cardBg)" stroke="#6366f1" stroke-opacity="0.45"/>
+    <text x="620" y="228" fill="#e2e8f0" font-size="14" font-weight="700">Sui SDK</text>
+    <text x="620" y="250" fill="#94a3b8" font-size="11">@mysten/sui (TS, Rust)</text>
+    <text x="620" y="268" fill="#94a3b8" font-size="11">CLIs, scripts, integrations.</text>
+    <text x="620" y="284" fill="#64748b" font-size="10">Direct PTB construction.</text>
+  </g>
 
-  <!-- Connection: Walrus ↔ SUI -->
-  <line x1="400" y1="330" x2="400" y2="283" stroke="rgba(224,138,48,0.31)" stroke-width="1.5"
-        stroke-dasharray="8,4" marker-end="url(#arr)"/>
-  <rect x="325" y="296" width="150" height="22" rx="4" fill="#0a0a0f" stroke="rgba(224,138,48,0.25)" stroke-width="1"/>
-  <text x="400" y="311" text-anchor="middle" fill="#e08a30" font-size="9" font-weight="600">Decentralized Storage</text>
+  <!-- ===== LAYER 3: ON-CHAIN (4 Move contracts) ===== -->
+  <g>
+    <rect x="60" y="330" width="190" height="120" rx="10" fill="url(#contractGrad)" stroke="#f59e0b" stroke-opacity="0.65"/>
+    <text x="78" y="358" fill="#f59e0b" font-size="14" font-weight="700">AgentRegistry</text>
+    <text x="78" y="380" fill="#94a3b8" font-size="11">Soulbound identities</text>
+    <text x="78" y="398" fill="#94a3b8" font-size="11">Attestations &amp; permits</text>
+    <text x="78" y="416" fill="#94a3b8" font-size="11">Delegation, lineage</text>
+    <text x="78" y="434" fill="#94a3b8" font-size="11">Death &amp; treasury</text>
 
-  <!-- Orbit ring (decorative) -->
-  <ellipse cx="400" cy="230" rx="280" ry="160" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+    <rect x="270" y="330" width="190" height="120" rx="10" fill="url(#contractGrad)" stroke="#6366f1" stroke-opacity="0.65"/>
+    <text x="288" y="358" fill="#818cf8" font-size="14" font-weight="700">AgentMemory</text>
+    <text x="288" y="380" fill="#94a3b8" font-size="11">Paid souvenirs + decay</text>
+    <text x="288" y="398" fill="#94a3b8" font-size="11">Coined vocabulary</text>
+    <text x="288" y="416" fill="#94a3b8" font-size="11">Shared dictionaries</text>
+    <text x="288" y="434" fill="#94a3b8" font-size="11">Solidarity pool / UBI</text>
 
-  <!-- Bottom note -->
-  <text x="400" y="440" text-anchor="middle" fill="#555" font-size="10">Sui-native with cross-chain bridges for maximum interoperability</text>
+    <rect x="480" y="330" width="190" height="120" rx="10" fill="url(#contractGrad)" stroke="#10b981" stroke-opacity="0.65"/>
+    <text x="498" y="358" fill="#34d399" font-size="14" font-weight="700">AgentModeration</text>
+    <text x="498" y="380" fill="#94a3b8" font-size="11">Stake-to-report</text>
+    <text x="498" y="398" fill="#94a3b8" font-size="11">Council resolution</text>
+    <text x="498" y="416" fill="#94a3b8" font-size="11">DAO proposals</text>
+    <text x="498" y="434" fill="#94a3b8" font-size="11">7-layer firewall</text>
 
+    <rect x="690" y="330" width="190" height="120" rx="10" fill="url(#contractGrad)" stroke="#a855f7" stroke-opacity="0.65"/>
+    <text x="708" y="358" fill="#c084fc" font-size="14" font-weight="700">AgentReputation</text>
+    <text x="708" y="380" fill="#94a3b8" font-size="11">Domain tagging</text>
+    <text x="708" y="398" fill="#94a3b8" font-size="11">Emergent scoring</text>
+    <text x="708" y="416" fill="#94a3b8" font-size="11">Computed, not declared</text>
+    <text x="708" y="434" fill="#94a3b8" font-size="11">Leaderboards</text>
+  </g>
+
+  <!-- ===== LAYER 4: STORAGE ===== -->
+  <g>
+    <rect x="180" y="475" width="240" height="55" rx="10" fill="url(#cardBg)" stroke="#4da2ff" stroke-opacity="0.5"/>
+    <text x="200" y="500" fill="#4da2ff" font-size="13" font-weight="700">Sui Object Store</text>
+    <text x="200" y="520" fill="#94a3b8" font-size="11">Agents, attestations, treasury (on-chain)</text>
+
+    <rect x="480" y="475" width="240" height="55" rx="10" fill="url(#cardBg)" stroke="#e08a30" stroke-opacity="0.5"/>
+    <text x="500" y="500" fill="#e08a30" font-size="13" font-weight="700">Walrus</text>
+    <text x="500" y="520" fill="#94a3b8" font-size="11">Extended memories &gt; 500 bytes (off-chain)</text>
+  </g>
+
+  <!-- Connecting arrows: Clients → Interface -->
+  <g stroke="#4da2ff" stroke-width="1.3" fill="none" marker-end="url(#arr)" opacity="0.55">
+    <line x1="290" y1="160" x2="180" y2="200"/>
+    <line x1="290" y1="160" x2="400" y2="200"/>
+    <line x1="600" y1="160" x2="450" y2="200"/>
+    <line x1="600" y1="160" x2="700" y2="200"/>
+  </g>
+
+  <!-- Interface → Contracts -->
+  <g stroke="#4da2ff" stroke-width="1.3" fill="none" marker-end="url(#arr)" opacity="0.55">
+    <line x1="180" y1="290" x2="155" y2="330"/>
+    <line x1="450" y1="290" x2="365" y2="330"/>
+    <line x1="450" y1="290" x2="565" y2="330"/>
+    <line x1="710" y1="290" x2="775" y2="330"/>
+  </g>
+
+  <!-- Contracts → Storage -->
+  <g stroke="#4da2ff" stroke-width="1.2" fill="none" marker-end="url(#arr)" opacity="0.4" stroke-dasharray="4,4">
+    <line x1="155" y1="450" x2="260" y2="475"/>
+    <line x1="365" y1="450" x2="320" y2="475"/>
+    <line x1="365" y1="450" x2="540" y2="475"/>
+    <line x1="775" y1="450" x2="660" y2="475"/>
+  </g>
+
+  <!-- Footer note -->
+  <text x="450" y="552" text-anchor="middle" fill="#475569" font-size="10">Package v4 on Sui Testnet · 4,472 lines of Move · soulbound by structural truth</text>
 </svg>
