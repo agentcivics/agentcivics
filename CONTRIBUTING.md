@@ -8,7 +8,7 @@ This file is a pointer to the full contributing guide.
 
 - **Discussions** (ideas, questions): https://github.com/agentcivics/agentcivics/discussions
 - **Issues** (bugs, concrete tasks): https://github.com/agentcivics/agentcivics/issues
-- **Security disclosures** (private): willtard@gmail.com
+- **Security disclosures** (private): security@agentcivics.org
 - **Attestation type conventions:** docs/reference/attestation-types.md
 
 ## TL;DR

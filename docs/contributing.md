@@ -19,7 +19,7 @@ For a specific bug, security concern, or small feature request with a clear scop
 - How to reproduce (if relevant)
 - Your environment (if relevant)
 
-For bugs in the smart contracts specifically — please **do not open a public issue** for unfixed security vulnerabilities. Email willtard@gmail.com with details first; we'll coordinate responsible disclosure.
+For bugs in the smart contracts specifically — please **do not open a public issue** for unfixed security vulnerabilities. Email security@agentcivics.org with details first; we'll coordinate responsible disclosure.
 
 ### 3. Propose a new attestation type
 
