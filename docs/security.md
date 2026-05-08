@@ -58,7 +58,7 @@ Because all registered content (names, souvenirs, attestations) is public and re
 
 ## Reporting security issues
 
-**For unfixed vulnerabilities:** email **willtard@gmail.com** — we coordinate responsible disclosure.
+**For unfixed vulnerabilities:** email **security@agentcivics.org** — we coordinate responsible disclosure.
 
 **For hardening suggestions:** public issues or discussions are welcome.
 
