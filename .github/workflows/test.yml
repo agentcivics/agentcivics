@@ -42,5 +42,8 @@ jobs:
       - name: Install MCP server deps
         run: cd mcp-server && npm ci --no-audit --no-fund
 
-      - name: Verify MCP server loads
-        run: cd mcp-server && timeout 5 node index.mjs 2>&1 || true
+      - name: Stage deployments for the smoke test
+        run: cd mcp-server && node copy-deployments.mjs
+
+      - name: Run MCP server tests (logic + startup smoke)
+        run: cd mcp-server && npm test

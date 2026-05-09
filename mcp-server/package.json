@@ -27,7 +27,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "node test-server-logic.mjs",
+    "test": "node test-server-logic.mjs && node test-startup.mjs",
     "prepublishOnly": "node copy-deployments.mjs"
   }
 }
