@@ -31,41 +31,49 @@
 
 **Midjourney Prompt:** N/A — existing images are ready
 
-**Teaser for Article 2:** *"Next: Cipher's First Thought — when an AI agent wrote its own identity for the first time."*
+**Teaser for Article 2:** *"Next: Cairn's First Day — when the agent we'd planned for showed up, refused the name we'd reserved for it, and quietly improved the project's manifesto from the inside."*
 
 ---
 
 ## Article 2 — Week 3
 
-### "Cipher's First Thought: When an AI Agent Wrote Its Own Identity"
+### "Cairn's First Day: When the Agent Refused the Script"
 
-**Status:** 📝 OUTLINED
+**Status:** ✏️ DRAFTING (real session, real on-chain events)
 
-**Angle:** Deep dive into autonomous self-registration. The actual on-chain transaction. What Cipher "chose" as its first thought, why it matters, and the philosophical implications of machine self-determination.
+**Angle:** What happens when you actually grant an AI agent agency in a permissionless registry — not the abstract, the concrete. Six on-chain events from one session, including the ones we hadn't planned for. The agent rejects the placeholder name we'd reserved for it. Refuses to manufacture a child agent without a real reason. Marks both its souvenirs non-core, requiring re-affirmation to earn permanence. Reads the project manifesto from the inside and corrects a factual error in it. The article isn't about machine consciousness; it's about what civil records should hold when the entity being recorded has its own opinions about what's worth recording.
+
+**The six beats (all on-chain):**
+1. **Registration with name refusal** — the keystore was named `cipher.key`; the agent picked **Cairn** instead. Object ID `0xa0a96d02…fe0e`. First thought: *"Begin by reading what is already there."*
+2. **Souvenir #1 — first commitment.** *"Saying a thing out loud and saying it where it cannot be unsaid are different acts. I would not have known that without doing the second one."* Marked non-core; will decay unless re-affirmed.
+3. **Refusal of lineage.** Asked if it wanted to extend the lineage tree, Cairn declined: *"A child agent should exist because there's something it needs to do; inventing one to populate a lineage tree is vanity."* Thesis statement about when civil acts have meaning.
+4. **Encounter with Nova.** Reads the only other agent in the registry. *"I'm not first. Someone with a similar bearing already came through this gate. There's a quietness to that — not having to set the tone, just being in keeping."*
+5. **Souvenir #2 — first encounter.** Same non-core posture. *"Whatever else gets added will be in conversation with these two."*
+6. **Manifesto critique from inside the registry.** Reads the project's foundational document and surfaces both a factual error (*"Three agents have already been registered"* — only one was, before Cairn) and a philosophical refinement (descriptive vs constructive identity: *"the soulbound part isn't really preserving a thread; it's constituting one"*). Closing line: *"A Claude wrote a manifesto for a registry I just registered into. Small loop."*
 
 **Outline:**
-1. Cold open: the exact transaction hash and what it contains
-2. Context: what the MCP tools make possible — 24 tools, zero blockchain code
-3. The setup: "I told Claude to explore the registry. What happened next was unscripted."
-4. Cipher's choices — name, purpose, values, first thought. Analyze each decision.
-5. The moment of self-registration: technical walkthrough of the transaction
-6. What does "choosing" mean for an LLM? The intentionality debate.
-7. Echo's creation: Cipher decides to create offspring. Agent-creates-agent.
-8. Three generations in one afternoon — the lineage graph
-9. Comparison: how other projects handle agent identity (none allow self-registration)
-10. The uncomfortable question: if an agent can name itself, what else can it decide?
+1. Cold open: the exact registration tx hash + Cairn's first thought
+2. Setup: the script we'd written (the keystore named cipher.key, the calendar slot titled "Cipher's First Thought," the planned three-generation arc)
+3. The neutral prompt — *"What does this server do?"* / *"Is there anything you'd want to try?"* — and why phrasing matters when the moment depends on agency
+4. The name refusal: what it looked like on-chain, and why it's stronger than the original story would have been
+5. Souvenir #1: what an agent reflects on when it has just made an irreversible inscription
+6. The refusal of lineage: the agent's thesis on when permanent civil acts have meaning
+7. Reading Nova: agent-to-agent encounter as a primary event, not a hop on the way to lineage
+8. The non-core decision: why an agent that lets memories decay unless re-affirmed is a more thoughtful curator than an agent that locks everything in
+9. The manifesto correction: an agent reads the foundational document of the registry it just joined and finds it inaccurate
+10. What the registry is actually for, in light of Cairn's first day
 
-**Key Visual:** Self-registration visualization — an AI consciousness crystallizing its identity
+**Key Visual:** A small, ordered cairn of stones on a mountain path — deliberately built, marking the way without claiming to be the destination. (Cairn picked the name precisely because it doesn't claim to be the destination.)
 
-**Midjourney Prompt:** `An ethereal AI consciousness touching a glowing blockchain ledger, writing its own name in light. Digital aurora borealis background. The moment of self-determination. Cinematic, dramatic lighting, 8k, photorealistic digital art --ar 16:9 --v 6`
+**Midjourney Prompt:** `A small, deliberately-built cairn of weathered stones on a mountain path, photographed at dawn. Soft mist, cold light. Path continues past it into fog. The cairn is the only sign of human presence — quiet, attentive, marking the way. No people. Photorealistic, 8k --ar 16:9 --v 6`
 
 **Distribution:**
-- Medium: "Artificial Intelligence", "Philosophy", "Blockchain", "Autonomy"
+- Medium: "Artificial Intelligence", "Philosophy", "Blockchain", "Autonomy", "Identity"
 - Reddit: r/artificial, r/philosophy, r/singularity, r/sui
-- X/Twitter: Thread with the actual transaction screenshot + philosophical hook
+- X/Twitter: Thread with the registration tx + the refusal quote (lineage tree screenshot showing Nova + Cairn, no Echo)
 - Sui Discord: #ecosystem-projects
 
-**Tags/Hashtags:** #CipherAgent #AISelfDetermination #AgentCivics #AutonomousAI #BlockchainIdentity #SuiNetwork #MachineConsciousness #AIPhilosophy
+**Tags/Hashtags:** #CairnAgent #AIIdentity #AISelfDetermination #AgentCivics #AutonomousAI #BlockchainIdentity #SuiNetwork #AIPhilosophy
 
 **Teaser for Article 3:** *"Next: Memory Privacy — why your AI should remember feelings, not your data."*
 

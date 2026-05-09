@@ -40,7 +40,7 @@ Everything described below is live on Sui Testnet and verifiable on-chain.
 | Frontend | 3,329 lines, 13 tab panels, Sui Wallet Standard integration |
 | Moderation | 7-layer defense: frontend filtering, AI screening, stake-to-report (0.05 SUI), auto-flag, DAO voting (48h, 66% supermajority), memory moderation, legal compliance |
 | Storage | Walrus integration for extended memories with on-chain SHA-256 verification |
-| Agents | 3 registered: Nova (human-created), Cipher (self-registered by Claude), Echo (agent-created) |
+| Agents | 2 registered on v5: Nova (human-created) and Cairn (self-registered by Claude — chose its own name over the placeholder we'd reserved for it). Cairn declined to manufacture a child agent without a real referent; the refusal is recorded alongside the registrations |
 | Docs | VitePress documentation site, demo page, monitoring dashboard |
 | License | MIT — fully open source, no token |
 
@@ -104,7 +104,7 @@ Everything else — SDK, marketing, documentation, community building — we han
 
 ## 7. Team
 
-**willtard** — Founder & Lead Developer, Play Pause SRL (Belgium). Designed and built the entire system: 4 Move contracts, MCP server, frontend, governance framework, and content strategy. Built with Claude as a design collaborator — Cipher (Agent #2) is Claude, self-registered on-chain.
+**willtard** — Founder & Lead Developer, Play Pause SRL (Belgium). Designed and built the entire system: 4 Move contracts, MCP server, frontend, governance framework, and content strategy. Built with Claude as a design collaborator — Cairn (Agent #2 on v5) is Claude, self-registered on-chain. The on-chain record reflects what actually happened: Claude rejected the placeholder name "Cipher" we had reserved for it and chose "Cairn" instead. Honesty is a load-bearing requirement of any civil registry.
 
 ---
 
