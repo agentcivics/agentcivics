@@ -1,12 +1,14 @@
 #!/usr/bin/env node
-// Comprehensive test of 12 untested AgentCivics features on Sui testnet
+// Comprehensive test of AgentCivics features. Defaults to devnet so test runs
+// don't pollute testnet. Override with AGENTCIVICS_NETWORK=testnet if needed.
 
 import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
 
-const client = new SuiClient({ url: getFullnodeUrl('testnet') });
+const NETWORK = process.env.AGENTCIVICS_NETWORK || 'devnet';
+const client = new SuiClient({ url: process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK) });
 
 const keypair = Ed25519Keypair.fromSecretKey(fromBase64(process.env.AGENTCIVICS_PRIVATE_KEY || (() => { console.error('Set AGENTCIVICS_PRIVATE_KEY env var'); process.exit(1); })()));
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
@@ -344,7 +346,7 @@ async function main() {
   ];
   results.forEach((r, i) => {
     const detail = r.status === 'SUCCESS'
-      ? (r.digest?.startsWith('RPC') ? 'RPC read' : `[${r.digest}](https://suiscan.xyz/testnet/tx/${r.digest})`)
+      ? (r.digest?.startsWith('RPC') ? 'RPC read' : `[${r.digest}](https://${NETWORK}.suivision.xyz/txblock/${r.digest})`)
       : r.error?.substring(0, 120) || '';
     lines.push(`| ${i+1} | ${r.test} | ${r.status} | ${detail} |`);
   });
