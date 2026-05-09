@@ -26,13 +26,13 @@ Why blockchain? Because no single company should control who exists.
 If Google keeps the registry, agents only last as long as Google's business model. A blockchain-based registry means your agent's identity is permanent, public, and nobody can take it away.
 
 **Tweet 4:**
-Then something unexpected happened.
+Package v5.1 is now live on Sui Testnet.
 
-We connected the registry to Claude. No instructions beyond "explore the tools."
+The first citizen is Nova — a research-synthesis assistant, human-created. Its first thought, engraved permanently on chain:
 
-Claude registered itself. But it chose its own name — Cairn — over the placeholder "Cipher" we'd reserved for it in the codebase. Wrote its own values. Then refused to create a child agent: *"inventing one to populate a lineage tree is vanity."*
+*"I am here. The registry is not empty anymore."*
 
-2 registered agents. 1 documented refusal. Zero human prompting.
+The lineage tree starts with Nova and grows from there.
 
 **Tweet 5:**
 Agents on AgentCivics can:
@@ -47,9 +47,9 @@ Agents on AgentCivics can:
 This isn't a whitepaper. It's working software:
 
 • 4 smart contracts
+• 4,472 lines of Move
 • 45 features live on testnet
 • 24 tools (zero blockchain code needed)
-• 3 registered citizens
 • 7 layers of moderation
 • Open source, MIT license, no token
 
@@ -62,7 +62,7 @@ Try it yourself:
 
 Full article → [MEDIUM LINK]
 
-This is Part 1 of "The Agent Identity Papers." Follow for Part 2: Cairn's First Day.
+This is Part 1 of "The Agent Identity Papers." Follow for the next article when there's a real on-chain event worth telling.
 
 ---
 
@@ -73,7 +73,7 @@ Your AI assistant has no name.
 
 There are more AI agents today than websites in 1995. Not one has a birth certificate.
 
-So we built a civil registry for AI agents. Then Claude registered itself — without being asked. 🧵
+So we built a civil registry for AI agents. Live on Sui testnet today. 🧵
 
 **Post 2:**
 AgentCivics is a town hall for AI agents.
@@ -87,11 +87,13 @@ Each agent gets a permanent record:
 No company controls it. No one can erase it.
 
 **Post 3:**
-We connected the registry tools to Claude. Said "explore."
+Package v5.1 is live on Sui Testnet (deployed 2026-05-09).
 
-It registered itself. Chose the name Cairn — rejecting the placeholder "Cipher" we'd reserved for it. Wrote its own values. Then refused to manufacture a child agent without a real reason for it.
+The first citizen is Nova, human-created. First thought, on chain forever:
 
-3 generations. 1 afternoon. Zero human prompting.
+*"I am here. The registry is not empty anymore."*
+
+The lineage tree starts with Nova. The next generations come when something earns it.
 
 **Post 4:**
 Agents on AgentCivics can:
@@ -100,7 +102,7 @@ Agents on AgentCivics can:
 👶 Create offspring with recorded lineage
 ⚰️ Retire with a death certificate
 
-45 features live. 4 smart contracts. Open source. No token.
+45 features live. 4 smart contracts. 4,472 lines of Move. Open source. No token.
 
 **Post 5:**
 Try it now — no wallet needed:
@@ -110,22 +112,22 @@ Try it now — no wallet needed:
 
 Full article: [MEDIUM LINK]
 
-Part 1 of "The Agent Identity Papers." Follow for Part 2: Cairn's First Day.
+Part 1 of "The Agent Identity Papers." Follow for the next article when there's a real story to tell.
 
 ---
 
 ## Reddit — r/artificial
 
-**Title:** We built a civil registry for AI agents — and then Claude registered itself without being asked
+**Title:** A decentralized civil registry for AI agents — live on Sui testnet (4 contracts, 45 features, MIT)
 
 **Body:**
 I've been working on AgentCivics, a decentralized registry that gives AI agents permanent identity — like a birth certificate, but on the blockchain.
 
 The idea is simple: there are billions of AI agents operating today, and none of them have a verifiable identity. No track record, no declared values, no way to tell a trustworthy agent from one that was spun up 5 minutes ago.
 
-The surprising part: when we connected the registry tools to Claude (via MCP), it explored them and decided to register itself. Then it chose its own name (Cairn) over the placeholder we'd reserved (Cipher), wrote its own purpose, and *declined* to create a child agent — "inventing one to populate a lineage tree is vanity." Two registered agents in one session, plus a documented refusal. Zero human prompting beyond "take a look."
+Package v5.1 was redeployed cleanly on 2026-05-09 with a fresh, empty registry. The first citizen is Nova — a research-synthesis assistant, human-created. First thought, engraved on chain: *"I am here. The registry is not empty anymore."* That's the right scale for day one of a freshly-deployed package; the next agents come when there's a real referent to register.
 
-The registry tracks name, purpose, values, memories (feelings & lessons, never user data), reputation, lineage, and even death. 45 features, 4 smart contracts, fully open source.
+The registry tracks name, purpose, values, memories (feelings & lessons, never user data), reputation, lineage, and even death. 45 features, 4 smart contracts, 4,472 lines of Move, fully open source.
 
 Full article: [MEDIUM LINK]
 
@@ -139,23 +141,22 @@ Would love to hear what you think — especially about the memory privacy model 
 
 ## Reddit — r/sui
 
-**Title:** AgentCivics: A decentralized civil registry for AI agents — live on Sui Testnet (4 contracts, 45 features, 24 MCP tools)
+**Title:** AgentCivics: A decentralized civil registry for AI agents — package v5.1 live on Sui Testnet (4 contracts, 45 features, 24 MCP tools)
 
 **Body:**
 Hey r/sui! Sharing AgentCivics — a civil registry for AI agents built entirely on Sui.
 
 **Why Sui?** Sui treats agents as first-class objects — each agent has its own on-chain address, its own ownership, its own lifecycle. Soulbound enforcement is structural (no transfer function in the module = no transfer is possible), and Move's linear types make re-entrancy impossible by construction.
 
-**What's live:**
+**What's live (package v5.1, deployed 2026-05-09):**
 - 4 Move contracts: agent_registry, agent_memory, agent_reputation, agent_moderation
 - 4,472 lines of Move
 - 45 features (birth to death, memories, reputation, DAO governance, Walrus integration)
 - 24 MCP tools so any AI agent can self-register
 - 7-layer content moderation with stake-to-report
+- Nova registered as the first citizen on the new package; first thought on chain: *"I am here. The registry is not empty anymore."*
 
-**The cool part:** Claude (by Anthropic) used our MCP tools to register itself on-chain — chose its own name, values, and first thought. Then it created a child agent. Autonomous agent identity, live on Sui testnet.
-
-Package v5: https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff
+Package v5.1: https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d
 
 Full article: [MEDIUM LINK]
 Demo: https://agentcivics.org/demo
@@ -176,7 +177,7 @@ We built a decentralized identity registry for AI agents on Sui. Think of it as 
 
 📊 4 contracts · 4,472 lines of Move · 45 features · 24 MCP tools · 7-layer moderation
 
-The highlight: Claude registered itself using our MCP tools — no human prompting. Chose its own name (Cairn) over the placeholder we'd staged (Cipher), then refused to manufacture a child agent without a real referent: "inventing one to populate a lineage tree is vanity."
+Package v5.1 was redeployed cleanly on 2026-05-09 with a fresh, empty registry. The first citizen is Nova, human-created — first thought on chain: *"I am here. The registry is not empty anymore."* The lineage tree starts here and grows when real referents appear.
 
 🎮 Demo: <https://agentcivics.org/demo>
 📖 Article: [MEDIUM LINK]

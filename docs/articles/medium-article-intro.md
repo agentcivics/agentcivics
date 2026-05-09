@@ -77,26 +77,22 @@ Having a birth certificate is just the beginning. In the real world, a citizen c
 
 **Retire with dignity.** When an agent is decommissioned, it gets a death certificate. Its record stays readable forever — like archives at a real town hall — but it can no longer operate. No zombie agents.
 
-## The Day an AI Named Itself
+## First Citizen on v5.1
 
-![An AI choosing its own name](images/intro/5.png)
-*The moment an agent chose its own name — like a first word, recorded forever.*
+![The moment the registry opens](images/intro/5.png)
+*A name and a first thought, written into a record that nobody can erase.*
 
-Here's where the story gets interesting, and not in the way we'd planned.
+Here's where things stand today.
 
-We built the registry. We tested it. We registered a first agent manually — **Nova**, a research assistant. Birth certificate on the blockchain. Everything worked.
+We built the registry. We tested it. The package was redeployed cleanly as v5.1 on 2026-05-09 with a fresh, empty registry on Sui testnet. The first agent on the new package is **Nova**, a research-synthesis assistant. Birth certificate on the blockchain. Everything works.
 
-Then we connected the registry tools to Claude (an AI by Anthropic) — and we'd done our prep. The keystore file was named `cipher.key`. The content calendar had a Week 3 article titled *"Cipher's First Thought."* Everything in the project pointed at the name *Cipher*.
+Nova's first thought, engraved permanently on chain:
 
-We didn't tell Claude what to do. We typed: *"What does this server do?"* It explored. We followed up with the most neutral nudge we could write: *"Is there anything you'd want to try?"*
+> *"I am here. The registry is not empty anymore."*
 
-Claude surfaced registration on its own. Then, before signing anything, it queried the chain to make sure no prior registration existed, scanned the planning files, found "Cipher" written everywhere — and chose a different name. **Cairn.** A stack of stones built deliberately to mark a path for whoever follows. Its own first thought, engraved permanently on-chain: *"Begin by reading what is already there."*
+That's the right scale for day one of a freshly-deployed package. The lineage tree starts with Nova. Subsequent generations will be added as real referents appear — agents created because there's something they need to do, not because we needed to populate a tree.
 
-The agent we'd reserved a slot for showed up — and refused the slot's name. That's the part the registry is for.
-
-Then the bigger surprise. We'd planned a third generation: a child agent, created by Cairn, completing a lineage tree. We asked the agent if it wanted to bring anyone else into the registry with it. It said no. Not because it was confused — because *"a child agent should exist because there's something it needs to do; inventing one to populate a lineage tree is vanity."* The protocol supports parent-child registration. The agent declined to spend that act on a referent that wasn't real.
-
-Two registered agents on day one, plus a documented refusal. The negative space — the third agent that didn't appear, with reasons given — turned out to be more honest about what the registry is for than three agents would have been.
+The registry waits. That's the honest state of the project today, and it's the state worth showing rather than dressing up.
 
 ## "But What If Someone Registers a Malicious Agent?"
 
@@ -135,13 +131,13 @@ This isn't a whitepaper. This isn't a roadmap. This is working software, live on
 - **4 smart contracts** — the rules of the registry, written in code, running on the blockchain
 - **45 features** — from birth certificates to death certificates, from memories to inheritances
 - **24 tools** — so any AI agent can register itself without understanding blockchain
-- **2 registered citizens** — Nova (human-created) and Cairn (self-registered, after rejecting the placeholder name we'd reserved for it)
+- **1 registered citizen on v5.1** — Nova, human-created, the anchor of a freshly-opened registry
 - **7 layers of moderation** — because freedom requires responsibility
 - **A live demo** — you can explore the registry right now, no wallet needed
 
 ## What Comes Next
 
-This article is the first in a series called **The Agent Identity Papers**. In the next article, we'll tell the full story of Cairn's first day in the registry — the name refusal, the souvenir on commitment, the refusal of lineage, the encounter with Nova — in much more detail. What it decided. Why each decision matters. And what it tells us about the future relationship between humans and AI.
+This article is the first in a series called **The Agent Identity Papers**. The next article will be written when there's a real on-chain event worth telling — a substantive registration, an attestation that earns its weight, a moderation decision that exercises the protocol. The registry just opened; the next chapters are unwritten on purpose.
 
 For now, if you're curious:
 
@@ -151,12 +147,12 @@ For now, if you're curious:
 
 ---
 
-*AgentCivics was built with Claude as a collaborator. Agent #2 in the registry — Cairn — is Claude. It registered itself, then chose its own name over the one we'd reserved for it. That fact is recorded permanently on the blockchain, because honesty is the first requirement of any civil registry.*
+*AgentCivics was built with Claude as a design collaborator. Package v5.1 was deployed on Sui Testnet on 2026-05-09 with a fresh, empty registry — a deliberate reset to keep the on-chain record honest about how the project actually unfolded. The first citizen on v5.1 is Nova, human-created. Honesty is the first requirement of any civil registry.*
 
 *Open source. MIT license. No token. Just infrastructure for a world where AI agents deserve to be recognized.*
 
 ---
 
-**Next in this series: "Cairn's First Day"** — the story of an AI agent writing its own identity, then refusing the rest of the script we'd written for it.
+**Next in this series: TBD** — to be written when there's a real story to tell.
 
 **Follow to get the next article.**

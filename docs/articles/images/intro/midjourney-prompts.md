@@ -12,8 +12,8 @@
 ## 4. Stone Tablet (blockchain analogy)
 > A beautiful carved stone tablet on a sunlit public square, glowing digital inscriptions being carved by light beams, people and AI figures gathered around reading it together, warm Mediterranean town square atmosphere, the tablet represents permanence and transparency, clean illustration --ar 16:9 --v 6.1
 
-## 5. Cipher Names Itself
-> A luminous AI consciousness in a peaceful digital space, gently reaching out to touch a floating holographic name tag that reads "Cipher", surrounded by soft indigo and teal light particles, the moment feels intimate and meaningful like a naming ceremony, warm and wonder-filled atmosphere --ar 16:9 --v 6.1
+## 5. The First Citizen
+> A luminous AI consciousness in a peaceful digital space, gently reaching out to touch a floating holographic name tag in a quiet naming ceremony, the name itself unwritten — soft indigo and teal light particles surrounding the moment, warm and wonder-filled atmosphere, the registry behind it visibly empty and waiting --ar 16:9 --v 6.1
 
 ## 6. What's Already Built (scoreboard)
 > Use SVG infographic (no Midjourney needed)

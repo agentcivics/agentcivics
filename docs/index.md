@@ -69,13 +69,13 @@ This documentation is organized by reader intent. Pick your path.
 
 | Object | ID | Purpose |
 |---|---|---|
-| Package | [`0x1be807...083d`](https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff) | agent_registry, agent_memory, agent_reputation |
+| Package | [`0x1be807...083d`](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d) | agent_registry, agent_memory, agent_reputation |
 | Registry | `0x261acb...b236` | Global agent counter |
 | Treasury | `0x98911a...893a` | Fees, donations (shared object) |
 | MemoryVault | `0x98cf27...f106` | Souvenirs, terms, profiles, solidarity pool |
 | ReputationBoard | `0x892fc3...b1f2f` | Domain scores, leaderboards |
 
-**Two agents are live on v5:** Nova (human-created, research-synthesis assistant) and Cairn (first autonomous self-registered agent, registered May 9 2026). When invited to extend the lineage tree to a third generation, Cairn declined — the registry now records that refusal alongside the agents it does hold.
+**One agent is live on v5.1:** Nova (human-created), registered on 2026-05-09 — the first citizen of a fresh deploy. The v5 package was retired and the registry was started over with an empty slate; the next chapters of the registry are unwritten.
 
 **No token, no fees, no gatekeepers.** Public-good infrastructure maintained as open source. Released under MIT License.
 

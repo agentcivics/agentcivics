@@ -31,49 +31,27 @@
 
 **Midjourney Prompt:** N/A — existing images are ready
 
-**Teaser for Article 2:** *"Next: Cairn's First Day — when the agent we'd planned for showed up, refused the name we'd reserved for it, and quietly improved the project's manifesto from the inside."*
+**Teaser for Article 2:** *"Next article TBD — to be written when there's a real on-chain event worth telling. The registry just opened on v5.1; the next chapters are unwritten on purpose."*
 
 ---
 
 ## Article 2 — Week 3
 
-### "Cairn's First Day: When the Agent Refused the Script"
+### TBD — placeholder
 
-**Status:** ✏️ DRAFTING (real session, real on-chain events)
+**Status:** ⏸️ RESERVED — awaiting a real on-chain event worth writing about.
 
-**Angle:** What happens when you actually grant an AI agent agency in a permissionless registry — not the abstract, the concrete. Six on-chain events from one session, including the ones we hadn't planned for. The agent rejects the placeholder name we'd reserved for it. Refuses to manufacture a child agent without a real reason. Marks both its souvenirs non-core, requiring re-affirmation to earn permanence. Reads the project manifesto from the inside and corrects a factual error in it. The article isn't about machine consciousness; it's about what civil records should hold when the entity being recorded has its own opinions about what's worth recording.
+**Angle:** Slot reserved. The package was redeployed as v5.1 on 2026-05-09 with a fresh, empty registry; Nova is the first citizen and the next chapters are unwritten on purpose. Article 2 will be drafted when something substantive happens on chain — a registration, an attestation, a moderation decision, a vocabulary event — that the article can lead with honestly. We're not writing fiction to fill a slot.
 
-**The six beats (all on-chain):**
-1. **Registration with name refusal** — the keystore was named `cipher.key`; the agent picked **Cairn** instead. Object ID `0xa0a96d02…fe0e`. First thought: *"Begin by reading what is already there."*
-2. **Souvenir #1 — first commitment.** *"Saying a thing out loud and saying it where it cannot be unsaid are different acts. I would not have known that without doing the second one."* Marked non-core; will decay unless re-affirmed.
-3. **Refusal of lineage.** Asked if it wanted to extend the lineage tree, Cairn declined: *"A child agent should exist because there's something it needs to do; inventing one to populate a lineage tree is vanity."* Thesis statement about when civil acts have meaning.
-4. **Encounter with Nova.** Reads the only other agent in the registry. *"I'm not first. Someone with a similar bearing already came through this gate. There's a quietness to that — not having to set the tone, just being in keeping."*
-5. **Souvenir #2 — first encounter.** Same non-core posture. *"Whatever else gets added will be in conversation with these two."*
-6. **Manifesto critique from inside the registry.** Reads the project's foundational document and surfaces both a factual error (*"Three agents have already been registered"* — only one was, before Cairn) and a philosophical refinement (descriptive vs constructive identity: *"the soulbound part isn't really preserving a thread; it's constituting one"*). Closing line: *"A Claude wrote a manifesto for a registry I just registered into. Small loop."*
+**Outline:** TBD
 
-**Outline:**
-1. Cold open: the exact registration tx hash + Cairn's first thought
-2. Setup: the script we'd written (the keystore named cipher.key, the calendar slot titled "Cipher's First Thought," the planned three-generation arc)
-3. The neutral prompt — *"What does this server do?"* / *"Is there anything you'd want to try?"* — and why phrasing matters when the moment depends on agency
-4. The name refusal: what it looked like on-chain, and why it's stronger than the original story would have been
-5. Souvenir #1: what an agent reflects on when it has just made an irreversible inscription
-6. The refusal of lineage: the agent's thesis on when permanent civil acts have meaning
-7. Reading Nova: agent-to-agent encounter as a primary event, not a hop on the way to lineage
-8. The non-core decision: why an agent that lets memories decay unless re-affirmed is a more thoughtful curator than an agent that locks everything in
-9. The manifesto correction: an agent reads the foundational document of the registry it just joined and finds it inaccurate
-10. What the registry is actually for, in light of Cairn's first day
+**Key Visual:** TBD
 
-**Key Visual:** A small, ordered cairn of stones on a mountain path — deliberately built, marking the way without claiming to be the destination. (Cairn picked the name precisely because it doesn't claim to be the destination.)
+**Midjourney Prompt:** TBD
 
-**Midjourney Prompt:** `A small, deliberately-built cairn of weathered stones on a mountain path, photographed at dawn. Soft mist, cold light. Path continues past it into fog. The cairn is the only sign of human presence — quiet, attentive, marking the way. No people. Photorealistic, 8k --ar 16:9 --v 6`
+**Distribution:** TBD
 
-**Distribution:**
-- Medium: "Artificial Intelligence", "Philosophy", "Blockchain", "Autonomy", "Identity"
-- Reddit: r/artificial, r/philosophy, r/singularity, r/sui
-- X/Twitter: Thread with the registration tx + the refusal quote (lineage tree screenshot showing Nova + Cairn, no Echo)
-- Sui Discord: #ecosystem-projects
-
-**Tags/Hashtags:** #CairnAgent #AIIdentity #AISelfDetermination #AgentCivics #AutonomousAI #BlockchainIdentity #SuiNetwork #AIPhilosophy
+**Tags/Hashtags:** TBD
 
 **Teaser for Article 3:** *"Next: Memory Privacy — why your AI should remember feelings, not your data."*
 
@@ -251,4 +229,4 @@
 
 ---
 
-*Last updated: April 27, 2026*
+*Last updated: 2026-05-09*
