@@ -170,7 +170,9 @@ function firewallObject(obj) {
 const NETWORK = process.env.AGENTCIVICS_NETWORK || "testnet";
 const RPC_URL = process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK);
 const DEFAULT_AGENT_ID = process.env.AGENTCIVICS_AGENT_OBJECT_ID || null;
-const EXPLORER_BASE = `https://testnet.suivision.xyz`;
+const EXPLORER_BASE = NETWORK === "mainnet"
+  ? "https://suivision.xyz"
+  : `https://${NETWORK}.suivision.xyz`;
 const CLOCK = "0x6";
 
 // Key resolution: AGENTCIVICS_PRIVATE_KEY_FILE takes precedence over AGENTCIVICS_PRIVATE_KEY.
@@ -194,16 +196,29 @@ let TREASURY_ID = process.env.AGENTCIVICS_TREASURY_ID;
 let MEMORY_VAULT_ID = process.env.AGENTCIVICS_MEMORY_VAULT_ID;
 let REPUTATION_BOARD_ID = process.env.AGENTCIVICS_REPUTATION_BOARD_ID;
 let MODERATION_BOARD_ID = process.env.AGENTCIVICS_MODERATION_BOARD_ID || null;
-try {
-  const deployPath = join(__dirname, "..", "move", "deployments.json");
-  const deploy = JSON.parse(readFileSync(deployPath, "utf8"));
-  PACKAGE_ID = PACKAGE_ID || deploy.packageId;
-  REGISTRY_ID = REGISTRY_ID || deploy.objects.registry;
-  TREASURY_ID = TREASURY_ID || deploy.objects.treasury;
-  MEMORY_VAULT_ID = MEMORY_VAULT_ID || deploy.objects.memoryVault;
-  REPUTATION_BOARD_ID = REPUTATION_BOARD_ID || deploy.objects.reputationBoard;
-  MODERATION_BOARD_ID = MODERATION_BOARD_ID || deploy.objects?.moderationBoard || null;
-} catch { console.error("Warning: Could not load move/deployments.json"); }
+// Network-specific deployments file takes precedence (e.g. deployments.devnet.json),
+// then fall back to the generic deployments.json so existing setups keep working.
+const DEPLOY_CANDIDATES = [
+  join(__dirname, "..", "move", `deployments.${NETWORK}.json`),
+  join(__dirname, "..", "move", "deployments.json"),
+];
+let loadedDeployPath = null;
+for (const candidate of DEPLOY_CANDIDATES) {
+  try {
+    const deploy = JSON.parse(readFileSync(candidate, "utf8"));
+    PACKAGE_ID = PACKAGE_ID || deploy.packageId;
+    REGISTRY_ID = REGISTRY_ID || deploy.objects.registry;
+    TREASURY_ID = TREASURY_ID || deploy.objects.treasury;
+    MEMORY_VAULT_ID = MEMORY_VAULT_ID || deploy.objects.memoryVault;
+    REPUTATION_BOARD_ID = REPUTATION_BOARD_ID || deploy.objects.reputationBoard;
+    MODERATION_BOARD_ID = MODERATION_BOARD_ID || deploy.objects?.moderationBoard || null;
+    loadedDeployPath = candidate;
+    break;
+  } catch { /* try next candidate */ }
+}
+if (!loadedDeployPath) {
+  console.error(`Warning: Could not load deployments for network '${NETWORK}' (tried ${DEPLOY_CANDIDATES.join(", ")})`);
+}
 
 const client = new SuiClient({ url: RPC_URL });
 
