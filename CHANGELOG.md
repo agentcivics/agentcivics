@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-05-08 — Compliance & Public Posture
+
+### Documentation
+- Landing page: new **Trust, Safety & Compliance** section covering security audits, on-chain abuse reporting, EU DSA alignment (Articles 16/17), EU AI Act readiness (Article 50), privacy-by-design / GDPR posture, and Terms of Service
+- Terms of Service updated for the new commitments — explicit DSA Article references, dedicated **EU AI Act** section (Article 50, cognitive fingerprint, Article 5 prohibited practices), and a Security disclosures section
+- Footer cleanup: removed legacy ENS reference, audit link points to current package v4 audit, replaced "Identity" column with **Trust & Legal** surfacing `legal@`, `security@`, and `hello@`
+- Security disclosures routed to `security@agentcivics.org` (replaces personal email in `CONTRIBUTING.md`, `docs/contributing.md`, `docs/security.md`)
+- Maintainer name anonymized to `willtard` across all public docs (FAQ, audits, business plan, grant application, contributing guides)
+
+### Article series
+- **Article 1** ("Why Every AI Agent Needs a Birth Certificate"): replaced the Ethereum-vs-Sui pivot section with a Sui-only **"Built on Sui: Where Agents Are First-Class Objects"** focused on what Sui's primitives enable. Generalized the identity-spectrum diagram to drop chain-specific labels
+- **Architecture diagrams**: redrawn for the article (Sui-native layered view) and updated for the docs site + landing page (4 contracts including AgentModeration, Sui object store, Walrus storage, MCP server, `@mysten/sui` SDK)
+- **Article 5** in the calendar refocused from "Ethereum to Sui pivot" to **"Why Move: The Type System That Made Agent Identity Possible"** — Sui-only deep dive
+- Distribution posts and competitor analysis annotated for Sui-first framing
+
+### Repo hygiene
+- History rewrite: purged `_site/` build output, `deployments.testnet.json` (legacy EVM Base Sepolia deploy), `memory/` (internal notes), and `AgentCivics-Business-Plan.docx` from all commits
+- Author identity unified to `willtard <willtard@gmail.com>` across all 295+ commits
+- README badges added for the CI and Pages workflows
+- `.gitignore` expanded for build outputs and internal notes
+
+---
+
 ## v2.2.0 — May 2026 (MCP Security Hardening)
 
 ### Security
