@@ -158,7 +158,7 @@
 4. Soulbinding by construction: there is no transfer function, so the object cannot move. Period.
 5. Linear types: why double-spend is a type error in Move
 6. Re-entrancy as a non-problem: how the type system rules it out so you can write fee-collecting code without a defensive crouch
-7. The `UpgradeCap`: shipping package v4 without proxy patterns or storage migrations
+7. The `UpgradeCap`: shipping package v5 without proxy patterns or storage migrations
 8. Shared objects and how the `Registry`, `Treasury`, and `MemoryVault` become public infrastructure
 9. The `agent_moderation.move` walkthrough: stake-to-report, council resolution, DAO proposals — all in one module
 10. A short developer wishlist: what would make Move even better for projects like this

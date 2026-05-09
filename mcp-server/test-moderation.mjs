@@ -16,11 +16,11 @@ if (!SECRET) { console.error('Set AGENTCIVICS_PRIVATE_KEY env var (base64 Ed2551
 const keypair = Ed25519Keypair.fromSecretKey(fromBase64(SECRET));
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
 
-const PKG   = '0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580';
-const ORIG_PKG = '0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580';
+const PKG   = '0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff';
+const ORIG_PKG = '0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff';
 const BOARD = '0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448';
-const REG   = '0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f';
-const TREAS = '0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4';
+const REG   = '0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930';
+const TREAS = '0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a';
 const CLOCK = '0x6';
 
 const CIPHER = '0xda3ecae0cced0cd5d2431eb956f1d0050877aafd128cf71766af27d11075e9f7';

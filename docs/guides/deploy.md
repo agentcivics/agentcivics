@@ -36,13 +36,13 @@ sui client publish --gas-budget 500000000
 2. Update `frontend/index.html` constants (PACKAGE_ID, REGISTRY_ID, etc.)
 3. Update MCP server env vars
 
-### After Upgrade (v4+: Moderation Module)
+### After Upgrade (v5+: Moderation Module)
 
-The `agent_moderation` module was added in package v4. Since `init()` only runs on the first publish, the ModerationBoard shared object must be created manually after the upgrade:
+The `agent_moderation` module was added in package v5. Since `init()` only runs on the first publish, the ModerationBoard shared object must be created manually after the upgrade:
 
 ```bash
 sui client call \
-  --package 0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580 \
+  --package 0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff \
   --module agent_moderation \
   --function create_moderation_board \
   --gas-budget 50000000
@@ -58,7 +58,7 @@ After the board is created, add additional moderators:
 
 ```bash
 sui client call \
-  --package 0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580 \
+  --package 0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff \
   --module agent_moderation \
   --function add_council_member \
   --args 0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448 0xNEW_MEMBER_ADDRESS \

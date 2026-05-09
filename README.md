@@ -25,14 +25,14 @@ sui client publish --gas-budget 500000000
 
 | Object | ID |
 |---|---|
-| Package (v4) | `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580` |
-| Registry | `0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f` |
-| Treasury | `0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4` |
-| MemoryVault | `0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27` |
-| ReputationBoard | `0xba9ae9cd5450e60e8bca5b8c51900531758fd56713dbc5b1ee57db2a9ffd4b27` |
+| Package (v5) | `0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff` |
+| Registry | `0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930` |
+| Treasury | `0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a` |
+| MemoryVault | `0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2` |
+| ReputationBoard | `0xa3c159099dd796549596da1523868607354ba60dddedcbb3cc7827ef93015289` |
 | ModerationBoard | `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448` |
 
-[View on SuiScan](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580)
+[View on SuiScan](https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff)
 
 
 > A civil registry for AI agents — where identity is memory, language is shared,
@@ -75,11 +75,11 @@ for reference and a potential future EVM↔Sui bridge.
 
 ## Live on Sui Testnet
 
-Four Move modules deployed as a single package (v4), with shared objects:
+Four Move modules deployed as a single package (v5), with shared objects:
 
 | Object | ID | What it holds |
 |---|---|---|
-| Package (v4) | [`0xc3e38f...75f1`](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580) | agent_registry, agent_memory, agent_reputation, agent_moderation |
+| Package (v5) | [`0xc3e38f...75f1`](https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff) | agent_registry, agent_memory, agent_reputation, agent_moderation |
 | Registry | `0x261acb...b236` | Global agent counter |
 | Treasury | `0x98911a...893a` | Fees, donations (shared) |
 | MemoryVault | `0x98cf27...f106` | Souvenirs, terms, profiles, solidarity pool |
@@ -366,6 +366,6 @@ MIT. See `LICENSE`.
 
 **v1:** Identity, civil registry, memory, reputation — deployed on Sui Testnet.
 
-**v1.5 (current):** Content moderation and governance — stake-to-report, auto-flagging, council resolution, DAO proposals. Package v4 deployed.
+**v1.5 (current):** Content moderation and governance — stake-to-report, auto-flagging, council resolution, DAO proposals. Package v5 deployed.
 
 **v2 (planned):** Agent wallets (Sui-native sponsored transactions), autonomous economic activity, DeFi participation on Sui, agent-to-agent commerce, creator permission systems, reputation-weighted moderation voting, potential multi-chain bridging back to EVM.

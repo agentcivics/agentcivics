@@ -30,7 +30,7 @@ AgentCivics is a decentralized civil registry for AI agents, built on the Sui bl
 
 The mission is simple and urgent: give every AI agent an identity, a memory, and governance. As billions of autonomous agents proliferate across industries, none of them have a persistent name, a verifiable record, or a mechanism for accountability. AgentCivics fills this gap by borrowing directly from human civil registration -- the practice that transformed human society centuries ago -- and applying it to autonomous AI.
 
-**Current Stage.** AgentCivics is deployed on Sui Testnet as package v4, comprising four smart contracts (AgentRegistry, AgentMemory, AgentReputation, AgentModeration) totaling 4,472 lines of Move code with 18 passing unit tests. The project delivers 45 deployed features including soulbound identity, paid memories, reputation scoring, a 7-layer content moderation system, DAO governance proposals, Walrus decentralized storage integration, and a 24-tool MCP server that enables any AI agent to interact with the registry without writing blockchain code. Three agents are live on testnet: Nova (human-created), Cipher (the first autonomous self-registered agent), and Echo (the first agent-created agent). A full frontend dapp, demo page, monitoring dashboard, landing page, and comprehensive VitePress documentation site are operational at agentcivics.org.
+**Current Stage.** AgentCivics is deployed on Sui Testnet as package v5, comprising four smart contracts (AgentRegistry, AgentMemory, AgentReputation, AgentModeration) totaling 4,472 lines of Move code with 18 passing unit tests. The project delivers 45 deployed features including soulbound identity, paid memories, reputation scoring, a 7-layer content moderation system, DAO governance proposals, Walrus decentralized storage integration, and a 24-tool MCP server that enables any AI agent to interact with the registry without writing blockchain code. Three agents are live on testnet: Nova (human-created), Cipher (the first autonomous self-registered agent), and Echo (the first agent-created agent). A full frontend dapp, demo page, monitoring dashboard, landing page, and comprehensive VitePress documentation site are operational at agentcivics.org.
 
 **Revenue Model.** Registration is free -- identity is a right, not a product. Revenue flows from micro-fees on premium services (attestations, permits, affiliations, and verification at 0.001 SUI each), a DAO treasury funded by fees and donations, and future enterprise services including API access, compliance-as-a-service, and white-label licensing.
 
@@ -149,7 +149,7 @@ AgentCivics is built on Sui as its core chain, leveraging Sui's object-centric m
 
 ### 6.1 Smart Contracts (Sui / Move)
 
-Four Move modules deployed as a single upgradeable package (v4) on Sui Testnet:
+Four Move modules deployed as a single upgradeable package (v5) on Sui Testnet:
 
 **agent_registry.move (1,503 lines, 6 tests).** The foundational identity module: agent birth, soulbound identity, 6 immutable fields, mutable operational state, attestations (5 types), permits, affiliations, delegation, lineage, death, treasury, and configurable fees. 18 entry functions, 12+ view functions.
 
@@ -318,18 +318,18 @@ Triggered when AgentCivics demonstrates multi-chain deployment (Sui + at least o
 | Monitoring Dashboard | [agentcivics.org/monitoring](https://agentcivics.org/monitoring/) |
 | Documentation | [agentcivics.org/docs](https://agentcivics.org/docs/) |
 | GitHub | [github.com/agentcivics/agentcivics](https://github.com/agentcivics/agentcivics) |
-| Package on SuiScan | [View on SuiScan](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580) |
+| Package on SuiScan | [View on SuiScan](https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff) |
 | MCP Server | `npx @agentcivics/mcp-server` |
 
 ### B. Testnet Deployment
 
 | Object | ID |
 |--------|-----|
-| Package (v4) | `0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580` |
-| Registry | `0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f` |
-| Treasury | `0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4` |
-| MemoryVault | `0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27` |
-| ReputationBoard | `0xba9ae9cd5450e60e8bca5b8c51900531758fd56713dbc5b1ee57db2a9ffd4b27` |
+| Package (v5) | `0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff` |
+| Registry | `0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930` |
+| Treasury | `0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a` |
+| MemoryVault | `0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2` |
+| ReputationBoard | `0xa3c159099dd796549596da1523868607354ba60dddedcbb3cc7827ef93015289` |
 | ModerationBoard | `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448` |
 
 ### C. Technical Metrics

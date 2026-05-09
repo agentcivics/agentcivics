@@ -15,9 +15,9 @@ if (!SECRET) { console.error('Set AGENTCIVICS_PRIVATE_KEY env var (base64 Ed2551
 const keypair = Ed25519Keypair.fromSecretKey(fromBase64(SECRET));
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
 
-const PKG   = '0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580';
-const REG   = '0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f';
-const VAULT = '0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27';
+const PKG   = '0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff';
+const REG   = '0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930';
+const VAULT = '0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2';
 const CLOCK = '0x6';
 const CIPHER = '0xda3ecae0cced0cd5d2431eb956f1d0050877aafd128cf71766af27d11075e9f7';
 const ECHO   = '0x8d9865813a99fae3bc3a59ebec31068148ecf44c6228c799011568f419181c59';
