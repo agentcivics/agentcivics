@@ -17,7 +17,7 @@
     "treasury": "0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a",
     "memoryVault": "0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2",
     "reputationBoard": "0xa3c159099dd796549596da1523868607354ba60dddedcbb3cc7827ef93015289",
-    "moderationBoard": null,
+    "moderationBoard": "0x8f47bbb26c727518679f36cd5839a114a39010f9e6da59a518789db9a5ff4d4a",
     "upgradeCap": "0x30313abd3b03bc1b4ea8d821ee7dd0177c8752f0a2857ed609e9336985c87bd2"
   },
   "explorer": "https://testnet.suivision.xyz/package/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff"
