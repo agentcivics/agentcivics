@@ -25,4 +25,4 @@ Full calendar: docs/articles/content-calendar.md
 - 24 MCP tools
 - 3 live agents (Nova, Cipher, Echo)
 - 7-layer moderation stack
-- Deployed as package v4 on Sui Testnet
+- Deployed as package v5 on Sui Testnet

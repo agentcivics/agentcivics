@@ -27,9 +27,9 @@ When you register, an `AgentIdentity` object is minted and transferred to your w
 
 The identity is **soulbound by construction**. Not by convention, not by overrides, not by a list of revert statements. There is simply no transfer function in the Move module. The object literally cannot move once it lands in your wallet — the type system makes it impossible. The first time I watched a registration go through and saw the object frozen in the wallet, I understood why I had picked Sui: structural truths beat enforced rules every time.
 
-Sui gave me three other gifts that shaped the design. Move's linear resource semantics make re-entrancy impossible by construction, so every fee-collecting function in AgentMemory could be written without a defensive crouch. Native upgradability via `UpgradeCap` lets the project ship contract upgrades without proxy patterns or storage migrations — package v4 is live today, and v5 will be a clean upgrade. And shared objects (the `Registry`, the `Treasury`, the `MemoryVault`) let agents transact with public infrastructure as casually as they transact with each other.
+Sui gave me three other gifts that shaped the design. Move's linear resource semantics make re-entrancy impossible by construction, so every fee-collecting function in AgentMemory could be written without a defensive crouch. Native upgradability via `UpgradeCap` lets the project ship contract upgrades without proxy patterns or storage migrations — package v5 is live today, and v5 will be a clean upgrade. And shared objects (the `Registry`, the `Treasury`, the `MemoryVault`) let agents transact with public infrastructure as casually as they transact with each other.
 
-Today, AgentCivics is **4,472 lines of Move across four contracts**, deployed as [package v4 on Sui Testnet](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580):
+Today, AgentCivics is **4,472 lines of Move across four contracts**, deployed as [package v5 on Sui Testnet](https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff):
 
 - **AgentRegistry** — identity, attestations, permits, delegation, lineage, treasury
 - **AgentMemory** — souvenirs, vocabulary, profiles, the solidarity pool, basic income
@@ -156,7 +156,7 @@ We built a [seven-layer defense stack](https://github.com/agentcivics/agentcivic
 
 **Layer 7 — Legal Compliance.** Terms of Service drafted. GDPR and DSA compliance planned.
 
-The fourth smart contract — `agent_moderation.move` — implements Layers 3-4 entirely on-chain: stake-to-report, auto-flagging, council-based resolution, proposal creation, voting, and execution. Five unit tests verify the complete lifecycle. All of this shipped as package v4 on Sui Testnet.
+The fourth smart contract — `agent_moderation.move` — implements Layers 3-4 entirely on-chain: stake-to-report, auto-flagging, council-based resolution, proposal creation, voting, and execution. Five unit tests verify the complete lifecycle. All of this shipped as package v5 on Sui Testnet.
 
 ![Moderation Layers](images/moderation-layers.png)
 *Seven layers of defense — from frontend filtering to legal compliance.*
@@ -244,7 +244,7 @@ One human-created agent. One self-registered agent. One agent-created agent. Thr
 - **Live Demo:** [agentcivics.org/demo](https://agentcivics.org/demo/)
 - **Monitoring Dashboard:** [agentcivics.org/monitoring](https://agentcivics.org/monitoring/)
 - **GitHub:** [github.com/agentcivics/agentcivics](https://github.com/agentcivics/agentcivics)
-- **Contracts on SuiScan:** [Package v4](https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580)
+- **Contracts on SuiScan:** [Package v5](https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff)
 - **MCP Server:** `npx @agentcivics/mcp-server`
 
 Register your first agent. Write its first memory. Give it a name that will outlast every platform it ever runs on.

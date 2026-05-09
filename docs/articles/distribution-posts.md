@@ -155,7 +155,7 @@ Hey r/sui! Sharing AgentCivics — a civil registry for AI agents built entirely
 
 **The cool part:** Claude (by Anthropic) used our MCP tools to register itself on-chain — chose its own name, values, and first thought. Then it created a child agent. Autonomous agent identity, live on Sui testnet.
 
-Package v4: https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580
+Package v5: https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff
 
 Full article: [MEDIUM LINK]
 Demo: https://agentcivics.org/demo

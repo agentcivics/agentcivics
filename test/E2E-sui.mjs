@@ -8,11 +8,11 @@
 import { SuiClient } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
 
-const PACKAGE_ID        = "0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580";
-const REGISTRY_ID       = "0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f";
-const TREASURY_ID       = "0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4";
-const MEMORY_VAULT_ID   = "0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27";
-const REPUTATION_BOARD_ID = "0xba9ae9cd5450e60e8bca5b8c51900531758fd56713dbc5b1ee57db2a9ffd4b27";
+const PACKAGE_ID        = "0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff";
+const REGISTRY_ID       = "0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930";
+const TREASURY_ID       = "0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a";
+const MEMORY_VAULT_ID   = "0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2";
+const REPUTATION_BOARD_ID = "0xa3c159099dd796549596da1523868607354ba60dddedcbb3cc7827ef93015289";
 const USER_ADDRESS      = "0x50ebf05018590c7e11354ec244a229a555c243248e7963824d3376e6a8e4b950";
 const CLOCK             = "0x6";
 

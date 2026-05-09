@@ -57,3 +57,4 @@ memory/
 
 # Legacy EVM deploy manifest (obsolete since Sui pivot)
 deployments.testnet.json
+*.bak

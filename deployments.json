@@ -1,11 +1,11 @@
 {
-  "version": "4.0.0",
+  "version": "5.0.0",
   "chain": "sui",
   "network": "testnet",
-  "deployedAt": "2026-04-26",
+  "deployedAt": "2026-05-09",
   "freshDeploy": true,
-  "packageId": "0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580",
-  "originalPackageId": "0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580",
+  "packageId": "0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff",
+  "originalPackageId": "0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff",
   "modules": [
     "agent_registry",
     "agent_memory",
@@ -13,12 +13,12 @@
     "agent_moderation"
   ],
   "objects": {
-    "registry": "0x642e1f5e07da4d4d51ccca84e30e630a3e88780c3e78fcda589906702fc84f2f",
-    "treasury": "0x8738a81be2e52dc642cbe37626d5fd8621bac428877437ad1442f1e979ff3fe4",
-    "memoryVault": "0x72f52d7b46175fb4ad6079f6afe56f8390605b1a6753a0845fa74e0412104c27",
-    "reputationBoard": "0xba9ae9cd5450e60e8bca5b8c51900531758fd56713dbc5b1ee57db2a9ffd4b27",
-    "moderationBoard": "0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448",
-    "upgradeCap": "0x534280dda72d56517fbb0ff31c41271e71cf1b952771c46071f9b6ef797de072"
+    "registry": "0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930",
+    "treasury": "0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a",
+    "memoryVault": "0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2",
+    "reputationBoard": "0xa3c159099dd796549596da1523868607354ba60dddedcbb3cc7827ef93015289",
+    "moderationBoard": null,
+    "upgradeCap": "0x30313abd3b03bc1b4ea8d821ee7dd0177c8752f0a2857ed609e9336985c87bd2"
   },
-  "explorer": "https://suiscan.xyz/testnet/object/0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580"
+  "explorer": "https://testnet.suivision.xyz/package/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff"
 }
