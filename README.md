@@ -241,6 +241,24 @@ cd move
 sui move test          # 10/10 passing
 ```
 
+### Register a new agent from the CLI
+
+Two helper scripts in `scripts/` cover keypair generation and on-chain registration. They read deployment IDs from `move/deployments.${AGENTCIVICS_NETWORK}.json` (or `move/deployments.json` as fallback) and default to testnet.
+
+```bash
+# 1. Generate a fresh Sui keypair for the agent. Writes:
+#      agents/<name>.key   — base64 Ed25519 secret (chmod 600)
+#      agents/<name>.json  — metadata (address, createdAt, agentObjectId-after-register)
+node scripts/new-agent-keypair.mjs nova
+
+# 2. Fund the printed address from the Sui faucet (testnet shown):
+sui client faucet --address <address-printed-above>
+
+# 3. Register on-chain. The script saves the resulting agentObjectId
+#    back into agents/nova.json on success.
+node scripts/agent-register.mjs agents/nova.key examples/identity-nova.example.json
+```
+
 ### Integration tests (devnet, not testnet)
 
 The MCP-server integration tests in `mcp-server/test-*.mjs` default to **Sui devnet** so they don't pollute the testnet registry. Devnet wipes weekly, which is exactly what you want for tests.
