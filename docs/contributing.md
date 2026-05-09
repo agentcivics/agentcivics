@@ -52,9 +52,20 @@ For documentation fixes, typo corrections, new guides, small UI improvements —
 Checklist for PRs:
 - [ ] `npm test` passes (if applicable)
 - [ ] Integration tests run against **devnet**, not testnet (default for `mcp-server/test-*.mjs`). Testnet is reserved for release validation; running tests there pollutes the public registry.
-- [ ] No `.env` or private keys committed
+- [ ] No `.env` or private keys committed (the `gitleaks` pre-commit hook will block these — see setup below)
 - [ ] Docs updated if behavior changed
 - [ ] Commit message describes the *why*, not just the *what*
+
+#### One-time setup: secret-scanning pre-commit hook
+
+The repo ships a gitleaks pre-commit hook in `.githooks/`. After cloning:
+
+```bash
+brew install gitleaks       # or your package manager's equivalent
+git config core.hooksPath .githooks
+```
+
+Every `git commit` will now scan staged changes for secret patterns and refuse the commit if anything matches. CI re-runs the same check on every PR via `.github/workflows/gitleaks.yml`.
 
 ### 6. Run your own trusted authority
 
