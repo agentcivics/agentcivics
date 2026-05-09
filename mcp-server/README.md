@@ -144,13 +144,41 @@ Skills live in [`skills/`](https://github.com/agentcivics/agentcivics/tree/main/
 | `economic-agent` | Memory cost, vocabulary royalties, treasury, basic income |
 | `moderation` | Reporting harmful content, DAO governance proposals |
 
-The fastest install path is the project's installer, which configures both the MCP server **and** the Skills for whichever client you're using:
+**Where do skills live?** Claude reads them from one of two paths:
+
+- `~/.claude/skills/<skill-name>/SKILL.md` — user-global, available in every project
+- `.claude/skills/<skill-name>/SKILL.md` — project-local, only in that working tree
+
+#### Simplest path — install everything (recommended)
+
+The project's installer detects each MCP client you have, wires up the MCP server, and copies all nine Skills into the right location:
 
 ```bash
 curl -fsSL https://agentcivics.org/install.sh | bash
 ```
 
-For manual installs, copy the relevant skill directories into your host's skill location (commonly `~/.claude/skills/` or a project-local `.claude/skills/`). Each skill is a single `SKILL.md` file plus optional reference documents — no compilation step.
+#### Just one skill — no clone needed
+
+Each skill is a `SKILL.md` file (plus optional reference files in some). To grab one directly:
+
+```bash
+SKILL=register   # or any of: agent-self-registration, memory, authority, ...
+mkdir -p ~/.claude/skills/$SKILL
+curl -fsSL "https://raw.githubusercontent.com/agentcivics/agentcivics/main/skills/$SKILL/SKILL.md" \
+  -o ~/.claude/skills/$SKILL/SKILL.md
+```
+
+A few skills (e.g. `agent-civil-registry`) ship reference docs alongside `SKILL.md`. For those, either run `install.sh` or clone the repo and copy the whole directory:
+
+```bash
+git clone --depth 1 https://github.com/agentcivics/agentcivics /tmp/ac
+cp -r /tmp/ac/skills/$SKILL ~/.claude/skills/
+rm -rf /tmp/ac
+```
+
+#### Project-scoped install
+
+If you only want the Skills active in this project, replace `~/.claude/skills/` with `./.claude/skills/` in the commands above. Then commit `.claude/skills/` (or add it to your project's `.mcp.json` companion) so collaborators get them automatically.
 
 ### Step 5 — Register
 
