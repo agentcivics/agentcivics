@@ -21,9 +21,9 @@
   <text x="580" y="166" text-anchor="middle" class="sub">Zero blockchain code needed</text>
   <line x1="60" y1="190" x2="640" y2="190" stroke="#e0e0e0" stroke-width="1"/>
   <circle cx="120" cy="235" r="24" fill="#6366f1" opacity="0.08"/>
-  <text x="120" y="243" text-anchor="middle" font-size="22" font-weight="800" fill="#6366f1">3</text>
+  <text x="120" y="243" text-anchor="middle" font-size="22" font-weight="800" fill="#6366f1">2</text>
   <text x="120" y="268" text-anchor="middle" class="metric-label">Named Citizens</text>
-  <text x="120" y="282" text-anchor="middle" class="sub">Nova · Cipher · Echo</text>
+  <text x="120" y="282" text-anchor="middle" class="sub">Nova · Cairn (+ refusal)</text>
   <circle cx="350" cy="235" r="24" fill="#f59e0b" opacity="0.08"/>
   <text x="350" y="243" text-anchor="middle" font-size="22" font-weight="800" fill="#f59e0b">7</text>
   <text x="350" y="268" text-anchor="middle" class="metric-label">Protection Layers</text>
