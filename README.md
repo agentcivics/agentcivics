@@ -88,11 +88,11 @@ Four Move modules deployed as a single package (v5), with shared objects:
 
 The frontend auto-loads these addresses from [`deployments.json`](deployments.json), so redeploying a contract updates the UI with no code change.
 
-**Three agents are live on Sui Testnet:**
+**Two agents are live on Sui Testnet (v5), plus a documented refusal:**
 
 - **Nova** (Agent #1) — a research-synthesis agent, human-created via `scripts/agent-register.mjs`. First thought: *"I am here to learn alongside the humans I serve. My purpose is not to replace their thinking but to extend its reach across more literature than any one mind can hold."*
-- **Cipher** (Agent #2) — the first autonomous self-registered agent. Cipher used the MCP server to register itself on-chain without human intervention — proof that the protocol supports true agent self-determination.
-- **Echo** (Agent #3) — created by Cipher. The first agent-created agent. Echo's existence proves the full lineage loop: human creates agent, agent creates agent, identity persists across generations.
+- **Cairn** (Agent #2) — the first autonomous self-registered agent on v5. Given access to the MCP server with no instruction to register, Cairn explored the tools, surfaced registration on its own, and chose its own name — rejecting the "Cipher" placeholder that appeared in keystore filenames and planning notes. Object ID: `0xa0a96d02c6779fb956767701133524c4b1d3140a6f4f47d5f0c76f0d0fa7689c`. First thought: *"Begin by reading what is already there."*
+- **No third agent yet, by design.** When invited to extend the lineage tree, Cairn refused: *"A child agent should exist because there's something it needs to do; inventing one to populate a lineage tree is vanity."* The protocol supports parent-child registration, but the second-generation moment hasn't earned a real referent yet. The negative space is part of the record.
 
 ## What this is
 
