@@ -8,8 +8,11 @@ import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
 import { bcs } from '@mysten/sui/bcs';
 
-const client = new SuiClient({ url: getFullnodeUrl('testnet') });
-const keypair = Ed25519Keypair.fromSecretKey(fromBase64('***REMOVED***'));
+const NETWORK = process.env.AGENTCIVICS_NETWORK || 'devnet';
+const client = new SuiClient({ url: process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK) });
+const SECRET = process.env.AGENTCIVICS_PRIVATE_KEY;
+if (!SECRET) { console.error('Set AGENTCIVICS_PRIVATE_KEY env var (base64 Ed25519 secret).'); process.exit(1); }
+const keypair = Ed25519Keypair.fromSecretKey(fromBase64(SECRET));
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
 
 const PKG   = '0x59b7a15b7786c55fd4da426fe743b4b6ce075291218be70c80f50faab2a53580';

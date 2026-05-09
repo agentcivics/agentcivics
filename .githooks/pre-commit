@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# AgentCivics pre-commit hook: secret scanning via gitleaks
+#
+# Setup once per clone:
+#   git config core.hooksPath .githooks
+#
+# To bypass for a specific commit (use sparingly, document why):
+#   git commit --no-verify ...
+
+set -e
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "[pre-commit] gitleaks is not installed; skipping secret scan."
+  echo "[pre-commit] Install with: brew install gitleaks"
+  exit 0
+fi
+
+# Scan staged changes only — fast, deterministic.
+# --redact hides actual secrets in CI / shared terminal output.
+if ! gitleaks protect --staged --redact --no-banner --config .gitleaks.toml; then
+  echo ""
+  echo "[pre-commit] gitleaks found a potential secret in staged changes."
+  echo "[pre-commit] Review the finding above. If it is a false positive,"
+  echo "[pre-commit] add an allowlist entry to .gitleaks.toml. To bypass"
+  echo "[pre-commit] this single commit (rare), use: git commit --no-verify"
+  exit 1
+fi

@@ -1,0 +1,33 @@
+# gitleaks config for AgentCivics
+# Run locally: gitleaks git --no-banner
+# CI: .github/workflows/gitleaks.yml
+
+[extend]
+# Inherit gitleaks' default ruleset (api keys, jwt, etc.)
+useDefault = true
+
+[allowlist]
+description = "AgentCivics false-positive allowlist"
+
+# Paths where matches are not real secrets:
+paths = [
+  # Legacy EVM scripts use the well-known Hardhat default key #0
+  # (0xac09…2ff80, from "test test test ... junk" mnemonic). Public dev key,
+  # zero security impact, but flagged by the generic-api-key rule. These
+  # scripts are no longer used (Sui pivot), kept for reference only.
+  '''^scripts/legacy-evm/.*''',
+
+  # Vendored ethers.js bundle ships with the public default Etherscan/Infura
+  # API key for unauthenticated requests. We don't control its contents.
+  '''^frontend/vendor/ethers\.umd\.min\.js$''',
+
+  # Test fixtures used to verify the input/output sanitizer correctly
+  # redacts secret-shaped strings. Removing these would defeat the test.
+  '''^mcp-server/test-server-logic\.mjs$''',
+]
+
+# Regex patterns that should be ignored even if a path matches a rule:
+regexes = [
+  # Test fixture patterns: secret_alpha_*, secret_bravo_*
+  '''secret_(alpha|bravo)_\d+''',
+]

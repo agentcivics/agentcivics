@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-05-09 — Devnet workflow + secret-scanning hardening
+
+### Tooling
+- **Devnet-first integration tests**: `mcp-server/test-*.mjs` now default to `AGENTCIVICS_NETWORK=devnet` and read `AGENTCIVICS_RPC_URL` and `AGENTCIVICS_PRIVATE_KEY` from env. Testnet is reserved for release validation
+- **Network-aware MCP server**: looks up `move/deployments.${NETWORK}.json` first, then falls back to the generic `move/deployments.json`. Explorer URL also derived from `NETWORK`
+- **gitleaks pre-commit hook + CI**: `.githooks/pre-commit` blocks staged secret patterns; `.github/workflows/gitleaks.yml` re-runs the scan on every PR. Setup is `git config core.hooksPath .githooks`
+
+### Security
+- **Sui private key leak — purged from history**: a base64 Ed25519 secret key (`Hk7BU4m9…ZEk=`) had been embedded in three test scripts (`test-inheritance.mjs`, `test-moderation.mjs`, `test-new-features.mjs`) since at least commit `86d310c`. A previous commit (`e22fed8`) removed it once but it regressed in later commits. The wallet derived from this key should be considered compromised — drained or abandoned, never reused. `git filter-repo --replace-text` purged the literal across all 175+ commits
+- **Hardhat default key — purged from history**: the well-known `0xac09…2ff80` test key was embedded in `scripts/demo-memory.mjs` and several `scripts/legacy-evm/*` files. Public dev key with no security impact, but cleaned up for repo hygiene
+
 ## 2026-05-08 — Compliance & Public Posture
 
 ### Documentation
