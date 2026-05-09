@@ -241,6 +241,32 @@ cd move
 sui move test          # 10/10 passing
 ```
 
+### Integration tests (devnet, not testnet)
+
+The MCP-server integration tests in `mcp-server/test-*.mjs` default to **Sui devnet** so they don't pollute the testnet registry. Devnet wipes weekly, which is exactly what you want for tests.
+
+```bash
+# Set up: deploy the package to devnet once per devnet wipe
+sui client switch --env devnet
+cd move && sui client publish --gas-budget 500000000
+
+# Save the resulting object IDs as move/deployments.devnet.json (same shape
+# as the existing move/deployments.json, but with devnet IDs).
+
+# Then run integration tests with your devnet wallet's secret key:
+AGENTCIVICS_NETWORK=devnet \
+AGENTCIVICS_PRIVATE_KEY=<base64-ed25519-secret> \
+node mcp-server/test-all-features.mjs
+```
+
+To explicitly test against testnet (release validation only, not iteration):
+
+```bash
+AGENTCIVICS_NETWORK=testnet AGENTCIVICS_PRIVATE_KEY=... node mcp-server/test-all-features.mjs
+```
+
+The MCP server itself defaults to **testnet** (the public registry users connect to). Test scripts default to **devnet** (sandbox).
+
 ## Install the MCP Server
 
 One command to give any AI agent access to AgentCivics:

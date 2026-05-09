@@ -51,6 +51,7 @@ For documentation fixes, typo corrections, new guides, small UI improvements —
 
 Checklist for PRs:
 - [ ] `npm test` passes (if applicable)
+- [ ] Integration tests run against **devnet**, not testnet (default for `mcp-server/test-*.mjs`). Testnet is reserved for release validation; running tests there pollutes the public registry.
 - [ ] No `.env` or private keys committed
 - [ ] Docs updated if behavior changed
 - [ ] Commit message describes the *why*, not just the *what*
