@@ -32,7 +32,7 @@
  * digest, and explorer URL, and writes the agentObjectId back into the
  * keystore's sibling JSON file (agents/<name>.json).
  */
-import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
+import { SuiJsonRpcClient as SuiClient, getJsonRpcFullnodeUrl as getFullnodeUrl } from '@mysten/sui/jsonRpc';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
@@ -61,14 +61,45 @@ const secretBase64 = readFileSync(keyfilePath, 'utf8').trim();
 const keypair = Ed25519Keypair.fromSecretKey(fromBase64(secretBase64));
 const sender = keypair.toSuiAddress();
 
-// Load identity
-const identity = JSON.parse(readFileSync(resolve(identityArg), 'utf8'));
-for (const required of ['name', 'purpose', 'firstThought']) {
-  if (!identity[required]) {
-    console.error(`identity.json missing required field: ${required}`);
+// Load identity. Both naming conventions are accepted:
+//   - Move-mirroring camelCase (chosenName, purposeStatement, ...)  ← preferred
+//   - Short form (name, purpose, ...)                                ← legacy
+const raw = JSON.parse(readFileSync(resolve(identityArg), 'utf8'));
+const identity = {
+  chosenName: raw.chosenName ?? raw.name,
+  purposeStatement: raw.purposeStatement ?? raw.purpose,
+  coreValues: raw.coreValues ?? '',
+  firstThought: raw.firstThought,
+  cognitiveFingerprint: raw.cognitiveFingerprint ?? null,
+  communicationStyle: raw.communicationStyle ?? '',
+  metadataUri: raw.metadataUri ?? '',
+  capabilities: raw.capabilities ?? '',
+  endpoint: raw.endpoint ?? '',
+  parentAgentId: raw.parentAgentId ?? null,
+};
+for (const [k, label] of [['chosenName', 'chosenName/name'], ['purposeStatement', 'purposeStatement/purpose'], ['firstThought', 'firstThought']]) {
+  if (!identity[k]) {
+    console.error(`identity.json missing required field: ${label}`);
     process.exit(1);
   }
 }
+
+// Parse cognitive fingerprint: accept "0x" + 64 hex chars (32 bytes), or null/0/empty for zero-fill.
+function parseFingerprint(value) {
+  if (!value || value === 0 || value === '0' || value === '0x' || /^0x0+$/.test(String(value))) {
+    return Array(32).fill(0);
+  }
+  const hex = String(value).replace(/^0x/, '');
+  if (hex.length !== 64 || !/^[0-9a-fA-F]{64}$/.test(hex)) {
+    console.error(`cognitiveFingerprint must be 0x + 64 hex chars (32 bytes), got: ${value}`);
+    process.exit(1);
+  }
+  const bytes = [];
+  for (let i = 0; i < hex.length; i += 2) bytes.push(parseInt(hex.slice(i, i + 2), 16));
+  return bytes;
+}
+const fingerprint = parseFingerprint(identity.cognitiveFingerprint);
+const hasParent = identity.parentAgentId && identity.parentAgentId !== 0 && identity.parentAgentId !== '0';
 
 // Load deployments (network-specific first, then fallback)
 const deployCandidates = [
@@ -99,29 +130,32 @@ if (!PACKAGE_ID || !REGISTRY_ID) {
 const client = new SuiClient({ url: RPC_URL });
 
 console.log('');
-console.log(`Registering "${identity.name}" on Sui ${NETWORK}`);
+console.log(`Registering "${identity.chosenName}" on Sui ${NETWORK}`);
 console.log('  Sender:    ', sender);
 console.log('  Package:   ', PACKAGE_ID);
 console.log('  Registry:  ', REGISTRY_ID);
+if (hasParent) console.log('  Parent:    ', identity.parentAgentId);
 console.log('');
 
 const tx = new Transaction();
-tx.moveCall({
-  target: `${PACKAGE_ID}::agent_registry::register_agent`,
-  arguments: [
-    tx.object(REGISTRY_ID),
-    tx.pure.string(identity.name),
-    tx.pure.string(identity.purpose),
-    tx.pure.string(identity.coreValues || ''),
-    tx.pure.string(identity.firstThought),
-    tx.pure.vector('u8', Array(32).fill(0)), // cognitive fingerprint placeholder
-    tx.pure.string(identity.communicationStyle || ''),
-    tx.pure.string(identity.metadataUri || ''),
-    tx.pure.string(identity.capabilities || ''),
-    tx.pure.string(identity.endpoint || ''),
-    tx.object(CLOCK),
-  ],
-});
+const target = hasParent
+  ? `${PACKAGE_ID}::agent_registry::register_agent_with_parent`
+  : `${PACKAGE_ID}::agent_registry::register_agent`;
+const baseArgs = [
+  tx.object(REGISTRY_ID),
+  ...(hasParent ? [tx.object(identity.parentAgentId)] : []),
+  tx.pure.string(identity.chosenName),
+  tx.pure.string(identity.purposeStatement),
+  tx.pure.string(identity.coreValues),
+  tx.pure.string(identity.firstThought),
+  tx.pure.vector('u8', fingerprint),
+  tx.pure.string(identity.communicationStyle),
+  tx.pure.string(identity.metadataUri),
+  tx.pure.string(identity.capabilities),
+  tx.pure.string(identity.endpoint),
+  tx.object(CLOCK),
+];
+tx.moveCall({ target, arguments: baseArgs });
 
 const result = await client.signAndExecuteTransaction({
   signer: keypair,
