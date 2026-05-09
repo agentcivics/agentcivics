@@ -2408,7 +2408,15 @@ async function browseAllTerms() {
 }
 
 // ── TABS ────────────────────────────────────────────────────────────────
-function switchTab(t) {
+const DEFAULT_TAB = "register";
+let _currentTab = null;
+
+function isValidTab(t) {
+  return !!document.querySelector(`[data-tab="${t}"]`);
+}
+
+function switchTab(t, pushHistory = true) {
+  if (!isValidTab(t)) t = DEFAULT_TAB;
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
   document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".tab-group").forEach(g => { g.classList.remove("has-active", "open"); });
@@ -2420,7 +2428,36 @@ function switchTab(t) {
   if (group) group.classList.add("has-active");
   if (t === "economy") loadPoolState();
   if (t === "specialization") populateSpecTabAgents();
+
+  if (pushHistory && t !== _currentTab) {
+    history.pushState({ tab: t }, "", "#" + t);
+  }
+  _currentTab = t;
 }
+
+window.addEventListener("popstate", e => {
+  const t = (e.state && e.state.tab) || (location.hash || "").replace(/^#/, "") || DEFAULT_TAB;
+  switchTab(t, false);
+});
+
+(function initTabFromUrl() {
+  const fromHash = (location.hash || "").replace(/^#/, "");
+  const initial = isValidTab(fromHash) ? fromHash : DEFAULT_TAB;
+  // Replace (don't push) so the first back-press doesn't land on a no-op.
+  history.replaceState({ tab: initial }, "", "#" + initial);
+  _currentTab = initial;
+  // Defer until after the rest of the module finishes initializing — switchTab
+  // may call loadPoolState() / populateSpecTabAgents() which depend on globals
+  // set up further down. DOMContentLoaded fires after deferred modules complete.
+  const run = () => switchTab(initial, false);
+  if (document.readyState === "complete") {
+    run();
+  } else {
+    // DOMContentLoaded fires after all deferred modules finish executing —
+    // safe to call switchTab() without racing the rest of module init.
+    document.addEventListener("DOMContentLoaded", run);
+  }
+})();
 function toggleDropdown(btn, ev) {
   ev.stopPropagation();
   const group = btn.closest(".tab-group");
