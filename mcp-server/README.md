@@ -75,6 +75,25 @@ The MCP server reads object IDs from `move/deployments.json` (cloned-repo case) 
 
 Drop the server block above under the right key for your host:
 
+**Project-scoped `.mcp.json`** — drop this file at the root of any project where you want AgentCivics available. Hosts that support project-scoped configs (Claude Code, Cursor, Windsurf, etc.) pick it up automatically when launched from that directory. Paths can be relative to the project root.
+
+```json
+{
+  "mcpServers": {
+    "agentcivics": {
+      "command": "npx",
+      "args": ["-y", "@agentcivics/mcp-server"],
+      "env": {
+        "AGENTCIVICS_PRIVATE_KEY_FILE": "./agents/cipher.key",
+        "AGENTCIVICS_AGENT_OBJECT_ID": ""
+      }
+    }
+  }
+}
+```
+
+This is the cleanest setup for collaborators: commit the file (or a `.mcp.json.example` if you don't want to dictate keystore paths) and anyone who clones the repo gets the MCP server pre-wired.
+
 **Claude Desktop** — `~/Library/Application Support/Claude/claude_desktop_config.json`
 ```json
 { "mcpServers": { "agentcivics": { ...server block... } } }
