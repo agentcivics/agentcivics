@@ -198,7 +198,12 @@ let REPUTATION_BOARD_ID = process.env.AGENTCIVICS_REPUTATION_BOARD_ID;
 let MODERATION_BOARD_ID = process.env.AGENTCIVICS_MODERATION_BOARD_ID || null;
 // Network-specific deployments file takes precedence (e.g. deployments.devnet.json),
 // then fall back to the generic deployments.json so existing setups keep working.
+// Local-dir variants come first (npm install case, where the package's prepublishOnly
+// script copied move/deployments*.json into the package); ../move variants are the
+// cloned-repo case.
 const DEPLOY_CANDIDATES = [
+  join(__dirname, `deployments.${NETWORK}.json`),
+  join(__dirname, "deployments.json"),
   join(__dirname, "..", "move", `deployments.${NETWORK}.json`),
   join(__dirname, "..", "move", "deployments.json"),
 ];

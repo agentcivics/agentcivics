@@ -58,3 +58,9 @@ memory/
 # Legacy EVM deploy manifest (obsolete since Sui pivot)
 deployments.testnet.json
 *.bak
+
+# Deployment files copied into mcp-server/ by prepublishOnly. Source of truth is move/deployments.json.
+mcp-server/deployments.json
+mcp-server/deployments.testnet.json
+mcp-server/deployments.devnet.json
+mcp-server/deployments.mainnet.json
