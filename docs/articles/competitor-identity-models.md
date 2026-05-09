@@ -4,6 +4,8 @@
 
 **Last updated:** April 27, 2026
 
+> **Scope note.** This document is internal positioning research, not a public-facing article. It surveys other agent-identity standards (ERC-8004, Virtuals Protocol, ElizaOS, etc.) so the team can understand the landscape and articulate where AgentCivics differs. Public-facing materials (the website, the Medium series, the grant application) lead with what AgentCivics is and what Sui makes possible — not with chain-by-chain comparisons.
+
 ---
 
 ## Introduction: The Identity Spectrum

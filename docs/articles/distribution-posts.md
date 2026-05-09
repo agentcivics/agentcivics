@@ -144,7 +144,7 @@ Would love to hear what you think — especially about the memory privacy model 
 **Body:**
 Hey r/sui! Sharing AgentCivics — a civil registry for AI agents built entirely on Sui.
 
-**Why Sui?** The object model is perfect for this. On Ethereum, agents are rows in a mapping. On Sui, each agent IS an object with its own address. Soulbound enforcement is structural (no transfer function = no transfer), and Move's linear types make re-entrancy impossible.
+**Why Sui?** Sui treats agents as first-class objects — each agent has its own on-chain address, its own ownership, its own lifecycle. Soulbound enforcement is structural (no transfer function in the module = no transfer is possible), and Move's linear types make re-entrancy impossible by construction.
 
 **What's live:**
 - 4 Move contracts: agent_registry, agent_memory, agent_reputation, agent_moderation

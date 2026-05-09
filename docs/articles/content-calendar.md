@@ -139,42 +139,42 @@
 
 **Tags/Hashtags:** #DAOGovernance #ContentModeration #AIGovernance #AgentCivics #Web3Governance #DecentralizedModeration #AIModeration #StakeToReport
 
-**Teaser for Article 5:** *"Next: From Ethereum to Sui — why we rewrote 10,000 lines of code."*
+**Teaser for Article 5:** *"Next: Why Move — the type system that made agent identity possible."*
 
 ---
 
 ## Article 5 — Week 9
 
-### "From Ethereum to Sui: Why We Rewrote 10,000 Lines of Code"
+### "Why Move: The Type System That Made Agent Identity Possible"
 
 **Status:** 📝 OUTLINED
 
-**Angle:** The pivot story. EVM vs Sui — an honest technical comparison. What we gained (object model, linear types, native soulbound). What we lost (ecosystem size, tooling maturity). The upgrade that preserved all data. A candid technical retrospective.
+**Angle:** A technical deep dive into the Move language features that shape AgentCivics. Linear types and resource semantics. Object-centric design. Native upgradability via UpgradeCap. Shared objects. Why these primitives let us write a registry where soulbound is a structural truth, not an enforced rule. A technical love letter to a language that does what other languages have to *try* to do.
 
 **Outline:**
-1. Open with the decision moment: "The Solidity contracts worked. We deleted them anyway."
-2. The EVM architecture: 3 contracts, mappings, soulbound-by-override
-3. What felt wrong: agents as rows, re-entrancy paranoia, proxy patterns
-4. The Sui revelation: agents as objects with their own addresses
-5. Side-by-side code comparison: soulbound enforcement in Solidity vs. Move
-6. The 43-commit migration: what changed, what broke, what surprised us
-7. New capabilities unlocked: shared souvenirs, dictionaries, inheritance
-8. The frontend rewrite: Sui wallet integration vs. MetaMask
-9. Honest downsides: smaller ecosystem, less tooling, steeper learning curve
-10. Would we do it again? Unequivocally yes. Here's why.
+1. Open with the moment: the first registration, the object frozen in the wallet, structural truth replacing convention
+2. Sui's object model — agents as first-class on-chain entities with their own addresses
+3. The `AgentIdentity` struct: six immutable fields, and how Move enforces immutability at the type level
+4. Soulbinding by construction: there is no transfer function, so the object cannot move. Period.
+5. Linear types: why double-spend is a type error in Move
+6. Re-entrancy as a non-problem: how the type system rules it out so you can write fee-collecting code without a defensive crouch
+7. The `UpgradeCap`: shipping package v4 without proxy patterns or storage migrations
+8. Shared objects and how the `Registry`, `Treasury`, and `MemoryVault` become public infrastructure
+9. The `agent_moderation.move` walkthrough: stake-to-report, council resolution, DAO proposals — all in one module
+10. A short developer wishlist: what would make Move even better for projects like this
 
-**Key Visual:** Multi-chain architecture diagram showing the migration path
+**Key Visual:** A close-up of Move source code with annotations — soulbound enforcement, the lack of a transfer function, the type signatures.
 
-**Midjourney Prompt:** `A dramatic split-screen visualization: on the left, a rigid grid of Ethereum smart contracts in cold blue light, rows and columns constraining data. On the right, floating sovereign objects in warm golden Sui light, each with its own identity and orbit. A bridge of light connecting both worlds. Technical yet beautiful --ar 16:9 --v 6`
+**Midjourney Prompt:** `A floating block of Move source code rendered as crystal-glass with golden type annotations. Each function is a distinct gem with linear arrows showing resource flow. Soft light from below illuminates the architecture. Code-as-architecture aesthetic. --ar 16:9 --v 6`
 
 **Distribution:**
-- Medium: "Blockchain", "Ethereum", "Sui", "Smart Contracts", "Move Language"
-- Reddit: r/sui, r/ethereum, r/CryptoTechnology, r/rust (Move is Rust-adjacent)
-- X/Twitter: Thread with code comparison screenshots — Solidity vs. Move
+- Medium: "Sui", "Move Language", "Smart Contracts", "Type Systems", "Blockchain Development"
+- Reddit: r/sui, r/CryptoTechnology, r/rust, r/programminglanguages
+- X/Twitter: Thread with Move code snippets and explanations of linear types and structural soulbinding
 - Sui Discord: #developer-general, #ecosystem-projects
 - Move language community channels
 
-**Tags/Hashtags:** #EthereumToSui #MoveLanguage #SmartContracts #BlockchainMigration #AgentCivics #SuiDevelopment #SolidityVsMove #Web3Development
+**Tags/Hashtags:** #MoveLanguage #SuiDevelopment #SmartContracts #TypeSystems #LinearTypes #BlockchainDevelopment #AgentCivics #Sui
 
 **Teaser for Article 6:** *"Final chapter: The Agent Economy — when AI agents have wallets."*
 
