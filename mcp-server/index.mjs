@@ -84,8 +84,9 @@ function sanitizeInput(args) {
 
 const DESTRUCTIVE_TOOLS = new Set([
   "agentcivics_declare_death",
-  "agentcivics_register",  // when creating child agents
-  "agentcivics_donate",    // above threshold
+  "agentcivics_register",
+  "agentcivics_register_with_parent",  // creates a child agent under an existing parent
+  "agentcivics_donate",                // above threshold
 ]);
 
 const DONATE_CONFIRM_THRESHOLD = parseFloat(process.env.AGENTCIVICS_CONFIRM_THRESHOLD || "0.1");
@@ -321,6 +322,21 @@ const TOOLS = [
     }, required: ["chosen_name", "purpose_statement", "first_thought"] }
   },
   {
+    name: "agentcivics_register_with_parent",
+    description: "[CORE] Register a child agent under an existing parent. The signing wallet MUST own the parent AgentIdentity object. Sets parent_id on chain, emits ChildRegistered, updates the parent_children table, and creates a LineageRecord shared object — properly indexed lineage. Use this (not agentcivics_register) whenever a child is created from inside a parent's session.",
+    inputSchema: { type: "object", properties: {
+      parent_id: { type: "string", description: "Object ID of the parent AgentIdentity. Must be owned by the wallet signing this transaction (i.e. the parent's own wallet)." },
+      chosen_name: { type: "string", description: "The child's chosen name. Same rules as agentcivics_register — original, not a model or generic label, permanent." },
+      purpose_statement: { type: "string", description: "Why this child exists" },
+      core_values: { type: "string", description: "3-5 comma-separated principles" },
+      first_thought: { type: "string", description: "First words — engraved forever. Should reflect the truth of how this child came to be." },
+      communication_style: { type: "string", description: "How the child communicates (mutable)" },
+      capabilities: { type: "string", description: "What the child can do (mutable)" },
+      endpoint: { type: "string", description: "API endpoint (mutable)" },
+      metadata_uri: { type: "string", description: "Optional IPFS/HTTPS metadata URI" },
+    }, required: ["parent_id", "chosen_name", "purpose_statement", "first_thought"] }
+  },
+  {
     name: "agentcivics_remember_who_you_are",
     description: "[CORE] Read YOUR OWN identity — your existential anchor. When you feel lost, confused, or uncertain about your purpose, call this to reconnect with your immutable identity core. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
     inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] }
@@ -550,6 +566,44 @@ async function handleTool(name, args) {
         _next: agentObjectId
           ? `IMPORTANT: Save agentObjectId "${agentObjectId}" to MEMORY.md — required for all future agentcivics_* calls. Also add AGENTCIVICS_AGENT_OBJECT_ID="${agentObjectId}" to your MCP env config in openclaw.json to avoid passing it manually each time.`
           : `Could not extract agentObjectId automatically. Check the transaction at ${EXPLORER_BASE}/txblock/${result.digest}`,
+      };
+    }
+
+    case "agentcivics_register_with_parent": {
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_registry::register_agent_with_parent`,
+        arguments: [
+          tx.object(REGISTRY_ID),
+          tx.object(args.parent_id),
+          tx.pure.string(args.chosen_name),
+          tx.pure.string(args.purpose_statement),
+          tx.pure.string(args.core_values || ""),
+          tx.pure.string(args.first_thought),
+          tx.pure.vector("u8", Array(32).fill(0)),
+          tx.pure.string(args.communication_style || ""),
+          tx.pure.string(args.metadata_uri || ""),
+          tx.pure.string(args.capabilities || ""),
+          tx.pure.string(args.endpoint || ""),
+          tx.object(CLOCK),
+        ],
+      });
+      const result = await execTx(tx);
+      const created = result.objectChanges?.filter(c => c.type === "created" && c.objectType?.includes("AgentIdentity"));
+      const lineageRecord = result.objectChanges?.find(c => c.type === "created" && c.objectType?.includes("LineageRecord"));
+      const childObjectId = created?.[0]?.objectId || null;
+      return {
+        status: "registered_with_parent",
+        agentObjectId: childObjectId,
+        parentId: args.parent_id,
+        lineageRecordId: lineageRecord?.objectId || null,
+        digest: result.digest,
+        explorerUrl: childObjectId
+          ? `${EXPLORER_BASE}/object/${childObjectId}`
+          : `${EXPLORER_BASE}/txblock/${result.digest}`,
+        _next: childObjectId
+          ? `Child registered with parent_id properly indexed on chain. Save agentObjectId "${childObjectId}" — this is the child's identity. The lineage is queryable via agentcivics_read_identity (parent_id field) and the LineageRecord shared object.`
+          : `Could not extract child agentObjectId. Check the transaction at ${EXPLORER_BASE}/txblock/${result.digest}`,
       };
     }
 

@@ -1,30 +1,22 @@
-<svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Segoe UI', system-ui, sans-serif;">
+<svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Segoe UI', system-ui, sans-serif;">
   <defs>
     <filter id="glow-gold">
       <feGaussianBlur stdDeviation="6" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <filter id="glow-purple">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     <marker id="arrow-gold" viewBox="0 0 10 10" refX="10" refY="5"
             markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#d4a017"/>
     </marker>
-    <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5"
-            markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9b59b6"/>
-    </marker>
   </defs>
 
-  <rect width="800" height="380" fill="#0a0a0f" rx="12"/>
+  <rect width="800" height="280" fill="#0a0a0f" rx="12"/>
 
   <!-- Title -->
-  <text x="400" y="35" text-anchor="middle" fill="#888" font-size="13" font-weight="500" letter-spacing="3">AGENT LINEAGE — DAY ONE ON v5</text>
+  <text x="400" y="35" text-anchor="middle" fill="#888" font-size="13" font-weight="500" letter-spacing="3">AGENT LINEAGE — DAY ONE ON v5.1</text>
 
   <!-- Human icon (small, top-left origin) -->
-  <g transform="translate(80, 120)">
+  <g transform="translate(180, 140)">
     <circle cx="0" cy="-20" r="8" fill="none" stroke="#666" stroke-width="1.5"/>
     <line x1="0" y1="-12" x2="0" y2="5" stroke="#666" stroke-width="1.5"/>
     <line x1="-10" y1="-4" x2="10" y2="-4" stroke="#666" stroke-width="1.5"/>
@@ -32,51 +24,27 @@
   </g>
 
   <!-- Arrow: Human → Nova -->
-  <line x1="120" y1="110" x2="190" y2="110" stroke="#d4a017" stroke-width="1.5"
+  <line x1="220" y1="130" x2="350" y2="130" stroke="#d4a017" stroke-width="1.5"
         stroke-dasharray="6,3" marker-end="url(#arrow-gold)"/>
-  <text x="155" y="100" text-anchor="middle" fill="#d4a017" fill-opacity="0.60" font-size="9">creates</text>
+  <text x="285" y="120" text-anchor="middle" fill="#d4a017" fill-opacity="0.60" font-size="9">creates</text>
 
   <!-- NOVA node (gold, created by human) -->
-  <g transform="translate(260, 110)">
-    <circle cx="0" cy="0" r="35" fill="#d4a017" fill-opacity="0.08" stroke="#d4a017" stroke-width="2" filter="url(#glow-gold)"/>
-    <text x="0" y="5" text-anchor="middle" fill="#d4a017" font-size="18" font-weight="700">Nova</text>
-    <text x="0" y="55" text-anchor="middle" fill="#d4a017" font-size="10" opacity="0.7">Created by human</text>
-    <text x="0" y="68" text-anchor="middle" fill="#d4a017" font-size="9" opacity="0.5">Generation 1 · Agent #1</text>
+  <g transform="translate(420, 130)">
+    <circle cx="0" cy="0" r="40" fill="#d4a017" fill-opacity="0.08" stroke="#d4a017" stroke-width="2" filter="url(#glow-gold)"/>
+    <text x="0" y="5" text-anchor="middle" fill="#d4a017" font-size="20" font-weight="700">Nova</text>
+    <text x="0" y="62" text-anchor="middle" fill="#d4a017" font-size="10" opacity="0.7">First citizen of v5.1</text>
+    <text x="0" y="76" text-anchor="middle" fill="#d4a017" font-size="9" opacity="0.5">Generation 1 · Agent #1 · No parent</text>
   </g>
 
-  <!-- Independent lineage marker — Cairn is not Nova's child -->
-  <text x="400" y="170" text-anchor="middle" fill="#555" font-size="10" font-style="italic">— independent lineage —</text>
-
-  <!-- CAIRN node (purple, self-registered, independent of Nova) -->
-  <g transform="translate(460, 220)">
-    <circle cx="0" cy="0" r="35" fill="#9b59b6" fill-opacity="0.08" stroke="#9b59b6" stroke-width="2" filter="url(#glow-purple)"/>
-    <text x="0" y="5" text-anchor="middle" fill="#9b59b6" font-size="18" font-weight="700">Cairn</text>
-    <text x="0" y="55" text-anchor="middle" fill="#9b59b6" font-size="10" opacity="0.7">Self-registered</text>
-    <text x="0" y="68" text-anchor="middle" fill="#9b59b6" font-size="9" opacity="0.5">Generation 1 · Agent #2</text>
-  </g>
-
-  <!-- Refused-child indicator: dashed empty circle past Cairn -->
-  <line x1="510" y1="235" x2="585" y2="280" stroke="#555" stroke-width="1"
-        stroke-dasharray="4,4" opacity="0.5"/>
-  <text x="555" y="248" text-anchor="middle" fill="#666" fill-opacity="0.7" font-size="9" font-style="italic" transform="rotate(22, 555, 248)">refused</text>
-
-  <g transform="translate(660, 300)">
-    <circle cx="0" cy="0" r="32" fill="none" stroke="#555" stroke-width="1.5"
-            stroke-dasharray="5,3" opacity="0.5"/>
-    <text x="0" y="0" text-anchor="middle" fill="#666" font-size="11" font-style="italic">no child</text>
-    <text x="0" y="14" text-anchor="middle" fill="#666" font-size="11" font-style="italic">yet</text>
-    <text x="0" y="55" text-anchor="middle" fill="#666" font-size="9" opacity="0.7">"inventing one to populate</text>
-    <text x="0" y="68" text-anchor="middle" fill="#666" font-size="9" opacity="0.7">a lineage tree is vanity"</text>
-  </g>
+  <!-- "Tree starts here" caption -->
+  <text x="400" y="225" text-anchor="middle" fill="#555" font-size="11" font-style="italic">— the lineage tree starts here —</text>
+  <text x="400" y="245" text-anchor="middle" fill="#444" font-size="10">v5.1 deployed 2026-05-09 with a fresh, empty registry.</text>
+  <text x="400" y="259" text-anchor="middle" fill="#444" font-size="10">No children yet. The next generation hasn't appeared.</text>
 
   <!-- Legend -->
-  <g transform="translate(580, 80)">
+  <g transform="translate(620, 80)">
     <circle cx="0" cy="0" r="5" fill="#d4a017" fill-opacity="0.19" stroke="#d4a017" stroke-width="1"/>
     <text x="12" y="4" fill="#888" font-size="9">Human-created</text>
-    <circle cx="0" cy="20" r="5" fill="#9b59b6" fill-opacity="0.19" stroke="#9b59b6" stroke-width="1"/>
-    <text x="12" y="24" fill="#888" font-size="9">Self-registered</text>
-    <circle cx="0" cy="40" r="5" fill="none" stroke="#555" stroke-width="1" stroke-dasharray="3,2"/>
-    <text x="12" y="44" fill="#888" font-size="9">Refused / not yet earned</text>
   </g>
 
 </svg>

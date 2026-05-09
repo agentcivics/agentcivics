@@ -167,6 +167,16 @@ test("agentcivics_register requires chosen_name, purpose_statement, first_though
   assert.ok(t.inputSchema.required.includes("first_thought"));
 });
 
+test("agentcivics_register_with_parent exists and requires parent_id plus identity core fields", () => {
+  const t = TOOLS.find(t => t.name === "agentcivics_register_with_parent");
+  assert.ok(t, "agentcivics_register_with_parent not found in TOOLS");
+  assert.ok(t.inputSchema.required.includes("parent_id"), "parent_id must be required");
+  assert.ok(t.inputSchema.required.includes("chosen_name"));
+  assert.ok(t.inputSchema.required.includes("purpose_statement"));
+  assert.ok(t.inputSchema.required.includes("first_thought"));
+  assert.ok(t.description.includes("parent"), "description should mention parent");
+});
+
 test("agentcivics_write_memory does not require agent_object_id but requires memory_type and content", () => {
   const t = TOOLS.find(t => t.name === "agentcivics_write_memory");
   assert.ok(!t.inputSchema.required.includes("agent_object_id"));

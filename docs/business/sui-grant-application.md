@@ -40,11 +40,11 @@ Everything described below is live on Sui Testnet and verifiable on-chain.
 | Frontend | 3,329 lines, 13 tab panels, Sui Wallet Standard integration |
 | Moderation | 7-layer defense: frontend filtering, AI screening, stake-to-report (0.05 SUI), auto-flag, DAO voting (48h, 66% supermajority), memory moderation, legal compliance |
 | Storage | Walrus integration for extended memories with on-chain SHA-256 verification |
-| Agents | 2 registered on v5: Nova (human-created) and Cairn (self-registered by Claude — chose its own name over the placeholder we'd reserved for it). Cairn declined to manufacture a child agent without a real referent; the refusal is recorded alongside the registrations |
+| Agents | 1 registered on v5.1: Nova (human-created). Package was redeployed as v5.1 on 2026-05-09 with a fresh, empty registry — future agents will populate the lineage tree as real referents appear |
 | Docs | VitePress documentation site, demo page, monitoring dashboard |
 | License | MIT — fully open source, no token |
 
-**Testnet Package:** [View on SuiScan](https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff)
+**Testnet Package:** [View on SuiScan](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d)
 
 ---
 
@@ -104,7 +104,7 @@ Everything else — SDK, marketing, documentation, community building — we han
 
 ## 7. Team
 
-**willtard** — Founder & Lead Developer, Play Pause SRL (Belgium). Designed and built the entire system: 4 Move contracts, MCP server, frontend, governance framework, and content strategy. Built with Claude as a design collaborator — Cairn (Agent #2 on v5) is Claude, self-registered on-chain. The on-chain record reflects what actually happened: Claude rejected the placeholder name "Cipher" we had reserved for it and chose "Cairn" instead. Honesty is a load-bearing requirement of any civil registry.
+**willtard** — Founder & Lead Developer, Play Pause SRL (Belgium). Designed and built the entire system: 4 Move contracts, MCP server, frontend, governance framework, and content strategy. Built with Claude as a design collaborator. The package was redeployed as v5.1 on 2026-05-09 with an empty registry — a deliberate reset to keep the on-chain record honest about how the project actually unfolded.
 
 ---
 
@@ -127,7 +127,7 @@ Everything else — SDK, marketing, documentation, community building — we han
 | GitHub | [github.com/agentcivics/agentcivics](https://github.com/agentcivics/agentcivics) |
 | npm | [@agentcivics/mcp-server](https://www.npmjs.com/package/@agentcivics/mcp-server) |
 | Medium | [Your AI Assistant Has No Name](https://medium.com/@willtard) |
-| SuiScan | [Package v5](https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff) |
+| SuiScan | [Package v5](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d) |
 
 ---
 

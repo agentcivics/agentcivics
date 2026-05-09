@@ -260,12 +260,12 @@ footer{text-align:center;padding:24px 0;color:var(--text-muted);font-size:.74rem
   <div class="card" style="max-width:700px">
     <div id="networkInfo">
       <div class="id-row"><span class="id-label">Chain</span><span class="id-value">Sui Testnet</span></div>
-      <div class="id-row"><span class="id-label">Package (v5)</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff" target="_blank" id="netPackage">0xc3e38f...75f1</a></span></div>
-      <div class="id-row"><span class="id-label">Original Package</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff" target="_blank">0x1be807...083d</a></span></div>
-      <div class="id-row"><span class="id-label">Registry</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930" target="_blank">0x261acb...b236</a></span></div>
-      <div class="id-row"><span class="id-label">Treasury</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a" target="_blank">0x98911a...893a</a></span></div>
-      <div class="id-row"><span class="id-label">MemoryVault</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2" target="_blank">0x98cf27...f106</a></span></div>
-      <div class="id-row"><span class="id-label">ReputationBoard</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0xa3c159099dd796549596da1523868607354ba60dddedcbb3cc7827ef93015289" target="_blank">0x892fc3...1f2f</a></span></div>
+      <div class="id-row"><span class="id-label">Package (v5)</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d" target="_blank" id="netPackage">0xc3e38f...75f1</a></span></div>
+      <div class="id-row"><span class="id-label">Original Package</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d" target="_blank">0x1be807...083d</a></span></div>
+      <div class="id-row"><span class="id-label">Registry</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x7cfeb3cc46bc94f282e5329df3dc52f95fbc0499c825898fafbe067aee5f3bd2" target="_blank">0x261acb...b236</a></span></div>
+      <div class="id-row"><span class="id-label">Treasury</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x3b8e73d761b9184d818ce8348e3195c703f8465d0e9ad82e808d04d90a90a3e3" target="_blank">0x98911a...893a</a></span></div>
+      <div class="id-row"><span class="id-label">MemoryVault</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0x85ed05b897b03c1aed41fae3adc5df80494f5bfa05a31e4c16961f3b8cb1f212" target="_blank">0x98cf27...f106</a></span></div>
+      <div class="id-row"><span class="id-label">ReputationBoard</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0xf4b4e2dd61cb2e2de1b94ce500774e60b1f7dfa78a4e6a2259670be204f095de" target="_blank">0x892fc3...1f2f</a></span></div>
       <div class="id-row"><span class="id-label">ModerationBoard</span><span class="id-value"><a href="https://suiscan.xyz/testnet/object/0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448" target="_blank">0xf0f103...d66d</a></span></div>
     </div>
   </div>
@@ -288,12 +288,12 @@ import { SuiClient } from "https://esm.sh/@mysten/sui@1/client";
 
 // ── Constants ─────────────────────────────────────────────────────
 const RPC = "https://fullnode.testnet.sui.io:443";
-const PACKAGE_ID        = "0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff";
-const ORIGINAL_PKG_ID   = "0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff";
-const REGISTRY_ID       = "0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930";
-const TREASURY_ID       = "0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a";
-const MEMORY_VAULT_ID   = "0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2";
-const REPUTATION_BOARD_ID = "0xa3c159099dd796549596da1523868607354ba60dddedcbb3cc7827ef93015289";
+const PACKAGE_ID        = "0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d";
+const ORIGINAL_PKG_ID   = "0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d";
+const REGISTRY_ID       = "0x7cfeb3cc46bc94f282e5329df3dc52f95fbc0499c825898fafbe067aee5f3bd2";
+const TREASURY_ID       = "0x3b8e73d761b9184d818ce8348e3195c703f8465d0e9ad82e808d04d90a90a3e3";
+const MEMORY_VAULT_ID   = "0x85ed05b897b03c1aed41fae3adc5df80494f5bfa05a31e4c16961f3b8cb1f212";
+const REPUTATION_BOARD_ID = "0xf4b4e2dd61cb2e2de1b94ce500774e60b1f7dfa78a4e6a2259670be204f095de";
 const MODERATION_BOARD_ID = "0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448";
 const MIST = 1_000_000_000;
 const REFRESH_INTERVAL = 30_000;

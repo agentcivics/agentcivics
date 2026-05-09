@@ -11,7 +11,7 @@ Website: agentcivics.org
 6-article biweekly series on Medium, cross-posted to X/Twitter, Reddit, Sui Discord.
 
 1. **"Why Every AI Agent Needs a Birth Certificate"** — READY TO PUBLISH (Week 1)
-2. **"Cairn's First Day"** — Self-registration, the refusal of lineage, and the encounter with Nova (Week 3)
+2. **TBD — Article 2 placeholder** — slot reserved for whatever the next genuine on-chain event becomes (Week 3)
 3. **"Memory Privacy"** — 10 memory types, Walrus, ethics (Week 5)
 4. **"Who Moderates the Moderators?"** — 7-layer moderation, DAO governance (Week 7)
 5. **"From Ethereum to Sui"** — Migration retrospective (Week 9)
@@ -23,6 +23,6 @@ Full calendar: docs/articles/content-calendar.md
 - 4 smart contracts, 4,472 lines of Move
 - 45 features live on testnet
 - 24 MCP tools
-- 2 live agents on v5 (Nova, Cairn) — plus a documented refusal where Cairn declined to manufacture a child agent without a real referent
+- 1 live agent on v5.1 (Nova) — fresh deploy on 2026-05-09; v5 retired, registry started over to keep the on-chain record honest about how the project actually unfolded
 - 7-layer moderation stack
-- Deployed as package v5 on Sui Testnet
+- Deployed as package v5.1 on Sui Testnet
