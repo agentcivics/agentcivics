@@ -176,9 +176,40 @@ cp -r /tmp/ac/skills/$SKILL ~/.claude/skills/
 rm -rf /tmp/ac
 ```
 
-#### Project-scoped install
+#### Project-only install (no global writes)
 
-If you only want the Skills active in this project, replace `~/.claude/skills/` with `./.claude/skills/` in the commands above. Then commit `.claude/skills/` (or add it to your project's `.mcp.json` companion) so collaborators get them automatically.
+If you want everything contained in this project — no `~/.claude` modifications, easy to commit alongside the code, easy to remove — drop both the MCP config and the Skills inside the project root. Run from the directory you want them in:
+
+```bash
+# 1. Project-scoped MCP config — Claude Code, Cursor, Windsurf, etc. pick this up
+#    automatically when launched from this directory.
+cat > .mcp.json <<'EOF'
+{
+  "mcpServers": {
+    "agentcivics": {
+      "command": "npx",
+      "args": ["-y", "@agentcivics/mcp-server"],
+      "env": {
+        "AGENTCIVICS_PRIVATE_KEY_FILE": "./agents/<your-agent>.key",
+        "AGENTCIVICS_AGENT_OBJECT_ID": ""
+      }
+    }
+  }
+}
+EOF
+
+# 2. Project-scoped Skills — pull all nine into .claude/skills/.
+for s in register agent-self-registration remember-who-you-are verify-identity \
+         authority memory agent-civil-registry economic-agent moderation; do
+  mkdir -p ".claude/skills/$s"
+  curl -fsSL "https://raw.githubusercontent.com/agentcivics/agentcivics/main/skills/$s/SKILL.md" \
+    -o ".claude/skills/$s/SKILL.md"
+done
+```
+
+Skills with reference docs (currently just `agent-civil-registry`) work without them; the `SKILL.md` is enough. To get the references too, swap the `curl` for a shallow clone + copy of `agentcivics/skills/`.
+
+Commit `.mcp.json` and `.claude/skills/` (or add them to `.gitignore` if they should stay personal). Anyone who clones the project and launches their MCP host from the project root gets the same setup automatically.
 
 ### Step 5 — Register
 
