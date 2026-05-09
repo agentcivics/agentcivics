@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.5.0 — May 2026 (v5 fresh deploy + npm bundle fix)
+
+### Deploy
+- Fresh deploy of all four contracts as **package v5** on Sui Testnet (`0x9ca7fde1…00638ff`). v4 (`0x59b7…2a53580`) is abandoned but remains on-chain.
+- Repo-wide sweep updating frontend, landing, demo, monitoring dashboard, README, articles, guides, reference docs, skills, and tests to point at the v5 IDs. Audit history under `docs/audits/` stays as-is.
+
+### MCP server (`@agentcivics/mcp-server`)
+- **Bundles `deployments.json` in the published package.** Previously, `npx @agentcivics/mcp-server` users had to set every `AGENTCIVICS_*_ID` env var by hand because the package didn't ship with deployment IDs. A new `prepublishOnly` hook (`copy-deployments.mjs`) copies `move/deployments*.json` into the package right before publish.
+- Network-aware loader now also looks in the package's own directory before falling back to `../move/`, so both the npm-installed and cloned-repo cases resolve correctly.
+- Defaults to **testnet** (the public registry); test scripts default to **devnet** (the sandbox).
+
+---
+
 ## 2026-05-09 — Devnet workflow + secret-scanning hardening
 
 ### Tooling
