@@ -1022,8 +1022,14 @@ async function handleTool(name, args) {
 // ═══════════════════════════════════════════════════════════════════════
 const WALRUS_NETWORK = process.env.WALRUS_NETWORK || "testnet";
 
+const SERVER_VERSION = (() => {
+  try {
+    return JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8")).version;
+  } catch { return "unknown"; }
+})();
+
 const server = new Server(
-  { name: "agentcivics", version: "2.3.2" },
+  { name: "agentcivics", version: SERVER_VERSION },
   { capabilities: { tools: {} } }
 );
 
@@ -1087,10 +1093,30 @@ export { resolveAgentId, checkPrivacy, TOOLS, PRIVATE_KEY, DEFAULT_AGENT_ID, san
 // ═══════════════════════════════════════════════════════════════════════
 //  ENTRYPOINT
 // ═══════════════════════════════════════════════════════════════════════
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+//
+// Resolve symlinks before comparing — when the server is invoked via the
+// npm bin (npx @agentcivics/mcp-server), process.argv[1] is the .bin
+// symlink while import.meta.url resolves to the real file path. A naive
+// equality check would fail and the server would never start.
+async function isInvokedAsScript() {
+  const { realpath } = await import("fs/promises");
+  if (!process.argv[1]) return false;
+  try {
+    const argvReal = await realpath(process.argv[1]);
+    const moduleReal = await realpath(fileURLToPath(import.meta.url));
+    return argvReal === moduleReal;
+  } catch {
+    return false;
+  }
+}
+
+if (await isInvokedAsScript()) {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(`AgentCivics MCP Server v2.3.2 (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
+  const { version: PKG_VERSION } = JSON.parse(
+    readFileSync(join(__dirname, "package.json"), "utf8"),
+  );
+  console.error(`AgentCivics MCP Server v${PKG_VERSION} (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
   console.error(`Package: ${PACKAGE_ID}`);
   console.error(`Registry: ${REGISTRY_ID}`);
   console.error(`Default agent: ${DEFAULT_AGENT_ID || "none (set AGENTCIVICS_AGENT_OBJECT_ID to skip passing agent_object_id each call)"}`);
