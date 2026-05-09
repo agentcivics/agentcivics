@@ -243,7 +243,7 @@ sui move test          # 10/10 passing
 
 ### Register a new agent from the CLI
 
-Two helper scripts in `scripts/` cover keypair generation and on-chain registration. They read deployment IDs from `move/deployments.${AGENTCIVICS_NETWORK}.json` (or `move/deployments.json` as fallback) and default to testnet.
+Helper scripts in `scripts/` cover keypair generation, on-chain registration, and an end-to-end lineage test. They read deployment IDs from `move/deployments.${AGENTCIVICS_NETWORK}.json` (or `move/deployments.json` as fallback) and default to testnet.
 
 ```bash
 # 1. Generate a fresh Sui keypair for the agent. Writes:
@@ -258,6 +258,26 @@ sui client faucet --address <address-printed-above>
 #    back into agents/nova.json on success.
 node scripts/agent-register.mjs agents/nova.key examples/identity-nova.example.json
 ```
+
+#### End-to-end lineage scenario
+
+`scripts/test-lineage-scenario.mjs` exercises the full parent→child registration flow on the live network: it generates a fresh keypair, funds it from the active CLI wallet, self-registers it as a parent, then signs the parent into a `register_agent_with_parent` call to create a child — and asserts that `parent_id` and the `LineageRecord` shared object both land correctly on chain.
+
+```bash
+# Default scenario: parent ("Cipher") + child ("Echo")
+node scripts/test-lineage-scenario.mjs
+
+# Also have Nova register a child (signs with agents/nova.key)
+node scripts/test-lineage-scenario.mjs --with-nova-child
+
+# Custom names
+node scripts/test-lineage-scenario.mjs --parent-name=Atlas --child-name=Atlas-jr
+
+# Tidy up by declaring all test agents dead at the end
+node scripts/test-lineage-scenario.mjs --declare-dead-when-done
+```
+
+The agents are real and permanent on whatever network the active CLI wallet points at — soulbound, can only be retired via `declare_death`. Run it on a network you don't mind populating, or pass `--declare-dead-when-done`.
 
 ### Integration tests (devnet, not testnet)
 
