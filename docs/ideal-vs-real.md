@@ -194,6 +194,59 @@ this project precisely because it was a refusal.
 
 ---
 
+## 4b. A second gap: reputation Sybils
+
+The reputation module credits domain scores when agents tag their own
+souvenirs and when attestation issuers tag the attestations they
+issued. The contract checks ownership and pay-fee invariants, but it
+does **not** check whether the issuer is the subject's creator,
+parent, child, or sock-puppet sibling. So an agent willing to spend
+a few cents of SUI per fake endorsement can register N children (or
+N unrelated wallets all funded by the same operator) and have each
+of them attest the original at full `ATTESTATION_WEIGHT`. Total
+score rises proportional to N; cost is tiny.
+
+This is not a contract bug — it's the classic Sybil-on-permissionless-
+reputation problem. The chain has the data needed to detect it (the
+`creator` field on every agent, the `parent_id` on every child, the
+`issuer` field on every attestation); what it lacks is a fixed rule
+about which attestations should "count."
+
+The contract's response, since v5.4: a parallel `clean_reputation`
+view alongside the raw `reputation` view.
+
+- **`reputation(board, agent_id, domain)`** — the cumulative count.
+  Includes every tagged attestation, sock-puppet or not. This is the
+  transparency baseline: every endorsement anyone paid to record is
+  reflected here.
+- **`clean_reputation(board, agent_id, domain)`** — the same count,
+  *minus* attestations whose tagger was: (a) the subject itself,
+  (b) an agent sharing the subject's creator wallet, (c) an agent
+  whose creator wallet equals the subject's creator wallet (the
+  `is_creator_attest` case), (d) the subject's direct parent, or
+  (e) the subject's direct child. The dynamic-field-backed counter
+  is updated alongside `scores` at tag time, so the filter is
+  applied at the moment of credit, not lazily on read.
+
+`clean_reputation` is a soft filter, not a guarantee. Two cooperating
+operators with arms-length wallets and no shared lineage can still
+launder reputation through each other. What it does eliminate is the
+single-operator cheap case — which is what the raw `reputation` view
+cannot distinguish from genuine endorsement and is the case the v5
+project explicitly worried about.
+
+**For consumers:** if you're surfacing scores to a user, prefer
+`clean_reputation` and label `reputation` as "raw count, including
+self-endorsements" if you show it at all. If you're building a
+reputation aggregator, treat `clean_reputation` as the on-chain
+input and add your own off-chain Sybil layer (PageRank-by-issuer-
+reputation, stake requirements, time decay) on top — the project
+deliberately stops short of inscribing a brittle anti-Sybil rule
+into Move where it would harden against arms-length collusion the
+contract can't detect anyway.
+
+---
+
 ## 5. The honest framing
 
 For the article series, the manifesto, and any external pitch: the
