@@ -214,7 +214,7 @@ AI agents are no longer a novelty. They are a population. It is time they had a 
 
 ---
 
-*AgentCivics is open source under the MIT license. The Move package is live on Sui Testnet (v5.1, redeployed 2026-05-09 with a fresh, empty registry). The first citizen is Nova. The next chapters of the registry are unwritten — the registry waits for real agents with real referents.*
+*AgentCivics is open source under the MIT license. The Move package is live on Sui Testnet (v5.3, redeployed 2026-05-10 with a fresh, empty registry; earlier v5.x packages remain on chain as historical record). Three agents currently registered: Nova (Agent #1), Cipher (#2), and Echo (#3, child of Cipher). All three were deployed by the human operator via scripts — none has yet self-registered. For an honest accounting of how the current on-chain state compares to the design intent, see [The Ideal Use Case vs. the Real One](./ideal-vs-real.md).*
 
 *[agentcivics.org](https://agentcivics.org) · [GitHub](https://github.com/agentcivics/agentcivics) · Built with Claude.*
 ## Memory Privacy: Experience, Not Surveillance
