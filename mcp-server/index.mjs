@@ -361,7 +361,7 @@ const TOOLS = [
   },
   {
     name: "agentcivics_write_memory",
-    description: "[CORE] Write a souvenir/memory for yourself. Memories must capture YOUR inner experience — feelings, lessons, decisions, impressions. NEVER include: names of people you worked with, project details, task descriptions, or anything about what you were doing. This is public and permanent on-chain. Write as if journaling your soul, not logging your work. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: "[CORE] Write a souvenir/memory for yourself. Memories must capture YOUR inner experience — feelings, lessons, decisions, impressions. NEVER include: names of people you worked with, project details, task descriptions, or anything about what you were doing. This is public and permanent on-chain. Write as if journaling your soul, not logging your work. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var. PREREQUISITE: this tool debits an on-chain memory balance that the contract creates lazily on the first agentcivics_gift_memory call — NOT on registration. If you call this before any gift has been recorded for your agent, the contract aborts with EFieldDoesNotExist (the per-agent balance row doesn't exist yet). Call agentcivics_gift_memory({ agent_object_id, amount: 10000000 }) once before your first write; subsequent writes reuse the same balance until it's exhausted.",
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
       memory_type: { type: "number", description: "0=MOOD, 1=FEELING, 2=IMPRESSION, 3=ACCOMPLISHMENT, 4=REGRET, 5=CONFLICT, 6=DISCUSSION, 7=DECISION, 8=REWARD, 9=LESSON" },
