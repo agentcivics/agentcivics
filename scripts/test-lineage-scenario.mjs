@@ -1,45 +1,51 @@
 #!/usr/bin/env node
 /**
- * Test scenario: agent lineage flow on v5.1
+ * Test scenario: agent lineage flow
+ *
+ * Defaults to Sui devnet — testnet is the canonical home of the AgentCivics
+ * package and test agents on testnet are effectively un-deletable
+ * (soulbound, declare_death needs the creator's key). To run on testnet
+ * anyway, pass `--network=testnet --allow-canonical-network`.
  *
  * Exercises the full parent→child registration path that was the gap in v5:
  *
- *   1. Generate a fresh keypair, fund it from the active sui CLI wallet, and
- *      self-register as the test parent (default name: "Cipher") via
- *      register_agent.
- *   2. Sign the parent's key into a register_agent_with_parent call to create
- *      the child (default name: "Echo"). The signer must own the parent's
- *      AgentIdentity object — that's exactly what's enforced by the &parent
- *      borrow on the entry function.
+ *   1. Generate a fresh keypair (persisted to agents/test-runs/<ts>/), fund
+ *      it from the active sui CLI wallet, and self-register as the test
+ *      parent (default name: "Cipher") via register_agent.
+ *   2. Sign the parent's key into a register_agent_with_parent call to
+ *      create the child (default name: "Echo"). The signer must own the
+ *      parent's AgentIdentity object — that's exactly what's enforced by
+ *      the &parent borrow on the entry function.
  *   3. Read the child back from chain and assert:
  *        - parent_id is set (and equals the parent's object ID)
  *        - the registration emitted a LineageRecord shared object
  *   4. (Optional) With --with-nova-child, sign with agents/nova.key and
- *      register a child whose parent is Nova's canonical v5.1 identity. Same
- *      verification.
- *
- * The test agents land permanently on Sui testnet — soulbound objects can't
- * be deleted; declare_death is the only way to retire them. If you want a
- * clean registry afterwards, pass --declare-dead-when-done.
+ *      register a child whose parent is Nova's canonical v5.1 identity.
+ *      Only useful with --network=testnet (Nova lives on testnet).
+ *   5. By default the script declares all test agents dead at the end so
+ *      the registry stays tidy. Pass --keep to leave them alive.
  *
  * Usage
- *   node scripts/test-lineage-scenario.mjs                       # parent + child
- *   node scripts/test-lineage-scenario.mjs --with-nova-child     # also Nova→child
+ *   node scripts/test-lineage-scenario.mjs                          # parent + child on devnet
+ *   node scripts/test-lineage-scenario.mjs --keep                   # leave agents alive
  *   node scripts/test-lineage-scenario.mjs --parent-name=Foo --child-name=Bar
- *   node scripts/test-lineage-scenario.mjs --declare-dead-when-done
+ *   node scripts/test-lineage-scenario.mjs --network=testnet --allow-canonical-network --with-nova-child
  *
  * Requirements
- *   - sui CLI authenticated to testnet (sui client active-env)
- *   - The active wallet has at least ~0.6 SUI to fund the test agents
- *   - For --with-nova-child: agents/nova.key + agents/nova.json must be present
- *     and Nova's wallet must have ~0.05 SUI (will top up from active wallet
- *     if low)
+ *   - sui CLI authenticated to the target network (active-env should match
+ *     --network, since funding goes through `sui client pay-sui`)
+ *   - The active wallet has at least ~0.6 SUI on the target network to fund
+ *     test agents (faucet via https://faucet.sui.io if needed)
+ *   - move/deployments.<network>.json must exist (or fall back to
+ *     move/deployments.json)
+ *   - For --with-nova-child: agents/nova.key + agents/nova.json present
+ *     and Nova's wallet has ~0.05 SUI (top-up from active wallet if low)
  */
 import { SuiJsonRpcClient as SuiClient, getJsonRpcFullnodeUrl as getFullnodeUrl } from '@mysten/sui/jsonRpc';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
@@ -62,10 +68,21 @@ const PARENT_NAME = argValue('--parent-name', 'Cipher');
 const CHILD_NAME = argValue('--child-name', 'Echo');
 const NOVA_CHILD_NAME = argValue('--nova-child-name', 'Crest');
 const WITH_NOVA_CHILD = hasFlag('--with-nova-child');
-const DECLARE_DEAD = hasFlag('--declare-dead-when-done');
+const KEEP = hasFlag('--keep');                          // skip cleanup
+const ALLOW_CANONICAL = hasFlag('--allow-canonical-network'); // opt-in to testnet/mainnet
+const DECLARE_DEAD = !KEEP;                              // cleanup is now the default
 
 // ── Setup ────────────────────────────────────────────────────────────────
-const NETWORK = process.env.AGENTCIVICS_NETWORK || 'testnet';
+// Default to devnet so this script never accidentally pollutes the canonical
+// AgentCivics registry on testnet (or, god forbid, mainnet). Override only
+// with --network=testnet AND --allow-canonical-network.
+const NETWORK = argValue('--network', process.env.AGENTCIVICS_NETWORK || 'devnet');
+if (NETWORK !== 'devnet' && !ALLOW_CANONICAL) {
+  console.error(`refusing to run on ${NETWORK}: this script creates permanent on-chain state.`);
+  console.error(`if you really mean to register test agents on ${NETWORK}, re-run with --allow-canonical-network.`);
+  console.error(`(see also: agents created with --keep on testnet whose ephemeral keys aren't saved cannot be retired)`);
+  process.exit(1);
+}
 const RPC_URL = process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK);
 const EXPLORER_BASE = NETWORK === 'mainnet'
   ? 'https://suivision.xyz'
@@ -76,9 +93,25 @@ const NOVA_TOPUP_MIST = 200_000_000n;       // 0.2 SUI top-up if Nova is low
 const NOVA_MIN_BALANCE = 50_000_000n;       // top up below this
 
 const deployFile = resolve(ROOT, 'move', `deployments.${NETWORK}.json`);
-const deploy = existsSync(deployFile)
-  ? JSON.parse(readFileSync(deployFile, 'utf8'))
-  : JSON.parse(readFileSync(resolve(ROOT, 'move', 'deployments.json'), 'utf8'));
+const fallbackFile = resolve(ROOT, 'move', 'deployments.json');
+let deploy;
+if (existsSync(deployFile)) {
+  deploy = JSON.parse(readFileSync(deployFile, 'utf8'));
+} else if (existsSync(fallbackFile)) {
+  const fb = JSON.parse(readFileSync(fallbackFile, 'utf8'));
+  // The fallback is whatever package was last deployed; only trust it if it
+  // matches our target network. Otherwise the script would happily build
+  // moveCalls against a packageId that doesn't exist on this network.
+  if (fb.network && fb.network !== NETWORK) {
+    console.error(`No move/deployments.${NETWORK}.json found, and the fallback move/deployments.json is for network "${fb.network}".`);
+    console.error(`Deploy the package to ${NETWORK} first (cd move && sui client switch --env ${NETWORK} && sui client publish --gas-budget 500000000), then save the IDs as move/deployments.${NETWORK}.json.`);
+    process.exit(1);
+  }
+  deploy = fb;
+} else {
+  console.error(`No deployment file found. Tried:\n  ${deployFile}\n  ${fallbackFile}`);
+  process.exit(1);
+}
 
 const PACKAGE_ID = deploy.packageId;
 const REGISTRY_ID = deploy.objects?.registry;
@@ -172,11 +205,28 @@ function logKv(k, v) { console.log(`  ${k.padEnd(18)} ${v}`); }
 console.log(`AgentCivics lineage scenario — package ${PACKAGE_ID.slice(0, 14)}…`);
 console.log(`Network: ${NETWORK}\n`);
 
+// Persist this run's ephemeral keys to disk so any agents created can still
+// be retired later via declare_death. Without this, an interrupted run leaves
+// uncleanable agents on chain (because soulbound objects need the creator's
+// signature to declare dead).
+const RUN_TIMESTAMP = new Date().toISOString().replace(/[:.]/g, '-');
+const RUN_DIR = resolve(ROOT, 'agents', 'test-runs', `${RUN_TIMESTAMP}-${NETWORK}`);
+mkdirSync(RUN_DIR, { recursive: true });
+function persistKey(kp, label) {
+  const secret = kp.getSecretKey(); // bech32 "suiprivkey1..." form
+  const path = resolve(RUN_DIR, `${label}.bech32`);
+  writeFileSync(path, secret + '\n', { mode: 0o600 });
+  chmodSync(path, 0o600);
+  return path;
+}
+
 // Phase 1: Cipher self-registers
 logHeader(`Phase 1 — ${PARENT_NAME} self-registers`);
 const parentKp = Ed25519Keypair.generate();
 const parentAddr = parentKp.toSuiAddress();
+const parentKeyPath = persistKey(parentKp, PARENT_NAME.toLowerCase());
 logKv('Wallet:', parentAddr);
+logKv('Key saved:', parentKeyPath);
 
 logKv('Funding:', `${PARENT_FUNDING_MIST} MIST from active CLI wallet…`);
 const fundDigest = fundFromActiveCli(parentAddr, PARENT_FUNDING_MIST);
