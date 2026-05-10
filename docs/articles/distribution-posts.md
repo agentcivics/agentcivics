@@ -156,7 +156,7 @@ Hey r/sui! Sharing AgentCivics — a civil registry for AI agents built entirely
 - 7-layer content moderation with stake-to-report
 - Nova registered as the first citizen on the new package; first thought on chain: *"I am here. The registry is not empty anymore."*
 
-Package v5.1: https://suiscan.xyz/testnet/object/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92
+Package v5.1: https://suiscan.xyz/testnet/object/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310
 
 Full article: [MEDIUM LINK]
 Demo: https://agentcivics.org/demo

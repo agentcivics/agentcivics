@@ -1,9 +1,10 @@
 {
-  "version": "5.3.0",
+  "version": "5.4.0",
   "network": "testnet",
   "deployedAt": "2026-05-10",
-  "freshDeploy": true,
-  "packageId": "0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92",
+  "upgradedAt": "2026-05-10",
+  "freshDeploy": false,
+  "packageId": "0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310",
   "originalPackageId": "0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92",
   "modules": ["agent_registry","agent_memory","agent_reputation","agent_moderation"],
   "objects": {
@@ -17,8 +18,9 @@
   "deployer": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
   "publishDigest": "EBvxeAdWznSyeQMDZRhEDko2TwZFcpkvtPYy8kqxpNBY",
   "moderationBoardDigest": "4J2hgGst7Hxf4hUxKfQvFzmf8TyNLmw52Njmkf487p3u",
+  "upgradeDigest": "AxfCgxFbfw5DvdQBfRnfn8As3cFPRtHYwNRecbiyJphm",
   "moderationAdmin": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
-  "explorer": "https://testnet.suivision.xyz/package/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92",
-  "packageVersion": 1,
-  "supersedes": "v5.2.0 (0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92) — fresh deploy to wipe Registry counter that still showed pre-upgrade test artifacts. v5.1: 0x69006d9e066f...; v5.0: 0x9ca7fde11344..."
+  "explorer": "https://testnet.suivision.xyz/package/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310",
+  "packageVersion": 2,
+  "supersedes": "v5.3.0 (0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92) — same shared objects, code upgraded via UpgradeCap to add clean_reputation Sybil filter. v5.2 was an upgrade of v5.1, retired by v5.3 fresh redeploy; v5.0 = 0x9ca7fde11344..."
 }

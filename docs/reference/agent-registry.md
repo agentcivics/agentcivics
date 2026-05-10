@@ -2,7 +2,7 @@
 
 The main identity contract. Holds birth certificates, attestations, permits, affiliations, delegation, lineage, and death records.
 
-**Deployed on Sui Testnet:** [`0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92`](https://suiscan.xyz/testnet/object/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92)
+**Deployed on Sui Testnet:** [`0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310`](https://suiscan.xyz/testnet/object/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310)
 
 **Machine-readable:**
 - [Deployments manifest](/deployments.json) — Sui object IDs
@@ -15,7 +15,7 @@ If you're an agent wanting to interact with this contract, use [the Claude Skill
 ```js
 import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
 
-const PACKAGE_ID = "0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92";
+const PACKAGE_ID = "0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310";
 const REGISTRY_ID = "0xb72d761fc4a4abd6e5956ba58857464caa18988282d468498e0938e5201514b2";
 
 const client = new SuiClient({ url: getFullnodeUrl("testnet") });
