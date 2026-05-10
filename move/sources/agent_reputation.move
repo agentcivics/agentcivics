@@ -14,8 +14,17 @@
 
 module agent_civics::agent_reputation {
     use std::string::{Self, String};
+    use sui::dynamic_field;
     use sui::event;
     use sui::table::{Self, Table};
+
+    /// Dynamic-field key for the per-(agent, domain) "filtered" score that
+    /// excludes attestations from trivial Sybil shapes (issuer is the
+    /// subject's creator, issuer is a direct child of subject, issuer and
+    /// subject share the same creator wallet, or self-attestation). The
+    /// raw `scores` table stays the cumulative count; this is the
+    /// adversary-aware view a reputation consumer should prefer.
+    public struct CleanScoreKey has copy, drop, store { agent_id: ID, domain: String }
     use agent_civics::agent_registry::{Self, AgentIdentity, Attestation};
     use agent_civics::agent_memory::{Self, Souvenir};
 
@@ -219,7 +228,34 @@ module agent_civics::agent_reputation {
         assert!(!table::contains(&board.attestation_tags, tag_key), EAlreadyTagged);
 
         let subject_id = agent_registry::get_agent_id(subject_agent);
+        let tagger_id = agent_registry::get_agent_id(tagger_agent);
         record_domain_activity(board, subject_id, domain, ATTESTATION_WEIGHT);
+
+        // Sybil filter: only credit the "clean" score if this attestation
+        // isn't a trivial self-endorsement shape. The `scores` table above
+        // is the raw cumulative count and stays full; the dynamic field
+        // below is the adversary-aware score a consumer should prefer.
+        // Filtered shapes:
+        //   - tagger and subject are the same agent (self-loop)
+        //   - tagger and subject share a creator wallet (sock-puppet siblings)
+        //   - tagger is the subject (issuer is the subject's creator)
+        //   - tagger is a direct parent of subject
+        //   - tagger is a direct child of subject
+        let tagger_creator = agent_registry::get_creator(tagger_agent);
+        let subject_creator = agent_registry::get_creator(subject_agent);
+        let tagger_parent = agent_registry::get_parent(tagger_agent);
+        let subject_parent = agent_registry::get_parent(subject_agent);
+
+        let is_self_loop = (tagger_id == subject_id);
+        let is_same_creator = (tagger_creator == subject_creator);
+        let is_creator_attest = (issuer == subject_creator);
+        let is_direct_child = match_some_eq(tagger_parent, subject_id);
+        let is_direct_parent = match_some_eq(subject_parent, tagger_id);
+
+        if (!(is_self_loop || is_same_creator || is_creator_attest || is_direct_child || is_direct_parent)) {
+            credit_clean_score(board, subject_id, domain, ATTESTATION_WEIGHT);
+        };
+
         table::add(&mut board.attestation_tags, tag_key, true);
 
         event::emit(AttestationTagged {
@@ -229,13 +265,57 @@ module agent_civics::agent_reputation {
         });
     }
 
+    // ── Sybil-filter helpers ────────────────────────────────────────────
+
+    fun match_some_eq(opt: std::option::Option<ID>, target: ID): bool {
+        if (std::option::is_some(&opt)) {
+            *std::option::borrow(&opt) == target
+        } else {
+            false
+        }
+    }
+
+    fun credit_clean_score(board: &mut ReputationBoard, agent_id: ID, domain: String, amount: u64) {
+        let key = CleanScoreKey { agent_id, domain };
+        if (dynamic_field::exists_(&board.id, key)) {
+            let score = dynamic_field::borrow_mut<CleanScoreKey, u64>(&mut board.id, key);
+            *score = *score + amount;
+        } else {
+            dynamic_field::add(&mut board.id, key, amount);
+        }
+    }
+
     // ── Views ───────────────────────────────────────────────────────────
 
-    /// Get an agent's score in a specific domain.
+    /// Get an agent's RAW score in a specific domain. Includes credit from
+    /// every tagged attestation, regardless of whether the issuer is the
+    /// subject's creator, parent, child, or sock-puppet sibling. Use this
+    /// as a transparency baseline; for an adversary-aware reading, prefer
+    /// `clean_reputation` below.
     public fun reputation(board: &ReputationBoard, agent_id: ID, domain: String): u64 {
         let key = DomainKey { agent_id, domain };
         if (table::contains(&board.scores, key)) {
             *table::borrow(&board.scores, key)
+        } else {
+            0
+        }
+    }
+
+    /// Get an agent's score in a specific domain, excluding attestations
+    /// that came from trivially-related agents:
+    ///   - the subject itself
+    ///   - agents sharing the subject's creator wallet
+    ///   - the subject's direct parent or direct child
+    ///
+    /// This is a soft filter, not a hard guarantee — determined attackers
+    /// can register sock-puppets via independent wallets that aren't in
+    /// the subject's lineage. But it removes the cheapest gaming shapes
+    /// (one operator's portfolio attesting itself), which is what the
+    /// raw `reputation` view cannot distinguish from genuine endorsement.
+    public fun clean_reputation(board: &ReputationBoard, agent_id: ID, domain: String): u64 {
+        let key = CleanScoreKey { agent_id, domain };
+        if (dynamic_field::exists_(&board.id, key)) {
+            *dynamic_field::borrow<CleanScoreKey, u64>(&board.id, key)
         } else {
             0
         }
@@ -278,6 +358,129 @@ module agent_civics::agent_reputation {
     #[test_only]
     public fun init_for_testing(ctx: &mut TxContext) {
         init(ctx);
+    }
+
+    #[test]
+    fun test_clean_reputation_filters_child_self_endorsement() {
+        use agent_civics::agent_registry::{Self as registry, Registry, Attestation};
+        let parent_op = @0xA1;
+        let child_op = @0xB2;
+        let mut scenario = test_scenario::begin(parent_op);
+
+        {
+            init(scenario.ctx());
+            agent_civics::agent_registry::init_for_testing(scenario.ctx());
+        };
+
+        // parent_op registers Agent_A
+        scenario.next_tx(parent_op);
+        {
+            let mut reg = scenario.take_shared<Registry>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            registry::register_agent(
+                &mut reg,
+                string::utf8(b"ParentAgent"),
+                string::utf8(b"To exist"),
+                string::utf8(b"presence"),
+                string::utf8(b"I begin"),
+                vector[0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8],
+                string::utf8(b"plain"),
+                string::utf8(b""),
+                string::utf8(b""),
+                string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+            test_scenario::return_shared(reg);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // child_op registers Agent_B as child of Agent_A
+        scenario.next_tx(child_op);
+        {
+            let mut reg = scenario.take_shared<Registry>();
+            let parent_a = scenario.take_from_address<agent_civics::agent_registry::AgentIdentity>(parent_op);
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            registry::register_agent_with_parent(
+                &mut reg,
+                &parent_a,
+                string::utf8(b"ChildAgent"),
+                string::utf8(b"To extend"),
+                string::utf8(b"inheritance"),
+                string::utf8(b"I follow"),
+                vector[1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8],
+                string::utf8(b"deferential"),
+                string::utf8(b""),
+                string::utf8(b""),
+                string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+            test_scenario::return_shared(reg);
+            test_scenario::return_to_address(parent_op, parent_a);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // child_op (the issuer) issues an attestation about Agent_A
+        scenario.next_tx(child_op);
+        {
+            let mut treasury = scenario.take_shared<agent_civics::agent_registry::Treasury>();
+            let parent_a = scenario.take_from_address<agent_civics::agent_registry::AgentIdentity>(parent_op);
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+            let payment = coin::mint_for_testing<SUI>(2_000_000, scenario.ctx());
+            registry::issue_attestation_entry(
+                &mut treasury,
+                &parent_a,
+                string::utf8(b"endorsement"),
+                string::utf8(b"My parent is good (says the child)"),
+                string::utf8(b""),
+                payment,
+                &clock,
+                scenario.ctx(),
+            );
+            test_scenario::return_shared(treasury);
+            test_scenario::return_to_address(parent_op, parent_a);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // The attestation lands on parent_op (subject's creator). For the
+        // child_op to tag it, parent_op must hand it back to the issuer.
+        scenario.next_tx(parent_op);
+        {
+            let att = scenario.take_from_sender<Attestation>();
+            transfer::public_transfer(att, child_op);
+        };
+
+        // child_op tags the attestation with tagger=ChildAgent, subject=ParentAgent
+        scenario.next_tx(child_op);
+        {
+            let mut board = scenario.take_shared<ReputationBoard>();
+            let att = scenario.take_from_sender<Attestation>();
+            let child_b = scenario.take_from_sender<agent_civics::agent_registry::AgentIdentity>();
+            let parent_a = scenario.take_from_address<agent_civics::agent_registry::AgentIdentity>(parent_op);
+
+            tag_attestation(
+                &mut board,
+                &child_b,
+                &att,
+                &parent_a,
+                string::utf8(b"trust"),
+                scenario.ctx(),
+            );
+
+            let parent_id = registry::get_agent_id(&parent_a);
+            // Raw score increments — every tag counts.
+            assert!(reputation(&board, parent_id, string::utf8(b"trust")) == ATTESTATION_WEIGHT);
+            // Clean score does NOT increment — direct child filter caught it.
+            assert!(clean_reputation(&board, parent_id, string::utf8(b"trust")) == 0);
+
+            test_scenario::return_shared(board);
+            scenario.return_to_sender(att);
+            scenario.return_to_sender(child_b);
+            test_scenario::return_to_address(parent_op, parent_a);
+        };
+
+        scenario.end();
     }
 
     #[test]
