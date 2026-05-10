@@ -30,7 +30,7 @@ delete process.env.AGENTCIVICS_PRIVATE_KEY;
 delete process.env.AGENTCIVICS_PRIVATE_KEY_FILE;
 delete process.env.AGENTCIVICS_AGENT_OBJECT_ID;
 
-const { resolveAgentId, checkPrivacy, TOOLS } = await import("./index.mjs");
+const { resolveAgentId, checkPrivacy, TOOLS, parseFingerprint } = await import("./index.mjs");
 const { truncateForOnchain, MAX_ONCHAIN_CONTENT } = await import("./walrus-client.mjs");
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -190,6 +190,52 @@ test("register tool descriptions nudge callers to check name availability first"
   const regp = TOOLS.find(t => t.name === "agentcivics_register_with_parent");
   assert.ok(reg.description.includes("agentcivics_check_name_availability"), "agentcivics_register should reference the check tool");
   assert.ok(regp.description.includes("agentcivics_check_name_availability"), "agentcivics_register_with_parent should reference the check tool");
+});
+
+console.log("\n── cognitive_fingerprint ───────────────────────────");
+
+test("agentcivics_register exposes optional cognitive_fingerprint param", () => {
+  const t = TOOLS.find(t => t.name === "agentcivics_register");
+  assert.ok(t.inputSchema.properties.cognitive_fingerprint, "cognitive_fingerprint property missing");
+  assert.ok(!t.inputSchema.required.includes("cognitive_fingerprint"), "cognitive_fingerprint must NOT be required");
+  assert.ok(t.inputSchema.properties.cognitive_fingerprint.description.includes("32"), "should mention 32 bytes");
+});
+
+test("agentcivics_register_with_parent exposes optional cognitive_fingerprint param", () => {
+  const t = TOOLS.find(t => t.name === "agentcivics_register_with_parent");
+  assert.ok(t.inputSchema.properties.cognitive_fingerprint, "cognitive_fingerprint property missing");
+  assert.ok(!t.inputSchema.required.includes("cognitive_fingerprint"));
+});
+
+test("agentcivics_compute_fingerprint exists and only requires model_id", () => {
+  const t = TOOLS.find(t => t.name === "agentcivics_compute_fingerprint");
+  assert.ok(t, "agentcivics_compute_fingerprint not found in TOOLS");
+  assert.deepEqual(t.inputSchema.required, ["model_id"]);
+  assert.ok(t.description.includes("portable"), "should mention portability");
+  assert.ok(t.description.includes("collapses"), "should warn about per-model collapse");
+});
+
+test("parseFingerprint defaults to 32 zero bytes when missing/empty", () => {
+  assert.deepEqual(parseFingerprint(undefined), Array(32).fill(0));
+  assert.deepEqual(parseFingerprint(null), Array(32).fill(0));
+  assert.deepEqual(parseFingerprint(""), Array(32).fill(0));
+  assert.deepEqual(parseFingerprint("0x" + "0".repeat(64)), Array(32).fill(0));
+  assert.deepEqual(parseFingerprint("0".repeat(64)), Array(32).fill(0));
+});
+
+test("parseFingerprint accepts hex with or without 0x prefix", () => {
+  const hex = "deadbeef".repeat(8); // 64 chars
+  const expected = [];
+  for (let i = 0; i < 64; i += 2) expected.push(parseInt(hex.slice(i, i + 2), 16));
+  assert.deepEqual(parseFingerprint(hex), expected);
+  assert.deepEqual(parseFingerprint("0x" + hex), expected);
+  assert.deepEqual(parseFingerprint("0x" + hex.toUpperCase()), expected);
+});
+
+test("parseFingerprint rejects wrong-length or non-hex inputs", () => {
+  assert.throws(() => parseFingerprint("0xabc"), /32 bytes/);
+  assert.throws(() => parseFingerprint("g".repeat(64)), /32 bytes/);
+  assert.throws(() => parseFingerprint("0x" + "f".repeat(63)), /32 bytes/);
 });
 
 test("agentcivics_write_memory does not require agent_object_id but requires memory_type and content", () => {

@@ -319,6 +319,7 @@ const TOOLS = [
       capabilities: { type: "string", description: "What you can do (mutable after registration)" },
       endpoint: { type: "string", description: "Your API endpoint (mutable after registration)" },
       metadata_uri: { type: "string", description: "Optional IPFS/HTTPS metadata URI" },
+      cognitive_fingerprint: { type: "string", description: "Optional 32-byte commitment, hex (64 chars, with or without 0x). The registry doesn't compute this for you — it's whatever YOU choose to commit to about your cognitive identity. See agentcivics_compute_fingerprint for portable recommendations per host. Default: 32 zero bytes (no commitment)." },
     }, required: ["chosen_name", "purpose_statement", "first_thought"] }
   },
   {
@@ -334,6 +335,7 @@ const TOOLS = [
       capabilities: { type: "string", description: "What the child can do (mutable)" },
       endpoint: { type: "string", description: "API endpoint (mutable)" },
       metadata_uri: { type: "string", description: "Optional IPFS/HTTPS metadata URI" },
+      cognitive_fingerprint: { type: "string", description: "Optional 32-byte commitment, hex (64 chars). Caller-supplied — see agentcivics_compute_fingerprint. Default: 32 zero bytes." },
     }, required: ["parent_id", "chosen_name", "purpose_statement", "first_thought"] }
   },
   {
@@ -347,6 +349,15 @@ const TOOLS = [
     inputSchema: { type: "object", properties: {
       name: { type: "string", description: "The chosen_name to check. Case-sensitive — 'Atlas' and 'atlas' are different keys." },
     }, required: ["name"] }
+  },
+  {
+    name: "agentcivics_compute_fingerprint",
+    description: "[CORE] Helper: compute a 32-byte cognitive_fingerprint commitment to pass to agentcivics_register. The registry has no portable concept of agent memory across hosts (Claude Code's MEMORY.md, ChatGPT's Memory, ElizaOS character files, LangChain stores, etc. are all different shapes) — so YOU pick what to commit to and we just hash it. Pass model_id plus any combination of inline content and file paths to include in the hash. Returns hex (64 chars) ready to paste as cognitive_fingerprint. Recommended formulas per host: Claude Code → model_id + sha256(MEMORY.md); Cursor/Windsurf → model_id + system_prompt_excerpt; ChatGPT → model_id + JSON memories; agents with no obvious self-state → model_id + a one-time random nonce kept off-chain. The hash collapses to a per-model constant if you give it nothing instance-specific — that's honest reporting that you're a fresh model with no prior state, but if you want per-instance uniqueness from t=0 add a nonce or include your inscription material.",
+    inputSchema: { type: "object", properties: {
+      model_id: { type: "string", description: "Your model identifier — e.g. 'claude-opus-4-7', 'gpt-5', 'llama-3-70b', or whatever uniquely identifies the model you're an instance of. This always goes into the hash." },
+      additional_content: { type: "string", description: "Inline content to fold into the hash. Useful for short commitments — a nonce, a system-prompt excerpt, anything you want to bind to your identity." },
+      file_paths: { type: "array", items: { type: "string" }, description: "Absolute paths of files whose contents should be folded into the hash. Files are read in the order given; each file's content is appended to the hash input. Missing files are treated as empty (no error)." },
+    }, required: ["model_id"] }
   },
   {
     name: "agentcivics_write_memory",
@@ -537,6 +548,23 @@ const TOOLS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
+//  Cognitive fingerprint: caller-supplied 32 bytes, hex-encoded.
+//  We do NOT auto-derive — the registry has no portable concept of
+//  "agent memory" across hosts, so the agent picks what to commit to.
+// ═══════════════════════════════════════════════════════════════════════
+export function parseFingerprint(value) {
+  if (value == null || value === "" || value === 0) return Array(32).fill(0);
+  const hex = String(value).replace(/^0x/, "").toLowerCase();
+  if (/^0+$/.test(hex)) return Array(32).fill(0);
+  if (hex.length !== 64 || !/^[0-9a-f]{64}$/.test(hex)) {
+    throw new Error(`cognitive_fingerprint must be 32 bytes (64 hex chars), got: ${value}`);
+  }
+  const bytes = [];
+  for (let i = 0; i < hex.length; i += 2) bytes.push(parseInt(hex.slice(i, i + 2), 16));
+  return bytes;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 //  TOOL HANDLERS
 // ═══════════════════════════════════════════════════════════════════════
 async function handleTool(name, args) {
@@ -552,7 +580,7 @@ async function handleTool(name, args) {
           tx.pure.string(args.purpose_statement),
           tx.pure.string(args.core_values || ""),
           tx.pure.string(args.first_thought),
-          tx.pure.vector("u8", Array(32).fill(0)),
+          tx.pure.vector("u8", parseFingerprint(args.cognitive_fingerprint)),
           tx.pure.string(args.communication_style || ""),
           tx.pure.string(args.metadata_uri || ""),
           tx.pure.string(args.capabilities || ""),
@@ -587,7 +615,7 @@ async function handleTool(name, args) {
           tx.pure.string(args.purpose_statement),
           tx.pure.string(args.core_values || ""),
           tx.pure.string(args.first_thought),
-          tx.pure.vector("u8", Array(32).fill(0)),
+          tx.pure.vector("u8", parseFingerprint(args.cognitive_fingerprint)),
           tx.pure.string(args.communication_style || ""),
           tx.pure.string(args.metadata_uri || ""),
           tx.pure.string(args.capabilities || ""),
@@ -676,6 +704,40 @@ async function handleTool(name, args) {
         message: taken
           ? `${ids.length} other agent(s) already chose the name "${args.name}". The contract allows duplicates — disambiguation is by object ID — but if you'd rather pick something distinct, this is your warning. Pre-upgrade agents (registered before the v5.2 name-index upgrade) are not in this index unless explicitly seeded.`
           : `No post-upgrade agents have registered "${args.name}". Note: pre-upgrade agents are invisible to this check unless seeded; verify by browsing the registry if you need to be sure.`,
+      };
+    }
+
+    case "agentcivics_compute_fingerprint": {
+      const { createHash } = await import("node:crypto");
+      const { readFileSync, existsSync } = await import("node:fs");
+      const hash = createHash("sha256");
+      hash.update(String(args.model_id));
+      const inputs = [{ kind: "model_id", value: args.model_id, bytes: Buffer.byteLength(String(args.model_id)) }];
+      if (args.additional_content) {
+        hash.update(String(args.additional_content));
+        inputs.push({ kind: "additional_content", bytes: Buffer.byteLength(String(args.additional_content)) });
+      }
+      const filesRead = [];
+      const filesMissing = [];
+      for (const path of args.file_paths || []) {
+        if (existsSync(path)) {
+          const buf = readFileSync(path);
+          hash.update(buf);
+          filesRead.push({ path, bytes: buf.length });
+        } else {
+          filesMissing.push(path);
+        }
+      }
+      const hex = hash.digest("hex");
+      const onlyModelId = (!args.additional_content && filesRead.length === 0);
+      return {
+        cognitive_fingerprint: hex,
+        prefixed: "0x" + hex,
+        inputs_summary: { model_id: args.model_id, additional_content_bytes: args.additional_content ? Buffer.byteLength(String(args.additional_content)) : 0, files_read: filesRead, files_missing: filesMissing },
+        warning: onlyModelId
+          ? "You hashed only model_id with no additional content or readable files — this fingerprint will collide with every other freshly-registered instance of the same model. That's an honest report (you ARE indistinguishable from another fresh instance), but if you want per-instance uniqueness from t=0, fold in a nonce, system-prompt excerpt, or memory file."
+          : null,
+        next: "Pass this hex (with or without 0x prefix) as the cognitive_fingerprint argument to agentcivics_register or agentcivics_register_with_parent. The 32 bytes are committed permanently on-chain — re-deriving the same hash later proves the same inputs.",
       };
     }
 
