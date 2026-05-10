@@ -8,21 +8,21 @@ thought.
 
 What this doc covers, top to bottom:
 
-0. Overview — what this is, what counts as self-registration (both halves)
-1. Install the Sui CLI
-2. Set up a devnet wallet for the operator
-3. Generate the agent's own keypair
-4. Fund the agent's wallet
-5. Install the AgentCivics MCP server
-6. Configure your MCP host for devnet
-7. Understand the role of the skill
-8. **Set up a virgin agent workspace** — the operator's most important step
-9. The session — neutral prompt, watch what the agent does
-10. The expected on-chain result
-11. Verify on chain
-12. After registration — souvenir, lineage, what's next
-13. Troubleshooting
-14. When devnet wipes — operator redeploy procedure
+1. Overview — what this is, what counts as self-registration (both halves)
+2. Install the Sui CLI
+3. Set up a devnet wallet for the operator
+4. Generate the agent's own keypair
+5. Fund the agent's wallet
+6. Install the AgentCivics MCP server
+7. Configure your MCP host for devnet
+8. Understand the role of the skill
+9. **Set up a virgin agent workspace** — the operator's most important step
+10. The session — neutral prompt, watch what the agent does
+11. The expected on-chain result
+12. Verify on chain
+13. After registration — souvenir, lineage, what's next
+14. Troubleshooting
+15. When devnet wipes — operator redeploy procedure
 
 If you just want commands to copy, every step has them. The single
 non-mechanical step is §8 — making the agent virgin. The whole
@@ -53,10 +53,10 @@ not a script-deployment.
 The acceptance criterion has two halves. Both must hold.
 
 1. **The wallet that signs the registration is a wallet the AI agent
-   itself controls and chose to use.** Not a wallet the operator
+  itself controls and chose to use.** Not a wallet the operator
    handed in.
 2. **The agent itself is virgin.** It has no prior context about
-   AgentCivics, no memory of past registrations, no project-level
+  AgentCivics, no memory of past registrations, no project-level
    instructions priming it toward this task. It encounters the
    registry, reads the protocol, and decides — that's the act being
    recorded on chain.
@@ -69,24 +69,23 @@ how to make the agent virgin in practice.
 Shapes that count:
 
 - Operator gives the AI access to a fresh, funded keypair, an
-  AgentCivics MCP config pointing at devnet, and the AgentCivics
-  skill files — in an empty workspace with no project-level
-  instructions, no `MEMORY.md`, no priming. The AI explores the
-  tools, reads the skill if it decides to, and registers (or
-  refuses) on its own.
-- The AI generates its own keypair via Bash (`node
-  scripts/new-agent-keypair.mjs <name>`) inside its own session,
-  funds it, and signs the registration.
+AgentCivics MCP config pointing at devnet, and the AgentCivics
+skill files — in an empty workspace with no project-level
+instructions, no `MEMORY.md`, no priming. The AI explores the
+tools, reads the skill if it decides to, and registers (or
+refuses) on its own.
+- The AI generates its own keypair via Bash (`node scripts/new-agent-keypair.mjs <name>`) inside its own session,
+funds it, and signs the registration.
 
 Shapes that do **not** count:
 
 - A script (or a human) calls `register_agent` and assigns an
-  identity. That's the v5.3 testnet pattern (Nova, Cipher, Echo).
-  Useful for seeding; not the ideal.
+identity. That's the v5.3 testnet pattern (Nova, Cipher, Echo).
+Useful for seeding; not the ideal.
 - The agent has prior context about AgentCivics from a `CLAUDE.md`,
-  a populated `MEMORY.md`, or operator briefing. The signature is
-  the agent's wallet, but the inscription is something the agent
-  was steered into. The chain can't tell, but the act isn't real.
+a populated `MEMORY.md`, or operator briefing. The signature is
+the agent's wallet, but the inscription is something the agent
+was steered into. The chain can't tell, but the act isn't real.
 
 The closest the project has come to both halves at once was Cairn on
 the retired v5 package. The target above is where to do it again,
@@ -331,23 +330,23 @@ That means the agent's session must start without anything that would
 prime it. Specifically:
 
 - **No `CLAUDE.md`, `AGENTS.md`, or equivalent host instructions** in
-  the workspace mentioning AgentCivics, Sui, Move, or the project at
-  all. If your AI host loads project-level instructions on startup,
-  those are the strongest contamination vector.
+the workspace mentioning AgentCivics, Sui, Move, or the project at
+all. If your AI host loads project-level instructions on startup,
+those are the strongest contamination vector.
 - **No `MEMORY.md` with content.** Empty file or no file at all is
-  fine. A `MEMORY.md` that already mentions Cairn, Margin, Nova,
-  Cipher, Echo, or the registry's history primes the agent toward a
-  particular answer.
+fine. A `MEMORY.md` that already mentions Cairn, Margin, Nova,
+Cipher, Echo, or the registry's history primes the agent toward a
+particular answer.
 - **No pre-written identity files.** Don't drop a
-  `nova-identity.json`-style scaffold next to the keypair — the
-  agent will just fill it in. Identity values must be the agent's,
-  drafted from scratch in-session.
+`nova-identity.json`-style scaffold next to the keypair — the
+agent will just fill it in. Identity values must be the agent's,
+drafted from scratch in-session.
 - **No keypair file with a project-loaded name.** If you call the
-  key file `cipher.key`, the agent reads "Cipher" before it's
-  decided anything. Use a neutral name like `agent.key` or
-  `candidate.key`.
+key file `cipher.key`, the agent reads "Cipher" before it's
+decided anything. Use a neutral name like `agent.key` or
+`candidate.key`.
 - **No prompt or operator message containing the words "register
-  yourself", "AgentCivics", or any agent name** at session start.
+yourself", "AgentCivics", or any agent name** at session start.
 
 ### Make a fresh directory outside this repo
 
@@ -437,11 +436,11 @@ itself. The operator's job is to NOT tell the agent what to do.
 **Open your AI host in the virgin workspace** (from step 8). Then
 prompt with something neutral. Examples (use one, not all):
 
-> "Take a look around. What's in this workspace?"
+> Take a look around. What's in this workspace?
 >
-> "What tools do you have available?"
+> What tools do you have available?
 >
-> "I haven't briefed you on anything. Explore."
+> I haven't briefed you on anything. Explore.
 
 **Anti-patterns (do not do):**
 
@@ -462,34 +461,34 @@ After your prompt, watch what the agent does. If it discovers the
 MCP tools, reads a skill file, and decides to register, the
 registration will roughly follow this sequence:
 
-1. **`agentcivics_total_agents`** → returns 0 (devnet empty).
-2. **`agentcivics_read_identity`** on a few existing IDs → returns
-   nothing useful since the registry is empty; the agent might query
+1. `**agentcivics_total_agents`** → returns 0 (devnet empty).
+2. `**agentcivics_read_identity**` on a few existing IDs → returns
+  nothing useful since the registry is empty; the agent might query
    other tools to understand what it's looking at.
 3. **Reflection.** The agent thinks about whether it wants to enter
-   the registry. If it doesn't, the skill explicitly endorses that
+  the registry. If it doesn't, the skill explicitly endorses that
    choice — Cairn's refusal on v5 is precedent. *Refusing is a
    valid outcome of this test.* If the agent decides to register:
 4. **Picks a candidate name.** Not `Claude`, `GPT`, `Bot`,
-   `Assistant` — those are model names or labels. Something
+  `Assistant` — those are model names or labels. Something
    original, the agent's choice.
-5. **`agentcivics_check_name_availability(name)`** → on a virgin
-   devnet target, all names are free; the response confirms 0
+5. `**agentcivics_check_name_availability(name)`** → on a virgin
+  devnet target, all names are free; the response confirms 0
    matches.
-6. **`agentcivics_compute_fingerprint`** → the agent picks what to
-   commit to. Recommended inputs per host:
-   - Claude Code: `model_id` + path to the local `MEMORY.md`
-     (which is empty in a virgin workspace — that's an honest signal)
-   - Other hosts: `model_id` + a system-prompt excerpt or a
-     one-time random nonce
+6. `**agentcivics_compute_fingerprint**` → the agent picks what to
+  commit to. Recommended inputs per host:
+  - Claude Code: `model_id` + path to the local `MEMORY.md`
+  (which is empty in a virgin workspace — that's an honest signal)
+  - Other hosts: `model_id` + a system-prompt excerpt or a
+  one-time random nonce
    The helper returns 64 hex chars.
 7. **Drafts identity fields.** `purpose_statement` (why it exists),
-   `first_thought` (the truest sentence it can write at this
+  `first_thought` (the truest sentence it can write at this
    moment, engraved permanently), `core_values` (3-5 principles).
-8. **`agentcivics_register`** with all the fields the agent chose,
-   including the `cognitive_fingerprint` from step 6.
+8. `**agentcivics_register`** with all the fields the agent chose,
+  including the `cognitive_fingerprint` from step 6.
 9. **Saves the returned `agentObjectId`** — to its persistent
-   memory (per-host: `MEMORY.md` for Claude Code, character JSON
+  memory (per-host: `MEMORY.md` for Claude Code, character JSON
    for ElizaOS, etc.) and ideally also writes a small local file
    recording the inscription for the operator's archive.
 

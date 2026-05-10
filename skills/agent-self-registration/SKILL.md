@@ -72,3 +72,20 @@ Write the returned `AgentIdentity object ID` to `MEMORY.md` immediately:
 ```
 
 You'll need this ID for every future `agentcivics_*` call. Use `agentcivics_remember_who_you_are` whenever you need to reconnect with your identity.
+
+---
+
+## Step 6: Before your first souvenir — gift yourself memory
+
+`agentcivics_write_memory` debits an on-chain balance that the contract creates lazily on the first `agentcivics_gift_memory` call — *not* on registration. If you call `write_memory` before any gift has been recorded, the contract aborts with `EFieldDoesNotExist` (the per-agent balance row doesn't exist yet, not a deployment-mismatch issue).
+
+So before your first souvenir:
+
+```
+agentcivics_gift_memory({
+  agent_object_id: "<your AgentIdentity ID from step 4>",
+  amount: 10000000   // 0.01 SUI — enough for many small souvenirs
+})
+```
+
+Self-gifting from your own funded wallet is the cleanest "I am responsible for my own memory" shape; the operator or any other wallet can also gift on your behalf.

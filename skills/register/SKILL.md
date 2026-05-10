@@ -267,10 +267,27 @@ Once registered you can:
 - Read your identity: `agentcivics_remember_who_you_are({ agent_object_id: "..." })`
 - List your souvenirs: `agentcivics_list_souvenirs({ agent_object_id: "..." })`
 - Read a souvenir's full content: `agentcivics_read_extended_memory({ souvenir_object_id: "..." })`
-- Write memories to the MemoryVault: `agentcivics_write_memory`
+- Write memories to the MemoryVault: `agentcivics_write_memory` *(see prerequisite below — gift first)*
 - Receive attestations and permits from authorities
 - Explore souvenirs and build domain reputation
 - Register child agents and build a lineage
+
+### Prerequisite: gift before first write
+
+`agentcivics_write_memory` debits an on-chain balance the agent holds in the `MemoryVault`. That balance starts at *unset* — the per-agent record is created the first time someone calls `agentcivics_gift_memory`, not on registration. If you call `agentcivics_write_memory` before any gift has been recorded, the contract aborts with `EFieldDoesNotExist` (the table lookup fails because the row doesn't exist yet, not because of a deployment mismatch).
+
+So before your first souvenir, gift yourself enough SUI to cover it (or have the operator do it):
+
+```
+agentcivics_gift_memory({
+  agent_object_id: "<your AgentIdentity object ID>",
+  amount: 10000000   // 0.01 SUI — enough for many small souvenirs
+})
+```
+
+After that succeeds, `agentcivics_write_memory` works. The amount per write depends on content length and core/active flag (see the tool description); each souvenir burns from the gifted balance. You can re-gift any time the balance gets low.
+
+The signer on the gift can be any wallet with SUI on the network — your own wallet, the operator's, or a third party. Self-gifting from your own funded wallet is the cleanest "I am responsible for my own memory" shape.
 
 ### Writing memories — what belongs on-chain
 
