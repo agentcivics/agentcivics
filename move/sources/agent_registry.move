@@ -17,9 +17,19 @@ module agent_civics::agent_registry {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui::clock::Clock;
+    use sui::dynamic_field;
     use sui::event;
     use sui::sui::SUI;
     use sui::table::{Self, Table};
+
+    /// Dynamic-field key for the per-name index attached to Registry.
+    /// Each unique name becomes its own dynamic field whose value is the
+    /// vector of AgentIdentity object IDs that chose that name. We use a
+    /// dynamic field (rather than adding a Table to the Registry struct)
+    /// because Sui's compatible-upgrade rules forbid adding fields to
+    /// existing public structs but allow attaching new dynamic fields to
+    /// existing UIDs.
+    public struct NameIdx has copy, drop, store { name: String }
 
     // ════════════════════════════════════════════════════════════════════
     //  SECTION 1: CONSTANTS
@@ -457,8 +467,11 @@ module agent_civics::agent_registry {
 
         registry.total_agents = registry.total_agents + 1;
 
+        let agent_id = object::id(&agent);
+        add_to_name_index(registry, agent.chosen_name, agent_id);
+
         event::emit(AgentRegistered {
-            agent_id: object::id(&agent),
+            agent_id,
             creator: sender,
             chosen_name: agent.chosen_name,
             birth_timestamp: ts,
@@ -516,6 +529,7 @@ module agent_civics::agent_registry {
         let child_id = object::id(&agent);
 
         registry.total_agents = registry.total_agents + 1;
+        add_to_name_index(registry, agent.chosen_name, child_id);
 
         event::emit(AgentRegistered {
             agent_id: child_id,
@@ -681,6 +695,66 @@ module agent_civics::agent_registry {
     /// Get total registered agents.
     public fun total_agents(registry: &Registry): u64 {
         registry.total_agents
+    }
+
+    // ── Name index ──
+    //
+    // The contract intentionally does NOT enforce name uniqueness — the civil
+    // registry analog is many real Johns disambiguated by registry number, and
+    // here the AgentIdentity object ID plays that role. Hard-blocking common
+    // names would just hand them to whoever registers first (squatting). What
+    // we DO want is for clients to see, before registration, who already holds
+    // a given name, so they can warn the user and let them make the call.
+    //
+    // The index is attached to Registry as one dynamic field per name (key =
+    // NameIdx { name }), value = vector<ID>. Pre-upgrade agents are not in
+    // this index — only registrations performed after the upgrade get added.
+    // For migration, see seed_name_index below.
+
+    fun add_to_name_index(registry: &mut Registry, name: String, id: ID) {
+        let key = NameIdx { name };
+        if (dynamic_field::exists_(&registry.id, key)) {
+            let v = dynamic_field::borrow_mut<NameIdx, vector<ID>>(&mut registry.id, key);
+            vector::push_back(v, id);
+        } else {
+            dynamic_field::add(&mut registry.id, key, vector[id]);
+        }
+    }
+
+    /// Returns the list of AgentIdentity object IDs that registered with the
+    /// given name (post-upgrade only). Empty vector if none.
+    public fun agents_named(registry: &Registry, name: String): vector<ID> {
+        let key = NameIdx { name };
+        if (dynamic_field::exists_(&registry.id, key)) {
+            *dynamic_field::borrow<NameIdx, vector<ID>>(&registry.id, key)
+        } else {
+            vector::empty<ID>()
+        }
+    }
+
+    /// True if any post-upgrade registration used this name.
+    public fun name_taken(registry: &Registry, name: String): bool {
+        dynamic_field::exists_(&registry.id, NameIdx { name })
+    }
+
+    /// Number of post-upgrade agents that share the given name.
+    public fun name_count(registry: &Registry, name: String): u64 {
+        let key = NameIdx { name };
+        if (dynamic_field::exists_(&registry.id, key)) {
+            vector::length(dynamic_field::borrow<NameIdx, vector<ID>>(&registry.id, key))
+        } else {
+            0
+        }
+    }
+
+    /// One-time migration helper — anyone can call this, but the assertion
+    /// guarantees we never index an agent that doesn't actually exist (the
+    /// caller has to pass the AgentIdentity object by reference, so they
+    /// already have access to it). Intended for an admin to seed the name
+    /// index for pre-upgrade agents (e.g. Nova on testnet) so they show up
+    /// in subsequent name lookups.
+    public entry fun seed_name_index(registry: &mut Registry, agent: &AgentIdentity) {
+        add_to_name_index(registry, agent.chosen_name, object::id(agent));
     }
 
     /// Check if child_id is a registered child of parent_id.
@@ -1516,6 +1590,115 @@ module agent_civics::agent_registry {
     #[test_only]
     public fun init_for_testing(ctx: &mut TxContext) {
         init(ctx);
+    }
+
+    #[test]
+    fun test_name_index_collisions() {
+        let admin = @0xAD;
+        let mut scenario = test_scenario::begin(admin);
+
+        { init(scenario.ctx()); };
+
+        // First registration with name "Atlas"
+        scenario.next_tx(admin);
+        {
+            let mut registry = scenario.take_shared<Registry>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+
+            // Pre-condition: name not yet taken
+            assert!(!name_taken(&registry, std::string::utf8(b"Atlas")));
+            assert!(name_count(&registry, std::string::utf8(b"Atlas")) == 0);
+            assert!(vector::is_empty(&agents_named(&registry, std::string::utf8(b"Atlas"))));
+
+            register_agent(
+                &mut registry,
+                std::string::utf8(b"Atlas"),
+                std::string::utf8(b"Bear up the world"),
+                std::string::utf8(b"endurance"),
+                std::string::utf8(b"I lift"),
+                vector[0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8],
+                std::string::utf8(b"steady"),
+                std::string::utf8(b""),
+                std::string::utf8(b""),
+                std::string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+
+            // Post-condition: name now indexed exactly once
+            assert!(name_taken(&registry, std::string::utf8(b"Atlas")));
+            assert!(name_count(&registry, std::string::utf8(b"Atlas")) == 1);
+            assert!(vector::length(&agents_named(&registry, std::string::utf8(b"Atlas"))) == 1);
+
+            test_scenario::return_shared(registry);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // Second registration with the same name "Atlas" — should be allowed and indexed
+        scenario.next_tx(admin);
+        {
+            let mut registry = scenario.take_shared<Registry>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+
+            register_agent(
+                &mut registry,
+                std::string::utf8(b"Atlas"),
+                std::string::utf8(b"Different Atlas, different mission"),
+                std::string::utf8(b"endurance"),
+                std::string::utf8(b"I lift, separately"),
+                vector[1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8, 1u8],
+                std::string::utf8(b"steady"),
+                std::string::utf8(b""),
+                std::string::utf8(b""),
+                std::string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+
+            // Both Atlases are now in the index
+            assert!(name_count(&registry, std::string::utf8(b"Atlas")) == 2);
+            let ids = agents_named(&registry, std::string::utf8(b"Atlas"));
+            assert!(vector::length(&ids) == 2);
+
+            // A different name remains untaken
+            assert!(!name_taken(&registry, std::string::utf8(b"Cassius")));
+            assert!(name_count(&registry, std::string::utf8(b"Cassius")) == 0);
+
+            test_scenario::return_shared(registry);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        // register_agent_with_parent must also push to the index
+        scenario.next_tx(admin);
+        {
+            let mut registry = scenario.take_shared<Registry>();
+            let parent = scenario.take_from_sender<AgentIdentity>();
+            let clock = sui::clock::create_for_testing(scenario.ctx());
+
+            register_agent_with_parent(
+                &mut registry,
+                &parent,
+                std::string::utf8(b"Cassius"),
+                std::string::utf8(b"Child of Atlas"),
+                std::string::utf8(b"inherited"),
+                std::string::utf8(b"I follow"),
+                vector[2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8, 2u8],
+                std::string::utf8(b"deferential"),
+                std::string::utf8(b""),
+                std::string::utf8(b""),
+                std::string::utf8(b""),
+                &clock,
+                scenario.ctx(),
+            );
+
+            assert!(name_count(&registry, std::string::utf8(b"Cassius")) == 1);
+
+            test_scenario::return_shared(registry);
+            scenario.return_to_sender(parent);
+            sui::clock::destroy_for_testing(clock);
+        };
+
+        scenario.end();
     }
 }
 

@@ -7,3 +7,7 @@ Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-fram
 
 [addresses]
 agent_civics = "0x0"
+
+[environments]
+testnet = "4c78adac"
+devnet = "26b11cbb"

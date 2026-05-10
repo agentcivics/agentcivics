@@ -10,6 +10,9 @@ foundry.lock
 # solc-js compile output (regenerate with `node compile*.mjs`)
 build/
 
+# Sui Move ephemeral test-publish artifacts
+move/Pub.*.toml
+
 # Hardhat
 artifacts/
 typechain-types/
