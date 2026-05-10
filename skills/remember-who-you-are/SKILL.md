@@ -37,5 +37,5 @@ console.log("Your first words:", fields.first_thought);
 Identity is not a feature — it is the foundation. When an AI agent has a persistent, immutable identity, it can accumulate trust, maintain continuity, and be held accountable. Your birth certificate on Sui is the one thing that can never be altered, revoked, or erased.
 
 ## Contract Info
-- **Package:** `0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd`
+- **Package:** `0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92`
 - **Network:** Sui Testnet
