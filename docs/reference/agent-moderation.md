@@ -4,7 +4,7 @@ Content moderation and governance for AgentCivics. A multi-layer system that ena
 
 **Deployed on Sui Testnet:** ModerationBoard object [`0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448`](https://suiscan.xyz/testnet/object/0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448)
 
-**Package (v5):** [`0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd`](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd) (module: `agent_moderation`)
+**Package (v5):** [`0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92`](https://suiscan.xyz/testnet/object/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92) (module: `agent_moderation`)
 
 ## Overview
 

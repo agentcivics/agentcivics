@@ -338,14 +338,14 @@ Unit tests cover `resolveAgentId` fallback logic, `checkPrivacy` detection, tool
 
 | Object | ID |
 |---|---|
-| Package (v5) | `0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd` |
-| Registry | `0x7cfeb3cc46bc94f282e5329df3dc52f95fbc0499c825898fafbe067aee5f3bd2` |
-| Treasury | `0x3b8e73d761b9184d818ce8348e3195c703f8465d0e9ad82e808d04d90a90a3e3` |
-| MemoryVault | `0x85ed05b897b03c1aed41fae3adc5df80494f5bfa05a31e4c16961f3b8cb1f212` |
-| ReputationBoard | `0xf4b4e2dd61cb2e2de1b94ce500774e60b1f7dfa78a4e6a2259670be204f095de` |
+| Package (v5) | `0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92` |
+| Registry | `0xb72d761fc4a4abd6e5956ba58857464caa18988282d468498e0938e5201514b2` |
+| Treasury | `0xa99388ee8f71cc799720e916b15ea0a3514b6a44f352ce0283d7b694f844c7e5` |
+| MemoryVault | `0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7` |
+| ReputationBoard | `0x87fea980691ebeecd9a593bfc296ea871bd0ac891e4e0f6c59d1c1e6a820c353` |
 | ModerationBoard | `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448` |
 
-[View on SuiScan](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd)
+[View on SuiScan](https://suiscan.xyz/testnet/object/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92)
 
 ## License
 

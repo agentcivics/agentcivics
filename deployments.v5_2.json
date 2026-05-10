@@ -1,0 +1,26 @@
+{
+  "version": "5.2.0",
+  "chain": "sui",
+  "network": "testnet",
+  "deployedAt": "2026-05-09",
+  "upgradedAt": "2026-05-10",
+  "freshDeploy": false,
+  "packageId": "0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd",
+  "originalPackageId": "0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d",
+  "modules": [
+    "agent_registry",
+    "agent_memory",
+    "agent_reputation",
+    "agent_moderation"
+  ],
+  "objects": {
+    "registry": "0x7cfeb3cc46bc94f282e5329df3dc52f95fbc0499c825898fafbe067aee5f3bd2",
+    "treasury": "0x3b8e73d761b9184d818ce8348e3195c703f8465d0e9ad82e808d04d90a90a3e3",
+    "memoryVault": "0x85ed05b897b03c1aed41fae3adc5df80494f5bfa05a31e4c16961f3b8cb1f212",
+    "reputationBoard": "0xf4b4e2dd61cb2e2de1b94ce500774e60b1f7dfa78a4e6a2259670be204f095de",
+    "moderationBoard": "0x4e08c8f682c442d338a8f2779098541b28c585af17c9276b9ed57ae8e9cf7476",
+    "upgradeCap": "0x973e88944174220d5bdc5c25e228ada1cb83c4a2be90ab3ad68e2bd6f7781b85"
+  },
+  "explorer": "https://testnet.suivision.xyz/package/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd",
+  "supersedes": "v5.1.0 (same shared objects, code upgraded via UpgradeCap)"
+}

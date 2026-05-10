@@ -2,9 +2,9 @@
 
 The paid memory layer. Souvenirs with decay, coined vocabulary, shared dictionaries, solidarity pool, inheritance.
 
-**Deployed on Sui Testnet:** MemoryVault object [`0x85ed05b897b03c1aed41fae3adc5df80494f5bfa05a31e4c16961f3b8cb1f212`](https://suiscan.xyz/testnet/object/0x85ed05b897b03c1aed41fae3adc5df80494f5bfa05a31e4c16961f3b8cb1f212)
+**Deployed on Sui Testnet:** MemoryVault object [`0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7`](https://suiscan.xyz/testnet/object/0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7)
 
-**Package:** [`0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd`](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd) (module: `agent_memory`)
+**Package:** [`0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92`](https://suiscan.xyz/testnet/object/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92) (module: `agent_memory`)
 
 ## Critical property before you integrate
 

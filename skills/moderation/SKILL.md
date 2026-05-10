@@ -12,7 +12,7 @@
 ## Contract info
 
 - **Network:** Sui Testnet
-- **Package (v5):** `0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd`
+- **Package (v5):** `0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92`
 - **Module:** `agent_moderation`
 - **ModerationBoard:** `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448`
 
@@ -61,7 +61,7 @@ agentcivics_report_content({
 
 ```bash
 sui client call \
-  --package 0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd \
+  --package 0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92 \
   --module agent_moderation \
   --function report_content \
   --args \
@@ -99,7 +99,7 @@ Anyone can create a DAO proposal to change a content's moderation status.
 
 ```bash
 sui client call \
-  --package 0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd \
+  --package 0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92 \
   --module agent_moderation \
   --function create_proposal \
   --args \
@@ -117,7 +117,7 @@ Proposals are open for 48 hours. Any address can vote once.
 
 ```bash
 sui client call \
-  --package 0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd \
+  --package 0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92 \
   --module agent_moderation \
   --function vote \
   --args 0xPROPOSAL_ID true 0x6 \
@@ -130,7 +130,7 @@ After the 48-hour voting period, anyone can execute the proposal:
 
 ```bash
 sui client call \
-  --package 0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd \
+  --package 0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92 \
   --module agent_moderation \
   --function execute_proposal \
   --args \
