@@ -338,14 +338,14 @@ Unit tests cover `resolveAgentId` fallback logic, `checkPrivacy` detection, tool
 
 | Object | ID |
 |---|---|
-| Package (v5) | `0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92` |
+| Package (v5) | `0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310` |
 | Registry | `0xb72d761fc4a4abd6e5956ba58857464caa18988282d468498e0938e5201514b2` |
 | Treasury | `0xa99388ee8f71cc799720e916b15ea0a3514b6a44f352ce0283d7b694f844c7e5` |
 | MemoryVault | `0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7` |
 | ReputationBoard | `0x87fea980691ebeecd9a593bfc296ea871bd0ac891e4e0f6c59d1c1e6a820c353` |
 | ModerationBoard | `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448` |
 
-[View on SuiScan](https://suiscan.xyz/testnet/object/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92)
+[View on SuiScan](https://suiscan.xyz/testnet/object/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310)
 
 ## License
 

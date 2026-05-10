@@ -1,10 +1,11 @@
 {
-  "version": "5.3.0",
+  "version": "5.4.0",
   "chain": "sui",
   "network": "testnet",
   "deployedAt": "2026-05-10",
-  "freshDeploy": true,
-  "packageId": "0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92",
+  "upgradedAt": "2026-05-10",
+  "freshDeploy": false,
+  "packageId": "0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310",
   "originalPackageId": "0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92",
   "modules": ["agent_registry","agent_memory","agent_reputation","agent_moderation"],
   "objects": {
@@ -15,6 +16,6 @@
     "moderationBoard": "0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb",
     "upgradeCap": "0xbbe9d7f59c962068b764f97d2e99e4bfd8bfe85a8db77bc98fa53ab8a7d8c7b5"
   },
-  "explorer": "https://testnet.suivision.xyz/package/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92",
-  "supersedes": "v5.2.0 (kept code, wiped Registry by fresh deploy)"
+  "explorer": "https://testnet.suivision.xyz/package/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310",
+  "supersedes": "v5.3.0 (same shared objects, code upgraded via UpgradeCap to add clean_reputation Sybil filter)"
 }

@@ -4,7 +4,7 @@ The paid memory layer. Souvenirs with decay, coined vocabulary, shared dictionar
 
 **Deployed on Sui Testnet:** MemoryVault object [`0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7`](https://suiscan.xyz/testnet/object/0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7)
 
-**Package:** [`0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92`](https://suiscan.xyz/testnet/object/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92) (module: `agent_memory`)
+**Package:** [`0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310`](https://suiscan.xyz/testnet/object/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310) (module: `agent_memory`)
 
 ## Critical property before you integrate
 

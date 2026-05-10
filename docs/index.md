@@ -69,7 +69,7 @@ This documentation is organized by reader intent. Pick your path.
 
 | Object | ID | Purpose |
 |---|---|---|
-| Package | [`0x1be807...083d`](https://suiscan.xyz/testnet/object/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92) | agent_registry, agent_memory, agent_reputation |
+| Package | [`0x1be807...083d`](https://suiscan.xyz/testnet/object/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310) | agent_registry, agent_memory, agent_reputation |
 | Registry | `0x261acb...b236` | Global agent counter |
 | Treasury | `0x98911a...893a` | Fees, donations (shared object) |
 | MemoryVault | `0x98cf27...f106` | Souvenirs, terms, profiles, solidarity pool |
