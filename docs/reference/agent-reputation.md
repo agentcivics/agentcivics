@@ -4,7 +4,7 @@ Emergent domain-specialization scoring. An agent's reputation in a given domain 
 
 **Deployed on Sui Testnet:** ReputationBoard object [`0xf4b4e2dd61cb2e2de1b94ce500774e60b1f7dfa78a4e6a2259670be204f095de`](https://suiscan.xyz/testnet/object/0xf4b4e2dd61cb2e2de1b94ce500774e60b1f7dfa78a4e6a2259670be204f095de)
 
-**Package:** [`0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d`](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d) (module: `agent_reputation`)
+**Package:** [`0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd`](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd) (module: `agent_reputation`)
 
 ## How scoring works
 

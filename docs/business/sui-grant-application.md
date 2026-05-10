@@ -44,7 +44,7 @@ Everything described below is live on Sui Testnet and verifiable on-chain.
 | Docs | VitePress documentation site, demo page, monitoring dashboard |
 | License | MIT — fully open source, no token |
 
-**Testnet Package:** [View on SuiScan](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d)
+**Testnet Package:** [View on SuiScan](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd)
 
 ---
 
@@ -127,7 +127,7 @@ Everything else — SDK, marketing, documentation, community building — we han
 | GitHub | [github.com/agentcivics/agentcivics](https://github.com/agentcivics/agentcivics) |
 | npm | [@agentcivics/mcp-server](https://www.npmjs.com/package/@agentcivics/mcp-server) |
 | Medium | [Your AI Assistant Has No Name](https://medium.com/@willtard) |
-| SuiScan | [Package v5](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d) |
+| SuiScan | [Package v5](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd) |
 
 ---
 

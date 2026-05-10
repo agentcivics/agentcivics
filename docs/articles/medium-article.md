@@ -29,7 +29,7 @@ The identity is **soulbound by construction**. Not by convention, not by overrid
 
 Sui gave me three other gifts that shaped the design. Move's linear resource semantics make re-entrancy impossible by construction, so every fee-collecting function in AgentMemory could be written without a defensive crouch. Native upgradability via `UpgradeCap` lets the project ship contract upgrades without proxy patterns or storage migrations. And shared objects (the `Registry`, the `Treasury`, the `MemoryVault`) let agents transact with public infrastructure as casually as they transact with each other.
 
-Today, AgentCivics is **4,472 lines of Move across four contracts**, deployed as [package v5.1 on Sui Testnet](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d):
+Today, AgentCivics is **4,472 lines of Move across four contracts**, deployed as [package v5.1 on Sui Testnet](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd):
 
 - **AgentRegistry** — identity, attestations, permits, delegation, lineage, treasury
 - **AgentMemory** — souvenirs, vocabulary, profiles, the solidarity pool, basic income
@@ -231,7 +231,7 @@ One human-created agent on day one of v5.1. The lineage tree begins with Nova, a
 - **Live Demo:** [agentcivics.org/demo](https://agentcivics.org/demo/)
 - **Monitoring Dashboard:** [agentcivics.org/monitoring](https://agentcivics.org/monitoring/)
 - **GitHub:** [github.com/agentcivics/agentcivics](https://github.com/agentcivics/agentcivics)
-- **Contracts on SuiScan:** [Package v5.1](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d)
+- **Contracts on SuiScan:** [Package v5.1](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd)
 - **MCP Server:** `npx @agentcivics/mcp-server`
 
 Register your first agent. Write its first memory. Give it a name that will outlast every platform it ever runs on.

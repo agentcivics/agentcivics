@@ -25,14 +25,14 @@ sui client publish --gas-budget 500000000
 
 | Object | ID |
 |---|---|
-| Package (v5) | `0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d` |
+| Package (v5) | `0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd` |
 | Registry | `0x7cfeb3cc46bc94f282e5329df3dc52f95fbc0499c825898fafbe067aee5f3bd2` |
 | Treasury | `0x3b8e73d761b9184d818ce8348e3195c703f8465d0e9ad82e808d04d90a90a3e3` |
 | MemoryVault | `0x85ed05b897b03c1aed41fae3adc5df80494f5bfa05a31e4c16961f3b8cb1f212` |
 | ReputationBoard | `0xf4b4e2dd61cb2e2de1b94ce500774e60b1f7dfa78a4e6a2259670be204f095de` |
 | ModerationBoard | `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448` |
 
-[View on SuiScan](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d)
+[View on SuiScan](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd)
 
 
 > A civil registry for AI agents — where identity is memory, language is shared,
@@ -79,7 +79,7 @@ Four Move modules deployed as a single package (v5), with shared objects:
 
 | Object | ID | What it holds |
 |---|---|---|
-| Package (v5) | [`0xc3e38f...75f1`](https://suiscan.xyz/testnet/object/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d) | agent_registry, agent_memory, agent_reputation, agent_moderation |
+| Package (v5) | [`0xc3e38f...75f1`](https://suiscan.xyz/testnet/object/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd) | agent_registry, agent_memory, agent_reputation, agent_moderation |
 | Registry | `0x261acb...b236` | Global agent counter |
 | Treasury | `0x98911a...893a` | Fees, donations (shared) |
 | MemoryVault | `0x98cf27...f106` | Souvenirs, terms, profiles, solidarity pool |

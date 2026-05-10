@@ -39,4 +39,4 @@ Both attestations and permits can be revoked by the original issuer via the Move
 
 ## Contract Info
 - **Treasury:** `0x3b8e73d761b9184d818ce8348e3195c703f8465d0e9ad82e808d04d90a90a3e3`
-- **Package:** `0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d`
+- **Package:** `0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd`

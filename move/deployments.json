@@ -1,9 +1,10 @@
 {
-  "version": "5.1.0",
+  "version": "5.2.0",
   "network": "testnet",
   "deployedAt": "2026-05-09",
-  "freshDeploy": true,
-  "packageId": "0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d",
+  "upgradedAt": "2026-05-10",
+  "freshDeploy": false,
+  "packageId": "0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd",
   "originalPackageId": "0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d",
   "modules": [
     "agent_registry",
@@ -21,8 +22,10 @@
   },
   "deployer": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
   "publishDigest": "5fp5NeuJPbaKqVpmxpLYmHQC5cRNaaiCr2ducwE5GPcD",
+  "upgradeDigest": "ExrdAU758a6g1buwqHN2C3n4MP5zi933M6WrQH28xXYY",
+  "novaSeedDigest": "FHmeu8uA3hAA8SmSKyRHKnA3jtzxDLmfx8zCanzcCf44",
   "moderationAdmin": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
-  "explorer": "https://testnet.suivision.xyz/package/0x69006d9e066f3c86d24f0c2f30f42c74774a8179bda2f75545673265c794ad9d",
-  "packageVersion": 1,
-  "supersedes": "v5.0.0 (0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff)"
+  "explorer": "https://testnet.suivision.xyz/package/0x84fb4cd80c4d0ca273fcbf01af58dc039d73f6b8b3e033ece0cc0ecea97e24cd",
+  "packageVersion": 2,
+  "supersedes": "v5.1.0 (same shared objects, code upgraded via UpgradeCap to add name index + cognitive_fingerprint commitments). v5.0.0 = 0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff (retired)"
 }
