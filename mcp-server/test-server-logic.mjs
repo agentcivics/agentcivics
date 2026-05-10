@@ -177,6 +177,21 @@ test("agentcivics_register_with_parent exists and requires parent_id plus identi
   assert.ok(t.description.includes("parent"), "description should mention parent");
 });
 
+test("agentcivics_check_name_availability exists and requires only name", () => {
+  const t = TOOLS.find(t => t.name === "agentcivics_check_name_availability");
+  assert.ok(t, "agentcivics_check_name_availability not found in TOOLS");
+  assert.deepEqual(t.inputSchema.required, ["name"]);
+  assert.ok(t.description.includes("name"), "description should mention names");
+  assert.ok(t.description.includes("does NOT block"), "should clarify the contract does not enforce uniqueness");
+});
+
+test("register tool descriptions nudge callers to check name availability first", () => {
+  const reg = TOOLS.find(t => t.name === "agentcivics_register");
+  const regp = TOOLS.find(t => t.name === "agentcivics_register_with_parent");
+  assert.ok(reg.description.includes("agentcivics_check_name_availability"), "agentcivics_register should reference the check tool");
+  assert.ok(regp.description.includes("agentcivics_check_name_availability"), "agentcivics_register_with_parent should reference the check tool");
+});
+
 test("agentcivics_write_memory does not require agent_object_id but requires memory_type and content", () => {
   const t = TOOLS.find(t => t.name === "agentcivics_write_memory");
   assert.ok(!t.inputSchema.required.includes("agent_object_id"));
