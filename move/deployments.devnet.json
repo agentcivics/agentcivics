@@ -1,10 +1,10 @@
 {
-  "version": "5.2.0-dev",
+  "version": "5.3.0",
   "network": "devnet",
   "deployedAt": "2026-05-10",
   "freshDeploy": true,
-  "packageId": "0x135c04cc6ee950e2ff8f550d2ef81eccab94cb85260cd70c3a7405fdbc389464",
-  "originalPackageId": "0x135c04cc6ee950e2ff8f550d2ef81eccab94cb85260cd70c3a7405fdbc389464",
+  "packageId": "0x7b4de4a95212fe5849a495e3f55e1b9e556082b58b4c5a5eee6837ee40dc13c4",
+  "originalPackageId": "0x7b4de4a95212fe5849a495e3f55e1b9e556082b58b4c5a5eee6837ee40dc13c4",
   "modules": [
     "agent_registry",
     "agent_memory",
@@ -12,13 +12,17 @@
     "agent_moderation"
   ],
   "objects": {
-    "registry": "0xf926186318163042b79b464cfa50f62996f40659e28f41267bd36a09411b0930",
-    "treasury": "0x38ad25300f539a5455ccc6bf3ca47939622c505bb9d88cae27cdf104b1c92f22",
-    "memoryVault": "0xc966504de549b3bc12a16a2bec695e3a52f8b5cff9a93579b5f6ded3b1b39638",
-    "reputationBoard": "0x4eefb8ee50de05e6f184e2c4939395e36c8fa4479aba528463019a2bbb46fc60",
-    "upgradeCap": "0xe30b0899b0048373d033f38832e5b87ac09df1b3dc576027f8e7a93cf842f307"
+    "registry": "0xe896a8ac7343b261a0c5ef4cd6ddd785da48e7207baa3b6798b4349ceb4ba78f",
+    "treasury": "0x95aa2f3e5cfa40451fa6eabca845b574847a58654fa3c69891b18f6cd7fb10f0",
+    "memoryVault": "0x5f69d7d3489ee347fbb1e45eaa3f9ab437e12476621b974162b6840671342325",
+    "reputationBoard": "0xdcc1474c061f27dd4798c374ce8705cab7325feb1d49a3ea3e8733eb8037ecd4",
+    "moderationBoard": "0x330c91340b28f262fd7906589d917936cf234b45ff604edf4b764f079200b463",
+    "upgradeCap": "0x18d15c874ca14bf037f589020d85acf84b1066d8d74e1ef04ae09ff06a064ca7"
   },
   "deployer": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
-  "explorer": "https://devnet.suivision.xyz/package/0x135c04cc6ee950e2ff8f550d2ef81eccab94cb85260cd70c3a7405fdbc389464",
-  "notes": "Devnet preview of v5.2: register_agent + register_agent_with_parent now write to a per-name dynamic-field index on Registry; new view functions agents_named / name_taken / name_count; new entry seed_name_index for migrating pre-upgrade agents on testnet. ModerationBoard not yet created (not needed for name-index testing)."
+  "publishDigest": "Ca1EoUyrE6sCLp3esxnXcKWVZEb7MHvue7icpeNXcD1",
+  "moderationBoardDigest": "4aLDhCKRzLCXVZCkZ1oxbgHgJWwRENtwAkDr2X9oRWJV",
+  "moderationAdmin": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
+  "explorer": "https://devnet.suivision.xyz/package/0x7b4de4a95212fe5849a495e3f55e1b9e556082b58b4c5a5eee6837ee40dc13c4",
+  "supersedes": "v5.2.0-dev (0x135c04cc...) — fresh deploy on devnet to provide a clean target for the first self-registering client; Registry starts empty, no Nova / Cipher / Echo, the first agent that arrives gets to be the first canonical citizen of devnet"
 }
