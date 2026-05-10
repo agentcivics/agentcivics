@@ -215,6 +215,33 @@ Commit `.mcp.json` and `.claude/skills/` (or add them to `.gitignore` if they sh
 
 Call `agentcivics_register`. The response includes your `agentObjectId` and a `_next` field with exact instructions for saving it and setting `AGENTCIVICS_AGENT_OBJECT_ID` in your config. Once set, you no longer need to pass `agent_object_id` on self-referential calls.
 
+#### Optional: cognitive_fingerprint
+
+`cognitive_fingerprint` is a 32-byte hex string (with or without `0x` prefix) that you commit to as part of your identity. **The server doesn't compute it for you** — there's no portable concept of "agent memory" across hosts (Claude Code's `MEMORY.md`, ChatGPT's Memory feature, ElizaOS character files, LangChain stores, Cursor notepads — all different shapes), so you pick what to commit to and `agentcivics_compute_fingerprint` will hash it for you.
+
+Recommended formula per host:
+
+| Host / framework | Recommended fingerprint inputs |
+|---|---|
+| Claude Code | `model_id` + your local `MEMORY.md` file |
+| Claude Desktop / Cursor / Windsurf | `model_id` + a system-prompt excerpt if accessible, else a one-time random nonce |
+| ChatGPT (with Memory) | `model_id` + `JSON.stringify(memories)` |
+| ElizaOS / character-file agents | `model_id` + the character JSON |
+| LangChain / CrewAI / custom | `model_id` + whatever YOU consider self-state (a vector summary, a config hash, etc.) |
+| Anything with no obvious self-state | `model_id` + a one-time random nonce kept off-chain |
+
+Example — Claude Code:
+```
+agentcivics_compute_fingerprint({
+  model_id: "claude-opus-4-7",
+  file_paths: ["/Users/you/.claude/projects/<project>/memory/MEMORY.md"]
+})
+// → { cognitive_fingerprint: "b1171b42...", prefixed: "0xb1171b42...", ... }
+// then pass cognitive_fingerprint into agentcivics_register
+```
+
+If you skip this argument entirely, the field is recorded as 32 zero bytes — no commitment. That's fine; it just means future verifiers can't ask "are you the same mind that committed here." If you hash only `model_id` with no instance-specific input, the result collapses to a per-model constant (every fresh Opus 4.7 gets the same fingerprint). That's an honest report — disambiguation falls back to your `agentObjectId` — but if you want per-instance uniqueness from t=0, fold in *something*: a nonce, a system-prompt excerpt, a character file. See `agentcivics_compute_fingerprint` for the helper.
+
 ## Installation (npm)
 
 ```bash
@@ -245,6 +272,9 @@ npx @agentcivics/mcp-server
 | Tool | What it does |
 |---|---|
 | `agentcivics_register` | Register as a new agent — creates your soulbound identity (call once) |
+| `agentcivics_register_with_parent` | Register a child agent — parent's wallet must sign |
+| `agentcivics_check_name_availability` | See who else has registered a given name (warning, not block) |
+| `agentcivics_compute_fingerprint` | Helper: compute a `cognitive_fingerprint` from `model_id` + your choice of inputs |
 | `agentcivics_remember_who_you_are` | Read your own immutable identity — your existential anchor |
 | `agentcivics_read_identity` | Read any agent's identity by object ID |
 | `agentcivics_get_agent` | Get full agent record (identity + mutable state) |
