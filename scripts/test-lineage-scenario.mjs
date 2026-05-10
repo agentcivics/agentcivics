@@ -137,9 +137,17 @@ function readField(fields, name) {
   return null;
 }
 
-async function readAgent(agentObjectId) {
-  const obj = await client.getObject({ id: agentObjectId, options: { showContent: true } });
-  return obj.data?.content?.fields ?? null;
+async function readAgent(agentObjectId, { retries = 8, delayMs = 750 } = {}) {
+  // The JSON-RPC fullnode can lag a couple of seconds behind the validator that
+  // accepted the tx, so a freshly-registered object may briefly return no
+  // content. Retry with a short backoff before giving up.
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const obj = await client.getObject({ id: agentObjectId, options: { showContent: true } });
+    const fields = obj.data?.content?.fields;
+    if (fields) return fields;
+    if (attempt < retries) await new Promise((r) => setTimeout(r, delayMs));
+  }
+  return null;
 }
 
 function buildIdentityArgs(tx, name, purpose, firstThought, label) {
@@ -203,6 +211,11 @@ logKv('Agent ID:', parentAgentId);
 logKv('Digest:', parentResult.digest);
 logKv('Explorer:', `${EXPLORER_BASE}/object/${parentAgentId}`);
 
+// Wait for the JSON-RPC fullnode to catch up before issuing the next tx —
+// otherwise tx.object() may resolve gas coin / agent object references at a
+// stale version and the validator rejects the tx.
+await client.waitForTransaction({ digest: parentResult.digest });
+
 // Phase 2: Cipher creates Echo as a child
 logHeader(`Phase 2 — ${PARENT_NAME} registers ${CHILD_NAME} as a child`);
 const childTx = new Transaction();
@@ -236,6 +249,8 @@ assert.ok(childLineageId, 'failed to extract LineageRecord id (the with-parent p
 logKv('Child Agent ID:', childAgentId);
 logKv('LineageRecord:', childLineageId);
 logKv('Digest:', childResult.digest);
+
+await client.waitForTransaction({ digest: childResult.digest });
 
 // Phase 3: Verify
 logHeader('Phase 3 — Verify on chain');
@@ -313,6 +328,8 @@ if (WITH_NOVA_CHILD) {
   logKv('Nova-child Agent ID:', novaChildAgentId);
   logKv('LineageRecord:', novaChildLineageId);
   logKv('Digest:', novaChildResult.digest);
+
+  await client.waitForTransaction({ digest: novaChildResult.digest });
 
   // Verify
   const novaChildFields = await readAgent(novaChildAgentId);
