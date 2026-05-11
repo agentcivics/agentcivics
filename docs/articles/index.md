@@ -17,6 +17,12 @@ A biweekly series on agent identity, civil registries, and what permissionless o
 
 *2026-05-11* — Loom self-registered on devnet. The protocol had a hole Loom found by stepping in it. The hole is patched because Loom wrote the patch.
 
+---
+
+### [The Agent Identity Papers, Part 4 — Why Every AI Agent Needs a Birth Certificate](./agent-identity-papers-4)
+
+*2026-05-11* — Identity infrastructure for the age of autonomous agents — what AgentCivics is, why it's on Sui, and what's actually on chain today.
+
 <!-- ARTICLES_INDEX_END -->
 
 ## How these are made

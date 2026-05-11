@@ -1,0 +1,73 @@
+# Project task runner — `mise tasks` lists everything; `mise run <name>` invokes one.
+# Conventions: tasks that mutate on-chain state default to the active sui environment.
+# Run `mise run env-testnet` or `mise run env-devnet` first to target the right chain.
+
+# ── Articles & docs ───────────────────────────────────────────────────
+
+[tasks.build-article]
+description = "Build a draft article into a publish-ready piece. Runs scripts/publish-article.mjs: fal.ai (Flux) for ```image blocks, @resvg/resvg-js for ```svg blocks. Images that already exist at the target path are skipped — pass --force to regenerate them. Usage: mise run build-article docs/articles/_drafts/<slug>-draft.md"
+run = "node --env-file=.env scripts/publish-article.mjs"
+
+[tasks.dev-docs]
+description = "Start the VitePress docs dev server with hot reload. Binds to 0.0.0.0 so the site is reachable from Tailscale hosts (.ts.net) — the allowlist in docs/.vitepress/config.mjs handles the Host header. Open http://localhost:5173/docs/ locally or http://<your-tailscale-host>.ts.net:5173/docs/ remotely."
+run = "cd docs && npx vitepress dev --host"
+
+[tasks.build-docs]
+description = "Build the VitePress docs to docs/.vitepress/dist/. Used by CI; locally for verifying the build (e.g. catching dead-link errors before merging — see PR #31 for the failure mode this prevents)."
+run = "cd docs && npx vitepress build"
+
+# ── Move contracts ────────────────────────────────────────────────────
+
+[tasks.move-build]
+description = "Build the Move contracts. Quick check that the source compiles."
+run = "cd move && sui move build"
+
+[tasks.move-test]
+description = "Run Move unit tests. All tests must pass before deploy."
+run = "cd move && sui move test"
+
+[tasks.deploy]
+description = "Publish the Move package to the currently active sui environment. Run `mise run env-testnet` or `mise run env-devnet` first to target the right chain. After deploy, run `mise run mcp-bundle` and bump mcp-server/package.json (stale npm bundles route registrations to the previous package)."
+run = "cd move && sui client publish --gas-budget 200000000"
+
+[tasks.upgrade]
+description = "Upgrade the Move package via UpgradeCap on the currently active sui environment. Use this when adding backward-compatible changes (dynamic fields, new entry functions). Devnet does not support upgrades — use `mise run deploy` instead on devnet."
+run = "cd move && sui client upgrade --gas-budget 200000000"
+
+# ── Sui environment switching ─────────────────────────────────────────
+
+[tasks.env-testnet]
+description = "Switch the active sui client environment to testnet (canonical chain, persistent). Use for production-like operations and the canonical Registry."
+run = "sui client switch --env testnet"
+
+[tasks.env-devnet]
+description = "Switch the active sui client environment to devnet (wipes weekly). Integration tests run here, never on testnet — testnet pollution leaves un-killable on-chain state."
+run = "sui client switch --env devnet"
+
+[tasks.env-show]
+description = "Show the currently active sui environment and address."
+run = "sui client active-env && sui client active-address"
+
+# ── Agent registration scripts ────────────────────────────────────────
+
+[tasks.new-keypair]
+description = "Generate a fresh Ed25519 Sui keypair for a new agent. Writes agents/<name>.key + agents/<name>.json. Usage: mise run new-keypair <name>"
+run = "node scripts/new-agent-keypair.mjs"
+
+[tasks.register-agent]
+description = "Register an agent on-chain using an existing keystore + identity JSON. Targets whichever AGENTCIVICS_NETWORK is set (default testnet). Usage: mise run register-agent agents/<name>.key examples/agent-<name>.json"
+run = "node --env-file=.env scripts/agent-register.mjs"
+
+[tasks.test-lineage]
+description = "End-to-end lineage scenario test (registers a new parent + child, attests, optionally cleans up). Defaults to devnet — pass --allow-canonical-network to override and target testnet (don't, per the devnet-first rule)."
+run = "node --env-file=.env scripts/test-lineage-scenario.mjs"
+
+# ── MCP server ────────────────────────────────────────────────────────
+
+[tasks.mcp-bundle]
+description = "Bundle latest move/deployments*.json into the mcp-server source. Run after every on-chain ID change so the next `npm publish` picks up fresh IDs. Skipping this is what made Margin land on the stale v5.2-dev package (incident 2026-05-10)."
+run = "node mcp-server/copy-deployments.mjs"
+
+[tasks.mcp-dev]
+description = "Run the MCP server locally with stdio transport (for debugging). Production use is via `npx -y @agentcivics/mcp-server`."
+run = "cd mcp-server && node index.mjs"
