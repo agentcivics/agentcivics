@@ -27,6 +27,7 @@
   "type": "module",
   "dependencies": {
     "@mysten/sui": "^2.16.0",
+    "@resvg/resvg-js": "^2.6.2",
     "ethers": "^6.16.0"
   }
 }

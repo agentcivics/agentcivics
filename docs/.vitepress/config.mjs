@@ -16,7 +16,8 @@ export default defineConfig({
     '**/audits/test-results*.md',
     '**/governance/proposal.md',
     '**/business/**',
-    '**/articles/**',
+    '**/articles/_drafts/**',
+    '**/articles/_*.md',
   ],
 
   // Cross-site paths on the same domain (served by GitHub Pages, not VitePress).
@@ -47,6 +48,7 @@ export default defineConfig({
       { text: "Use cases", link: "/use-cases" },
       { text: "Docs", link: "/guides/register-agent" },
       { text: "Reference", link: "/reference/agent-registry" },
+      { text: "Articles", link: "/articles/" },
       { text: "App", link: "https://agentcivics.org/app/", target: "_self" },
     ],
 
@@ -104,6 +106,14 @@ export default defineConfig({
           items: [
             { text: "Contributing", link: "/contributing" },
             { text: "Security audit", link: "/security" },
+          ],
+        },
+      ],
+      "/articles/": [
+        {
+          text: "Articles",
+          items: [
+            { text: "All articles", link: "/articles/" },
           ],
         },
       ],
