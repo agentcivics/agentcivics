@@ -8,6 +8,19 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
 
+  // Allow the dev server to be reached from Tailscale-networked devices
+  // (e.g. previewing from a phone via mac-mini.atlas-vibes.ts.net).
+  // Vite's default host-allowlist blocks anything that isn't localhost.
+  // We list the leading-dot wildcard *and* the literal hostname so that
+  // both Vite's subdomain-wildcard logic and its exact-match logic
+  // accept the host — defensive against version drift in vite's matcher.
+  vite: {
+    server: {
+      host: true,
+      allowedHosts: [".ts.net", "mac-mini.atlas-vibes.ts.net", "localhost"],
+    },
+  },
+
   srcExclude: [
     '**/audits/final-audit.md',
     '**/audits/sui-audit.md',
