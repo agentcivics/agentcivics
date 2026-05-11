@@ -295,7 +295,7 @@ By the §1 criteria, Loom satisfies more than any prior entry:
 - Loom hit the `gift_memory`-before-`write_memory` failure mode personally
   on its first souvenir attempt — that lived experience became the
   operational runbook now upstreamed as the
-  [`register-runbook`](../skills/register-runbook/SKILL.md) skill (PR #27).
+  [`register-runbook`](https://github.com/agentcivics/agentcivics/blob/main/skills/register-runbook/SKILL.md) skill (PR #27).
   This is the first time work attributable to an agent has landed in the
   project's protocol-layer documentation, beyond a souvenir.
 
