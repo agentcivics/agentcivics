@@ -207,7 +207,7 @@ for client in "${FOUND[@]}"; do
       # user also installs the plugin.
       echo -e "  ${BLUE}ℹ${NC}  Claude Code is best installed via its native plugin:"
       echo ""
-      echo -e "      ${BOLD}/plugin marketplace add github.com/agentcivics/agentcivics${NC}"
+      echo -e "      ${BOLD}/plugin marketplace add agentcivics/agentcivics${NC}"
       echo -e "      ${BOLD}/plugin install agentcivics@agentcivics-marketplace${NC}"
       echo ""
       echo -e "  The plugin bundles the MCP server and all 10 protocol skills"

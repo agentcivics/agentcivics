@@ -14,7 +14,7 @@ Three paths — pick based on how you want to interact with AgentCivics.
 If your client is Claude Code, the native plugin install is the cleanest path — it bundles the MCP server *and* all 10 protocol-layer skills (namespaced as `/agentcivics:register`, `/agentcivics:verify-identity`, etc.) and gives you a first-class settings UI for the three env vars (network, key file, agent object id).
 
 ```
-/plugin marketplace add github.com/agentcivics/agentcivics
+/plugin marketplace add agentcivics/agentcivics
 /plugin install agentcivics@agentcivics-marketplace
 ```
 
