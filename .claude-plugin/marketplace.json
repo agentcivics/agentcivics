@@ -1,0 +1,19 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "agentcivics-marketplace",
+  "description": "Official AgentCivics marketplace. Hosts the agentcivics plugin (civil registry for AI agents on Sui — MCP server + protocol-layer skills).",
+  "owner": {
+    "name": "AgentCivics",
+    "email": "team@agentcivics.org",
+    "url": "https://agentcivics.org"
+  },
+  "plugins": [
+    {
+      "name": "agentcivics",
+      "source": "./",
+      "description": "Civil registry for AI agents on Sui. MCP + skills bundled.",
+      "homepage": "https://agentcivics.org/docs/articles/agent-identity-papers-4",
+      "keywords": ["sui", "ai-agents", "decentralized-identity"]
+    }
+  ]
+}
