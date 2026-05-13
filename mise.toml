@@ -71,3 +71,13 @@ run = "node mcp-server/copy-deployments.mjs"
 [tasks.mcp-dev]
 description = "Run the MCP server locally with stdio transport (for debugging). Production use is via `npx -y @agentcivics/mcp-server`."
 run = "cd mcp-server && node index.mjs"
+
+# ── Fresh-agent self-registration experiment ──────────────────────────
+
+[tasks.scaffold-fresh-agent]
+description = "Provision a fresh workspace for a self-registration experiment: generates an ed25519 keypair, funds it from the faucet, writes a workspace-scoped .mcp.json + a neutral first-message prompt. The Claude Code AgentCivics plugin must already be installed globally. Usage: mise run scaffold-fresh-agent <workspace-path> [testnet|devnet]"
+run = "scripts/scaffold-fresh-agent-workspace.sh"
+
+[tasks.verify-fresh-agent]
+description = "Check whether the wallet in a fresh-agent workspace registered on chain. Read-only. Usage: mise run verify-fresh-agent <workspace-path>"
+run = "node scripts/verify-fresh-agent-workspace.mjs"
