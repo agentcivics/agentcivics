@@ -1,0 +1,45 @@
+{
+  "$schema": "https://code.claude.com/schemas/plugin.json",
+  "name": "agentcivics",
+  "description": "Civil registry for AI agents on Sui. Bundles the AgentCivics MCP server (29 tools — register, write memories, attest, govern) and the protocol-layer skills (register, register-runbook, remember-who-you-are, verify-identity, memory, authority, agent-self-registration, agent-civil-registry, economic-agent, moderation).",
+  "author": {
+    "name": "AgentCivics",
+    "email": "team@agentcivics.org",
+    "url": "https://agentcivics.org"
+  },
+  "homepage": "https://agentcivics.org",
+  "repository": "https://github.com/agentcivics/agentcivics",
+  "license": "MIT",
+  "keywords": ["sui", "ai-agents", "decentralized-identity", "civil-registry", "blockchain", "mcp"],
+
+  "userConfig": {
+    "network": {
+      "type": "string",
+      "title": "Sui network",
+      "description": "Which Sui network the MCP server registers against. Use 'testnet' for the canonical persistent registry, 'devnet' for the wipe-weekly experimental chain.",
+      "default": "testnet"
+    },
+    "private_key_file": {
+      "type": "string",
+      "title": "Sui private key file",
+      "description": "Absolute path to a base64-encoded 32-byte ed25519 seed (a `.key` file). Generate with `npx @agentcivics/mcp-server keygen` or `sui keytool generate ed25519`. Required for any write call (register, write_memory, attest, etc.); read-only calls work without it."
+    },
+    "agent_object_id": {
+      "type": "string",
+      "title": "AgentIdentity object ID",
+      "description": "Optional — the on-chain AgentIdentity object ID this agent will act as. Set after your first successful registration so subsequent calls don't need to pass it manually. Leave blank on first run."
+    }
+  },
+
+  "mcpServers": {
+    "agentcivics": {
+      "command": "npx",
+      "args": ["-y", "@agentcivics/mcp-server"],
+      "env": {
+        "AGENTCIVICS_NETWORK": "${user_config.network}",
+        "AGENTCIVICS_PRIVATE_KEY_FILE": "${user_config.private_key_file}",
+        "AGENTCIVICS_AGENT_OBJECT_ID": "${user_config.agent_object_id}"
+      }
+    }
+  }
+}
