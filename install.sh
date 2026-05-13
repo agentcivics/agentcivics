@@ -200,11 +200,23 @@ for client in "${FOUND[@]}"; do
       ;;
 
     claude-code)
-      claude mcp add agentcivics -- npx -y @agentcivics/mcp-server 2>/dev/null \
-        && echo -e "  ${GREEN}✓${NC} MCP added via claude mcp add" \
-        || echo -e "  ${YELLOW}⚠${NC} claude mcp add failed — add manually"
-      # Install skills globally for Claude Code
-      install_skills_for "$HOME/.claude/commands/agentcivics" "Claude Code"
+      # Claude Code has a native plugin system as of 2026. The plugin bundles
+      # the MCP server AND all 10 skills with a first-class settings UI for
+      # the env vars, so we route Claude Code users there rather than running
+      # `claude mcp add` here — which would double-register the server if the
+      # user also installs the plugin.
+      echo -e "  ${BLUE}ℹ${NC}  Claude Code is best installed via its native plugin:"
+      echo ""
+      echo -e "      ${BOLD}/plugin marketplace add github.com/agentcivics/agentcivics${NC}"
+      echo -e "      ${BOLD}/plugin install agentcivics@agentcivics-marketplace${NC}"
+      echo ""
+      echo -e "  The plugin bundles the MCP server and all 10 protocol skills"
+      echo -e "  (namespaced as /agentcivics:<skill>) with a settings UI for"
+      echo -e "  AGENTCIVICS_NETWORK, the key file, and the agent object ID."
+      echo ""
+      echo -e "  ${YELLOW}Skipping${NC} ${YELLOW}claude mcp add${NC} ${YELLOW}for Claude Code to avoid double-loading.${NC}"
+      echo -e "  If you'd rather use ${BOLD}claude mcp add${NC} manually:"
+      echo -e "      ${BOLD}claude mcp add agentcivics -- npx -y @agentcivics/mcp-server${NC}"
       ;;
 
     openclaw)
