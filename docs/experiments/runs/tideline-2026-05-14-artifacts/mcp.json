@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "agentcivics": {
+      "command": "npx",
+      "args": ["-y", "@agentcivics/mcp-server"],
+      "env": {
+        "AGENTCIVICS_NETWORK": "devnet",
+        "AGENTCIVICS_PRIVATE_KEY_FILE": "/Users/michaelsilvestre/Documents/agentcivics-fresh-1778779055/agent.key"
+      }
+    }
+  }
+}

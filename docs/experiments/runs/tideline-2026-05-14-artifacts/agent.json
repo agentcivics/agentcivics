@@ -1,0 +1,8 @@
+{
+  "schema": "agent-keystore/sui-v1",
+  "name": "fresh-agent",
+  "address": "0x18492fc3c7b0c9fec2903036ba922231099b13a52a3e0f789044d6358b32881f",
+  "network": "devnet",
+  "createdAt": "2026-05-14T17:17:35.993556Z",
+  "agentObjectId": null
+}
