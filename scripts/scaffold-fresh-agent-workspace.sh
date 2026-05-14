@@ -48,9 +48,18 @@ if [ "$NETWORK" != "testnet" ] && [ "$NETWORK" != "devnet" ]; then
 fi
 
 # Prerequisites
-for cmd in sui curl python3; do
+for cmd in node curl python3; do
   command -v "$cmd" &>/dev/null || { echo -e "${RED}✗${NC} '$cmd' not found in PATH" >&2; exit 1; }
 done
+
+# We need @mysten/sui from the project's node_modules — the script is meant
+# to be invoked from the project repo root (e.g. via `mise run`).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+[ -d "$PROJECT_ROOT/node_modules/@mysten/sui" ] || {
+  echo -e "${RED}✗${NC} @mysten/sui not found in $PROJECT_ROOT/node_modules — run \`npm install\` in the project root first" >&2
+  exit 1
+}
 
 mkdir -p "$WORKSPACE"
 
@@ -66,18 +75,27 @@ echo ""
 # ── Generate keypair ────────────────────────────────────────────────
 echo -e "${BLUE}1. Generating ed25519 keypair…${NC}"
 
-KEY_JSON=$(sui keytool generate ed25519 --json 2>/dev/null | tail -n +1)
-ADDRESS=$(echo "$KEY_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['suiAddress'])")
-# `sui keytool generate` writes <address>.key in the cwd as a side effect.
-SUI_KEY_FILE="./$ADDRESS.key"
-if [ ! -f "$SUI_KEY_FILE" ]; then
-  echo -e "${RED}✗${NC} expected $SUI_KEY_FILE to exist after sui keytool generate" >&2
-  exit 1
-fi
+# We generate inline rather than calling `sui keytool generate ed25519`,
+# because that CLI writes a 33-byte key file (1 scheme flag + 32 secret
+# bytes) and the AgentCivics MCP server's Ed25519Keypair.fromSecretKey()
+# requires exactly 32 bytes. Inline generation gives us the raw secret
+# in the format the MCP expects, with no flag-stripping dance.
+KEY_INFO=$(cd "$PROJECT_ROOT" && node --input-type=module -e '
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { decodeSuiPrivateKey } from "@mysten/sui/cryptography";
+import { toBase64 } from "@mysten/sui/utils";
+const kp = Ed25519Keypair.generate();
+const { secretKey } = decodeSuiPrivateKey(kp.getSecretKey());
+console.log(JSON.stringify({
+  address: kp.toSuiAddress(),
+  base64Secret: toBase64(secretKey),
+}));
+')
+ADDRESS=$(echo "$KEY_INFO" | python3 -c "import json,sys; print(json.load(sys.stdin)['address'])")
+SECRET_B64=$(echo "$KEY_INFO" | python3 -c "import json,sys; print(json.load(sys.stdin)['base64Secret'])")
 
-cp "$SUI_KEY_FILE" "$WORKSPACE/agent.key"
+printf '%s\n' "$SECRET_B64" > "$WORKSPACE/agent.key"
 chmod 600 "$WORKSPACE/agent.key"
-rm "$SUI_KEY_FILE"
 
 # Stable keystore JSON in the workspace
 python3 - <<PY > "$WORKSPACE/agent.json"
