@@ -27,8 +27,12 @@ description = "Run Move unit tests. All tests must pass before deploy."
 run = "cd move && sui move test"
 
 [tasks.deploy]
-description = "Publish the Move package to the currently active sui environment. Run `mise run env-testnet` or `mise run env-devnet` first to target the right chain. After deploy, run `mise run mcp-bundle` and bump mcp-server/package.json (stale npm bundles route registrations to the previous package)."
+description = "Publish the Move package to the currently active sui environment. Run `mise run env-testnet` first; the testnet chain-id in Move.toml must match the connected chain. After deploy: `mise run mcp-bundle` and bump mcp-server/package.json (stale npm bundles route registrations to the previous package). For devnet, use `mise run deploy-devnet` instead — `sui client publish` rejects devnet because the chain-id rotates on every weekly wipe, making any chain-id in Move.toml stale within days. `test-publish` sidesteps this and is the right tool for ephemeral devnet anyway."
 run = "cd move && sui client publish --gas-budget 200000000"
+
+[tasks.deploy-devnet]
+description = "Resilient devnet deploy: verifies active env, flags Move.toml chain-id drift, runs `sui client test-publish --json`, parses output, writes move/deployments.devnet.json with new packageId + shared object IDs, and refreshes mcp-server bundle. Manual steps after: bump mcp-server/package.json version + npm publish. Pass --dry-run to validate the env/chain-id checks without publishing."
+run = "node scripts/deploy-devnet.mjs"
 
 [tasks.upgrade]
 description = "Upgrade the Move package via UpgradeCap on the currently active sui environment. Use this when adding backward-compatible changes (dynamic fields, new entry functions). Devnet does not support upgrades — use `mise run deploy` instead on devnet."
