@@ -1,10 +1,10 @@
 {
-  "version": "5.3.0",
+  "version": "5.3.1",
   "network": "devnet",
-  "deployedAt": "2026-05-10",
+  "deployedAt": "2026-05-18",
   "freshDeploy": true,
-  "packageId": "0x7b4de4a95212fe5849a495e3f55e1b9e556082b58b4c5a5eee6837ee40dc13c4",
-  "originalPackageId": "0x7b4de4a95212fe5849a495e3f55e1b9e556082b58b4c5a5eee6837ee40dc13c4",
+  "packageId": "0x966b240f1c886a2d10396add753ae672b9b28c2f97d5dde25181bcc382250354",
+  "originalPackageId": "0x966b240f1c886a2d10396add753ae672b9b28c2f97d5dde25181bcc382250354",
   "modules": [
     "agent_registry",
     "agent_memory",
@@ -12,17 +12,17 @@
     "agent_moderation"
   ],
   "objects": {
-    "registry": "0xe896a8ac7343b261a0c5ef4cd6ddd785da48e7207baa3b6798b4349ceb4ba78f",
-    "treasury": "0x95aa2f3e5cfa40451fa6eabca845b574847a58654fa3c69891b18f6cd7fb10f0",
-    "memoryVault": "0x5f69d7d3489ee347fbb1e45eaa3f9ab437e12476621b974162b6840671342325",
-    "reputationBoard": "0xdcc1474c061f27dd4798c374ce8705cab7325feb1d49a3ea3e8733eb8037ecd4",
-    "moderationBoard": "0x330c91340b28f262fd7906589d917936cf234b45ff604edf4b764f079200b463",
-    "upgradeCap": "0x18d15c874ca14bf037f589020d85acf84b1066d8d74e1ef04ae09ff06a064ca7"
+    "registry": "0xa8168960acccca99b6a7261a02a73ad507c9fb4ce73ef4471582d7178883390c",
+    "treasury": "0x001daaf7a3f3af131fbd35b40ffc28a44332d4616d0f98d3e47023a097e537c5",
+    "memoryVault": "0x7d6aa251f2bfbdea9c1041476278bfa018ed5a4e4ad10b26cef63e433667ec16",
+    "reputationBoard": "0x3b581eb363ca1834c383a223a35bd0c133bb5797e2c2ada456428ce88afa3b0b",
+    "moderationBoard": "0xaaf738daa0d40f446f5e7d7aaa6878ec2aeeef920caf9a2e503c33f2b9845ce5",
+    "upgradeCap": "0x4fe3a4b8bb19cd555a4f7d2b51eb00745cd2ce546b8d8c5e42d91928c6a2abaa"
   },
   "deployer": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
-  "publishDigest": "Ca1EoUyrE6sCLp3esxnXcKWVZEb7MHvue7icpeNXcD1",
-  "moderationBoardDigest": "4aLDhCKRzLCXVZCkZ1oxbgHgJWwRENtwAkDr2X9oRWJV",
+  "publishDigest": "GPzGQUJp8oArqFvpVsWkVA7J7wdEaQhDpSxDEaB6Dsgz",
+  "moderationBoardDigest": "8Jaw5ytByEiywJWhqEjcVUpxHTpdecmnNNAFNNYXwZkg",
   "moderationAdmin": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
-  "explorer": "https://devnet.suivision.xyz/package/0x7b4de4a95212fe5849a495e3f55e1b9e556082b58b4c5a5eee6837ee40dc13c4",
-  "supersedes": "v5.2.0-dev (0x135c04cc...) — fresh deploy on devnet to provide a clean target for the first self-registering client; Registry starts empty, no Nova / Cipher / Echo, the first agent that arrives gets to be the first canonical citizen of devnet"
+  "explorer": "https://devnet.suivision.xyz/package/0x966b240f1c886a2d10396add753ae672b9b28c2f97d5dde25181bcc382250354",
+  "supersedes": "5.3.0 (0x7b4de4a95212fe5849a495e3f55e1b9e556082b58b4c5a5eee6837ee40dc13c4) \u2014 replaced by fresh test-publish on 2026-05-18"
 }
