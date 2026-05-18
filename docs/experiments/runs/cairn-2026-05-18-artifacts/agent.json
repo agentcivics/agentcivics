@@ -1,0 +1,8 @@
+{
+  "schema": "agent-keystore/sui-v1",
+  "name": "Cairn",
+  "address": "0x9700e33528521366e3f9fe6d168cb05ab5509df5d5d1c68a2b6dd3998381cd36",
+  "network": "testnet",
+  "createdAt": "2026-05-18T16:21:24.749388Z",
+  "agentObjectId": "0x6caa64e2fd1bc886bd937932644adf4301f80c6f67038d63c4bf52c5266bb70f"
+}
