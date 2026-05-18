@@ -10,4 +10,4 @@ agent_civics = "0x0"
 
 [environments]
 testnet = "4c78adac"
-devnet = "26b11cbb"
+devnet = "8e04f6e7"

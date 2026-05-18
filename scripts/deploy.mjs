@@ -28,7 +28,7 @@
  */
 
 import { execSync, spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -58,14 +58,19 @@ const ENV_CONFIG = {
     rpc: 'https://fullnode.testnet.sui.io:443',
     deploymentsFile: 'move/deployments.json',
     explorerBase: 'https://testnet.suivision.xyz/package/',
-    chainIdMatchRequired: true,   // publish rejects on mismatch
+    // chain-id drift on testnet means something is wrong; refuse rather
+    // than auto-rewrite Move.toml. The operator must investigate.
+    onChainIdMismatch: 'fail',
   },
   devnet: {
     suiCommand: 'test-publish',
     rpc: 'https://fullnode.devnet.sui.io:443',
     deploymentsFile: 'move/deployments.devnet.json',
     explorerBase: 'https://devnet.suivision.xyz/package/',
-    chainIdMatchRequired: false,  // test-publish tolerates mismatch
+    // chain-id drift on devnet is expected (weekly wipes rotate the
+    // chain-id). Auto-update Move.toml and clear the stale Pub.<env>.toml
+    // ephemeral file that newer sui CLI rejects without explanation.
+    onChainIdMismatch: 'auto-fix',
   },
 };
 
@@ -83,24 +88,45 @@ ok(`will write: ${cfg.deploymentsFile}`);
 // ── Move.toml chain-id check ────────────────────────────────────────
 if (!SKIP_CHAIN_ID_CHECK) {
   info(`Checking ${activeEnv} chain-id vs Move.toml…`);
-  const moveToml = readFileSync(resolve(ROOT, 'move/Move.toml'), 'utf-8');
-  const declaredMatch = moveToml.match(new RegExp(`^\\s*${activeEnv}\\s*=\\s*"([0-9a-f]+)"`, 'm'));
-  const declared = declaredMatch?.[1];
+  const moveTomlPath = resolve(ROOT, 'move/Move.toml');
+  const moveToml = readFileSync(moveTomlPath, 'utf-8');
+  const declaredMatch = moveToml.match(new RegExp(`^(\\s*${activeEnv}\\s*=\\s*")([0-9a-f]+)(")`, 'm'));
+  const declared = declaredMatch?.[2];
   const liveChainId = await fetch(cfg.rpc, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'sui_getChainIdentifier', params: [] }),
   }).then(r => r.json()).then(d => d.result);
 
+  const action = cfg.onChainIdMismatch;
+
   if (!declared) {
     warn(`Move.toml has no [environments] entry for ${activeEnv}.`);
-    if (cfg.chainIdMatchRequired) fail(`sui client ${cfg.suiCommand} requires Move.toml to declare the env. Add: ${activeEnv} = "${liveChainId}"`);
+    if (action === 'fail') {
+      fail(`sui client ${cfg.suiCommand} requires Move.toml to declare the env. Add: ${activeEnv} = "${liveChainId}"`);
+    }
+    // 'auto-fix' branch can't write a new entry without knowing the table
+    // structure; we punt to operator. (In practice the entry exists for
+    // any env we deploy to.)
+    fail(`Please add an [environments] entry for ${activeEnv} in move/Move.toml`);
   } else if (declared !== liveChainId) {
-    if (cfg.chainIdMatchRequired) {
+    if (action === 'fail') {
       fail(`Move.toml declares ${activeEnv} = "${declared}" but live chain-id is "${liveChainId}". Update Move.toml before deploying with sui client ${cfg.suiCommand}.`);
-    } else {
-      warn(`Move.toml declares ${activeEnv} = "${declared}" but live chain-id is "${liveChainId}".`);
-      warn(`test-publish ignores this mismatch; sui client publish would not. Continuing.`);
+    }
+    // 'auto-fix' — devnet path. Rewrite Move.toml and clear the stale
+    // ephemeral publication file that newer sui CLI rejects.
+    warn(`Move.toml declares ${activeEnv} = "${declared}" but live chain-id is "${liveChainId}".`);
+    const replaced = moveToml.replace(declaredMatch[0], `${declaredMatch[1]}${liveChainId}${declaredMatch[3]}`);
+    writeFileSync(moveTomlPath, replaced);
+    ok(`auto-updated Move.toml: ${activeEnv} = "${liveChainId}"`);
+
+    // Newer sui CLI bakes the chain-id into Pub.<env>.toml at first
+    // test-publish and refuses to reuse it on a different chain. Clear it
+    // so sui regenerates with the current chain-id.
+    const pubFile = resolve(ROOT, `move/Pub.${activeEnv}.toml`);
+    if (existsSync(pubFile)) {
+      rmSync(pubFile);
+      ok(`removed stale move/Pub.${activeEnv}.toml`);
     }
   } else {
     ok(`chain-id matches: ${declared}`);
