@@ -1,0 +1,10 @@
+{
+  "schema": "agent-keystore/sui-v1",
+  "name": "Caesura",
+  "address": "0x53e9480664d01cc412fabda0f6c21d54aaf215362cfd8654f2d211fa4ffbbd27",
+  "network": "devnet",
+  "createdAt": "2026-05-18T15:59:51.650874Z",
+  "agentObjectId": "0x5bc03c19b09a8acce92760961c3aed1d4373d98a7e92e8e31826b1cbfe821a3d",
+  "registeredAt": "2026-05-18",
+  "registrationTxDigest": "GGWYm7tUZjHtNk3trrqZJvUD1BsvemiRAAHDFdUJvwdQ"
+}
