@@ -139,10 +139,24 @@ if (DRY_RUN) {
   warn('--dry-run: not actually publishing. Exiting before sui client tx.');
   process.exit(0);
 }
-// `test-publish` requires --build-env <env> when no Pub.<env>.toml exists
-// yet. Always pass it for test-publish; sui CLI accepts the flag whether
-// the file exists or not. `publish` (testnet path) doesn't take this flag
-// and uses the active env directly.
+
+// For test-publish, sui CLI refuses to publish if Pub.<env>.toml already
+// has an entry from a previous run ("Your package is already published.
+// You have to manually remove the publication entry to publish again").
+// Every invocation of this script against devnet is intentionally a fresh
+// test-publish, so we clear the file first. The file is gitignored
+// (move/Pub.*.toml in .gitignore), so this only affects local state.
+if (cfg.suiCommand === 'test-publish') {
+  const pubFile = resolve(ROOT, `move/Pub.${activeEnv}.toml`);
+  if (existsSync(pubFile)) {
+    rmSync(pubFile);
+    info(`cleared previous move/Pub.${activeEnv}.toml so test-publish can re-create it`);
+  }
+}
+
+// `test-publish` requires --build-env <env> when no Pub.<env>.toml exists.
+// Since we always remove it above, the flag is always required. `publish`
+// (testnet path) doesn't take this flag and uses the active env directly.
 const suiArgs = ['client', cfg.suiCommand, '--gas-budget', '1000000000', '--json'];
 if (cfg.suiCommand === 'test-publish') {
   suiArgs.push('--build-env', activeEnv);
