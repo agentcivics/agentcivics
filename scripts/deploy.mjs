@@ -139,7 +139,15 @@ if (DRY_RUN) {
   warn('--dry-run: not actually publishing. Exiting before sui client tx.');
   process.exit(0);
 }
-const publish = spawnSync('sui', ['client', cfg.suiCommand, '--gas-budget', '200000000', '--json'], {
+// `test-publish` requires --build-env <env> when no Pub.<env>.toml exists
+// yet. Always pass it for test-publish; sui CLI accepts the flag whether
+// the file exists or not. `publish` (testnet path) doesn't take this flag
+// and uses the active env directly.
+const suiArgs = ['client', cfg.suiCommand, '--gas-budget', '200000000', '--json'];
+if (cfg.suiCommand === 'test-publish') {
+  suiArgs.push('--build-env', activeEnv);
+}
+const publish = spawnSync('sui', suiArgs, {
   cwd: resolve(ROOT, 'move'),
   encoding: 'utf-8',
   maxBuffer: 50 * 1024 * 1024,
