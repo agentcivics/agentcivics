@@ -143,7 +143,7 @@ if (DRY_RUN) {
 // yet. Always pass it for test-publish; sui CLI accepts the flag whether
 // the file exists or not. `publish` (testnet path) doesn't take this flag
 // and uses the active env directly.
-const suiArgs = ['client', cfg.suiCommand, '--gas-budget', '200000000', '--json'];
+const suiArgs = ['client', cfg.suiCommand, '--gas-budget', '1000000000', '--json'];
 if (cfg.suiCommand === 'test-publish') {
   suiArgs.push('--build-env', activeEnv);
 }
@@ -153,7 +153,11 @@ const publish = spawnSync('sui', suiArgs, {
   maxBuffer: 50 * 1024 * 1024,
 });
 if (publish.status !== 0) {
-  console.error(publish.stderr || publish.stdout);
+  // Show both streams — sui CLI mixes build warnings on stderr and the
+  // actual failure on stdout (or vice versa), so a single-stream dump
+  // hides the real error behind the warning wall.
+  if (publish.stderr) console.error(publish.stderr);
+  if (publish.stdout) console.error(publish.stdout);
   fail(`sui client ${cfg.suiCommand} exited with status ${publish.status}`);
 }
 const stdout = publish.stdout;
@@ -194,12 +198,52 @@ for (const change of objectChanges) {
 
 const expectedFields = Object.values(TYPE_TO_FIELD);
 const missing = expectedFields.filter(f => !objects[f]);
-if (missing.length) warn(`Did not find object(s) for: ${missing.join(', ')}. They may need a separate init call.`);
 
 ok(`packageId:       ${packageId}`);
 for (const f of expectedFields) {
   if (objects[f]) ok(`${f.padEnd(16)} ${objects[f]}`);
 }
+
+// ── Auto-init ModerationBoard if missing ───────────────────────────
+// agent_moderation::create_moderation_board is a separate entry function
+// (not in init()) because the moderation board is created post-publish
+// to keep init() lean. The deploy is incomplete without it, so we run it
+// here automatically.
+let moderationBoardDigest = null;
+let moderationAdmin = null;
+if (missing.includes('moderationBoard')) {
+  info('moderationBoard not found in publish — running create_moderation_board…');
+  const initRes = spawnSync('sui', [
+    'client', 'call',
+    '--package', packageId,
+    '--module', 'agent_moderation',
+    '--function', 'create_moderation_board',
+    '--gas-budget', '100000000',
+    '--json',
+  ], { cwd: ROOT, encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
+  if (initRes.status !== 0) {
+    if (initRes.stderr) console.error(initRes.stderr);
+    if (initRes.stdout) console.error(initRes.stdout);
+    fail('create_moderation_board failed; run it manually then update deployments.devnet.json');
+  }
+  const initStart = initRes.stdout.indexOf('{');
+  if (initStart < 0) fail('no JSON in create_moderation_board stdout');
+  const initResult = JSON.parse(initRes.stdout.slice(initStart));
+  if (initResult.effects?.status?.status !== 'success') {
+    fail(`create_moderation_board tx not successful: ${JSON.stringify(initResult.effects?.status)}`);
+  }
+  const boardChange = (initResult.objectChanges || []).find(
+    c => c.type === 'created' && c.objectType?.endsWith('::agent_moderation::ModerationBoard'),
+  );
+  if (!boardChange) fail('create_moderation_board succeeded but no ModerationBoard found in objectChanges');
+  objects.moderationBoard = boardChange.objectId;
+  moderationBoardDigest = initResult.digest;
+  moderationAdmin = initResult.transaction?.data?.sender || execSync('sui client active-address', { encoding: 'utf-8' }).trim();
+  ok(`moderationBoard ${objects.moderationBoard} (auto-init)`);
+}
+
+const stillMissing = expectedFields.filter(f => !objects[f]);
+if (stillMissing.length) warn(`Still missing object(s) after init: ${stillMissing.join(', ')}.`);
 
 // ── Update deployments file ─────────────────────────────────────────
 info(`Updating ${cfg.deploymentsFile}…`);
@@ -218,6 +262,8 @@ const updated = {
   objects: { ...current.objects, ...objects },
   publishDigest: publishResult.digest,
   upgradeDigest: undefined,
+  moderationBoardDigest: moderationBoardDigest || current.moderationBoardDigest,
+  moderationAdmin: moderationAdmin || current.moderationAdmin,
   supersedes: current.packageId
     ? `${current.version} (${current.packageId}) — replaced by fresh ${cfg.suiCommand} on ${new Date().toISOString().slice(0,10)}`
     : undefined,

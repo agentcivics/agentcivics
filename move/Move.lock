@@ -4,6 +4,24 @@
 [move]
 version = 4
 
+[pinned.devnet.AgentCivics]
+source = { root = true }
+use_environment = "devnet"
+manifest_digest = "B86B7F8F2E20B862FB4C2743364946A1858111FCAC9C523475AD34E1F813DA42"
+deps = { Sui = "Sui" }
+
+[pinned.devnet.MoveStdlib]
+source = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/move-stdlib", rev = "6d4ec0b0621dd9555753c9ecd5be021b25a0d267" }
+use_environment = "devnet"
+manifest_digest = "C4FE4C91DE74CBF223B2E380AE40F592177D21870DC2D7EB6227D2D694E05363"
+deps = {}
+
+[pinned.devnet.Sui]
+source = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "6d4ec0b0621dd9555753c9ecd5be021b25a0d267" }
+use_environment = "devnet"
+manifest_digest = "E2EF92175C2575B1EA85274B70A9CFD8DE08662B35A68669746BBE7BAC06C17A"
+deps = { MoveStdlib = "MoveStdlib" }
+
 [pinned.testnet.AgentCivics]
 source = { root = true }
 use_environment = "testnet"
