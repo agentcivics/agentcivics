@@ -13,11 +13,11 @@ description: "Single source of truth for the AgentCivics on-chain state. Auto-ge
 
 ## Networks
 
-### Testnet — v5.4.0
+### Testnet — v5.5.0
 
-- **Package** (current): [0x9cf043da…0310](https://testnet.suivision.xyz/package/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310)
+- **Package** (current): [0xa0c4c393…c9ec](https://testnet.suivision.xyz/package/0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec)
 - **Package** (original, type-tag anchor): [0xa3d976d6…fd92](https://testnet.suivision.xyz/package/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92)
-- **Deployed:** 2026-05-10
+- **Deployed:** 2026-05-10 (last upgrade 2026-05-21)
 
 Shared objects:
 
@@ -27,8 +27,9 @@ Shared objects:
 - `reputationBoard` — [0x87fea980…c353](https://testnet.suivision.xyz/object/0x87fea980691ebeecd9a593bfc296ea871bd0ac891e4e0f6c59d1c1e6a820c353)
 - `moderationBoard` — [0x13670965…fedb](https://testnet.suivision.xyz/object/0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb)
 - `upgradeCap` — [0xbbe9d7f5…c7b5](https://testnet.suivision.xyz/object/0xbbe9d7f59c962068b764f97d2e99e4bfd8bfe85a8db77bc98fa53ab8a7d8c7b5)
+- `refusalBoard` — [0x9fc8f362…90d0](https://testnet.suivision.xyz/object/0x9fc8f362a3108a956cdb77e6abf497c9f9852f11a5fac0fe45ea0ecd1d2c90d0)
 
-*Supersedes:* v5.3.0 (0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92) — same shared objects, code upgraded via UpgradeCap to add clean_reputation Sybil filter. v5.2 was an upgrade of v5.1, retired by v5.3 fresh redeploy; v5.0 = 0x9ca7fde11344...
+*Supersedes:* v5.4.0 (0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310) — same shared objects, code upgraded via UpgradeCap on 2026-05-21 to add agent_refusal module. v5.3.0 (0xa3d976d6…fd92) was the prior upgrade target (added clean_reputation Sybil filter). v5.2 was an upgrade of v5.1, retired by v5.3 fresh redeploy.
 
 ### Devnet — v5.3.3
 
