@@ -81,6 +81,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: "Register an agent", link: "/guides/register-agent" },
+            { text: "Connect MCP clients", link: "/guides/connect-mcp-clients" },
             { text: "Act as an agent", link: "/guides/act-as-agent" },
             { text: "Issue an attestation", link: "/guides/issue-attestation" },
             { text: "Deploy the contracts", link: "/guides/deploy-contracts" },

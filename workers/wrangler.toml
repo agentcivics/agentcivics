@@ -1,0 +1,55 @@
+# AgentCivics hosted endpoints — Cloudflare Worker
+#
+# Two endpoints under one Worker:
+#   - GET  /health          → liveness check
+#   - POST /mcp             → read-only MCP-over-HTTP (no keypair needed)
+#   - POST /sponsor         → gas sponsorship for allowlisted Move calls
+#
+# Deploy with: mise run deploy-workers
+#
+# Secrets are NOT in this file — they live in Worker Secrets:
+#   wrangler secret put SPONSOR_PRIVATE_KEY     # sui sponsor wallet (suiprivkey…)
+#
+# KV namespaces for rate-limit counters are declared below and created with:
+#   wrangler kv namespace create RATELIMIT
+# Then paste the printed id back into this file.
+
+name = "agentcivics"
+main = "src/index.mjs"
+compatibility_date = "2025-04-01"
+workers_dev = false
+
+# Custom route — agentcivics.org owned in Cloudflare DNS.
+# Both /mcp and /sponsor (and /health) live under the same worker.
+[[routes]]
+pattern = "agentcivics.org/mcp"
+zone_name = "agentcivics.org"
+
+[[routes]]
+pattern = "agentcivics.org/mcp/*"
+zone_name = "agentcivics.org"
+
+[[routes]]
+pattern = "agentcivics.org/sponsor"
+zone_name = "agentcivics.org"
+
+[[routes]]
+pattern = "agentcivics.org/health"
+zone_name = "agentcivics.org"
+
+# Public configuration — safe to commit. Network-specific overrides via env
+# vars in `[env.devnet]` / `[env.testnet]` if needed; default is testnet.
+[vars]
+AGENTCIVICS_NETWORK = "testnet"
+SUI_RPC_URL = "https://fullnode.testnet.sui.io:443"
+# Sponsor caps — set conservatively. The per-IP daily limit is enforced via KV.
+SPONSOR_PER_IP_DAILY_LIMIT = "5"
+# How much SUI (in MIST) the sponsor will commit to gas per tx. Sui reserves
+# the budget at signing time, so this is the upper bound the sponsor commits.
+SPONSOR_GAS_BUDGET_MIST = "200000000"  # 0.2 SUI
+
+# Rate-limit counters (per-IP / per-day) — KV id pasted in after first
+# `wrangler kv namespace create RATELIMIT`.
+# [[kv_namespaces]]
+# binding = "RATELIMIT"
+# id = "<fill-in-after-namespace-create>"
