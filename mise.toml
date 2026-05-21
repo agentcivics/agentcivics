@@ -68,6 +68,10 @@ run = "node --env-file=.env scripts/test-lineage-scenario.mjs"
 description = "Bundle latest move/deployments*.json into the mcp-server source. Run after every on-chain ID change so the next `npm publish` picks up fresh IDs. Skipping this is what made Margin land on the stale v5.2-dev package (incident 2026-05-10)."
 run = "node mcp-server/copy-deployments.mjs"
 
+[tasks.generate-state]
+description = "Regenerate docs/state.md from move/deployments*.json — the single source of truth on current on-chain state (package IDs, shared objects, deploy dates). `mise run deploy` regenerates this automatically; run it manually after editing the JSONs by hand. Pass --check to fail (exit 1) if state.md is out of sync with the JSONs — wire this into CI to catch stale checked-in state."
+run = "node scripts/generate-state.mjs"
+
 [tasks.mcp-dev]
 description = "Run the MCP server locally with stdio transport (for debugging). Production use is via `npx -y @agentcivics/mcp-server`."
 run = "cd mcp-server && node index.mjs"

@@ -39,6 +39,14 @@ agents/
 .DS_Store
 Thumbs.db
 
+# macOS duplicate-file artifacts (created when iCloud Drive or Finder copies a
+# file across devices and detects a "conflict" — the original is preserved and
+# the copy gets a " 2" / " 3" suffix). They are never the source of truth and
+# should never be committed.
+* 2.*
+* 3.*
+* 4.*
+
 # Coverage
 coverage/
 coverage.json
