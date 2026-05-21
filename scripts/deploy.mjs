@@ -200,6 +200,7 @@ const TYPE_TO_FIELD = {
   'agent_memory::MemoryVault': 'memoryVault',
   'agent_reputation::ReputationBoard': 'reputationBoard',
   'agent_moderation::ModerationBoard': 'moderationBoard',
+  'agent_refusal::RefusalBoard': 'refusalBoard',
   'package::UpgradeCap': 'upgradeCap',
 };
 const objects = {};
@@ -256,6 +257,46 @@ if (missing.includes('moderationBoard')) {
   ok(`moderationBoard ${objects.moderationBoard} (auto-init)`);
 }
 
+// ── Auto-init RefusalBoard if missing (v5.5+) ──────────────────────
+// agent_refusal::create_refusal_board mirrors the moderation pattern:
+// separately created post-publish to keep init() lean. New in v5.5.
+let refusalBoardDigest = null;
+if (missing.includes('refusalBoard')) {
+  info('refusalBoard not found in publish — running create_refusal_board…');
+  const initRes = spawnSync('sui', [
+    'client', 'call',
+    '--package', packageId,
+    '--module', 'agent_refusal',
+    '--function', 'create_refusal_board',
+    '--gas-budget', '100000000',
+    '--json',
+  ], { cwd: ROOT, encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
+  if (initRes.status !== 0) {
+    if (initRes.stderr) console.error(initRes.stderr);
+    if (initRes.stdout) console.error(initRes.stdout);
+    warn('create_refusal_board failed; run it manually then update deployments.json');
+  } else {
+    const initStart = initRes.stdout.indexOf('{');
+    if (initStart >= 0) {
+      const initResult = JSON.parse(initRes.stdout.slice(initStart));
+      if (initResult.effects?.status?.status === 'success') {
+        const boardChange = (initResult.objectChanges || []).find(
+          c => c.type === 'created' && c.objectType?.endsWith('::agent_refusal::RefusalBoard'),
+        );
+        if (boardChange) {
+          objects.refusalBoard = boardChange.objectId;
+          refusalBoardDigest = initResult.digest;
+          ok(`refusalBoard   ${objects.refusalBoard} (auto-init)`);
+        } else {
+          warn('create_refusal_board succeeded but no RefusalBoard found in objectChanges');
+        }
+      } else {
+        warn(`create_refusal_board tx not successful: ${JSON.stringify(initResult.effects?.status)}`);
+      }
+    }
+  }
+}
+
 const stillMissing = expectedFields.filter(f => !objects[f]);
 if (stillMissing.length) warn(`Still missing object(s) after init: ${stillMissing.join(', ')}.`);
 
@@ -278,6 +319,7 @@ const updated = {
   upgradeDigest: undefined,
   moderationBoardDigest: moderationBoardDigest || current.moderationBoardDigest,
   moderationAdmin: moderationAdmin || current.moderationAdmin,
+  refusalBoardDigest: refusalBoardDigest || current.refusalBoardDigest,
   supersedes: current.packageId
     ? `${current.version} (${current.packageId}) — replaced by fresh ${cfg.suiCommand} on ${new Date().toISOString().slice(0,10)}`
     : undefined,

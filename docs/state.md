@@ -30,21 +30,22 @@ Shared objects:
 
 *Supersedes:* v5.3.0 (0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92) — same shared objects, code upgraded via UpgradeCap to add clean_reputation Sybil filter. v5.2 was an upgrade of v5.1, retired by v5.3 fresh redeploy; v5.0 = 0x9ca7fde11344...
 
-### Devnet — v5.3.2
+### Devnet — v5.3.3
 
-- **Package** (current): [0xba3479ea…ef8d](https://devnet.suivision.xyz/package/0xba3479ead4fd9338ce6f2ac85e5be782f7374dd1dd74991bd8e80eef87b1ef8d)
-- **Deployed:** 2026-05-18 — fresh deploy
+- **Package** (current): [0x662e7761…98c9](https://devnet.suivision.xyz/package/0x662e77612ed188fab5cfb2434faae0458c814804d5a39e88badb4d07281798c9)
+- **Deployed:** 2026-05-21 — fresh deploy
 
 Shared objects:
 
-- `registry` — [0x1153a4ac…6097](https://devnet.suivision.xyz/object/0x1153a4acf5955f8e637b3df2d02648c30842c08eca10d5fcb216e7f61dce6097)
-- `treasury` — [0xea1210af…d64c](https://devnet.suivision.xyz/object/0xea1210af56e8e8948da296dbab1f540d2017e7d4b09a385c6ec650a37a09d64c)
-- `memoryVault` — [0x6654b8ca…3fce](https://devnet.suivision.xyz/object/0x6654b8caaa0fe063e90952ad291a6e0fa2febf659a566ab1911e448b76d33fce)
-- `reputationBoard` — [0x4d87a89c…962c](https://devnet.suivision.xyz/object/0x4d87a89c3d8a8f638e168c9a4db7118860184cc77b4d006ed74a1997caa9962c)
-- `moderationBoard` — [0x999cb862…6abe](https://devnet.suivision.xyz/object/0x999cb862d8efbeffdcf1cbf5e04d17075b00bf435cdbd6f9bae9f97f15506abe)
-- `upgradeCap` — [0xc604daa2…011c](https://devnet.suivision.xyz/object/0xc604daa2e0170baed738311f99c3a503aa83c48a66f7e3dd44ef768fb8e1011c)
+- `registry` — [0x8c98a366…3d86](https://devnet.suivision.xyz/object/0x8c98a366ebff9eb978177e3dfad49f4eebde271ab46c4a33c2dfcbdb4b6a3d86)
+- `treasury` — [0xc59f0d78…27d3](https://devnet.suivision.xyz/object/0xc59f0d78d45eccb9c9078d718a0adb32787df9a23decac7c7144b34ecebd27d3)
+- `memoryVault` — [0x10fbb084…a2b9](https://devnet.suivision.xyz/object/0x10fbb08429e2ddd7b09ee3e42b01a91e75cfa62a3755e67c29b6a8c8f709a2b9)
+- `reputationBoard` — [0xb0e3e005…05d1](https://devnet.suivision.xyz/object/0xb0e3e0054b6b1d46fe71f14a7aa0a798158af4ef1c270870f694892e534205d1)
+- `moderationBoard` — [0x92829504…8e55](https://devnet.suivision.xyz/object/0x928295042ff05f723df9a97b0ff3d730dad27182b43b6c17abb4488b231a8e55)
+- `upgradeCap` — [0x0bc44261…3f9b](https://devnet.suivision.xyz/object/0x0bc442612c2376dd4ca92d7e265a0a2877b0fc8981a369ad6c9ad42239683f9b)
+- `refusalBoard` — [0xf5d5227e…b49f](https://devnet.suivision.xyz/object/0xf5d5227e606336bedacf75829a3ddeaa8df9636aefec0049de8f6cd4f87db49f)
 
-*Supersedes:* 5.3.1 (0x966b240f1c886a2d10396add753ae672b9b28c2f97d5dde25181bcc382250354) — replaced by fresh test-publish on 2026-05-18
+*Supersedes:* 5.3.2 (0xba3479ead4fd9338ce6f2ac85e5be782f7374dd1dd74991bd8e80eef87b1ef8d) — replaced by fresh test-publish on 2026-05-21
 
 ---
 
