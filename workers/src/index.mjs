@@ -46,6 +46,10 @@ export default {
     }
 
     if (url.pathname === '/health' && request.method === 'GET') {
+      // Report endpoints relative to the request's actual origin — that
+      // way /health is self-consistent whether we're behind a custom
+      // domain (agentcivics.org) or on workers.dev.
+      const origin = `${url.protocol}//${url.host}`;
       return json({
         ok: true,
         service: 'agentcivics-workers',
@@ -56,8 +60,8 @@ export default {
         refusalBoard: deployment.objects?.refusalBoard ?? null,
         explorer: deployment.explorer,
         endpoints: {
-          mcp: 'https://agentcivics.org/mcp',
-          sponsor: 'https://agentcivics.org/sponsor',
+          mcp: `${origin}/mcp`,
+          sponsor: `${origin}/sponsor`,
         },
       });
     }

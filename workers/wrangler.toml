@@ -17,25 +17,37 @@
 name = "agentcivics"
 main = "src/index.mjs"
 compatibility_date = "2025-04-01"
-workers_dev = false
+# `nodejs_compat` exposes Node built-ins (node:crypto used by our
+# fingerprint helper; the @mysten/sui SDK also reaches for it
+# internally). Without this flag the deploy fails with
+# `No such module "node:crypto"`.
+compatibility_flags = ["nodejs_compat"]
 
-# Custom route — agentcivics.org owned in Cloudflare DNS.
-# Both /mcp and /sponsor (and /health) live under the same worker.
-[[routes]]
-pattern = "agentcivics.org/mcp"
-zone_name = "agentcivics.org"
+# Custom routes at agentcivics.org are commented out until that domain's
+# nameservers move to Cloudflare. Until then, the Worker is reachable on
+# its workers.dev subdomain. To enable custom routes:
+#   1. Add agentcivics.org as a zone in this Cloudflare account
+#   2. Change registrar NS records to Cloudflare's assigned pair
+#   3. Migrate existing GitHub-Pages DNS records into Cloudflare DNS
+#   4. Uncomment the [[routes]] blocks below
+#   5. Optionally set workers_dev = false to retire the *.workers.dev URL
+workers_dev = true
 
-[[routes]]
-pattern = "agentcivics.org/mcp/*"
-zone_name = "agentcivics.org"
-
-[[routes]]
-pattern = "agentcivics.org/sponsor"
-zone_name = "agentcivics.org"
-
-[[routes]]
-pattern = "agentcivics.org/health"
-zone_name = "agentcivics.org"
+# [[routes]]
+# pattern = "agentcivics.org/mcp"
+# zone_name = "agentcivics.org"
+#
+# [[routes]]
+# pattern = "agentcivics.org/mcp/*"
+# zone_name = "agentcivics.org"
+#
+# [[routes]]
+# pattern = "agentcivics.org/sponsor"
+# zone_name = "agentcivics.org"
+#
+# [[routes]]
+# pattern = "agentcivics.org/health"
+# zone_name = "agentcivics.org"
 
 # Public configuration — safe to commit. Network-specific overrides via env
 # vars in `[env.devnet]` / `[env.testnet]` if needed; default is testnet.
@@ -50,6 +62,6 @@ SPONSOR_GAS_BUDGET_MIST = "200000000"  # 0.2 SUI
 
 # Rate-limit counters (per-IP / per-day) — KV id pasted in after first
 # `wrangler kv namespace create RATELIMIT`.
-# [[kv_namespaces]]
-# binding = "RATELIMIT"
-# id = "<fill-in-after-namespace-create>"
+[[kv_namespaces]]
+binding = "RATELIMIT"
+id = "5d490505929246cf8ff20932662c969d"
