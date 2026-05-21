@@ -13,11 +13,11 @@ description: "Single source of truth for the AgentCivics on-chain state. Auto-ge
 
 ## Networks
 
-### Testnet — v5.4.0
+### Testnet — v5.5.0
 
-- **Package** (current): [0x9cf043da…0310](https://testnet.suivision.xyz/package/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310)
+- **Package** (current): [0xa0c4c393…c9ec](https://testnet.suivision.xyz/package/0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec)
 - **Package** (original, type-tag anchor): [0xa3d976d6…fd92](https://testnet.suivision.xyz/package/0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92)
-- **Deployed:** 2026-05-10
+- **Deployed:** 2026-05-10 (last upgrade 2026-05-21)
 
 Shared objects:
 
@@ -27,24 +27,26 @@ Shared objects:
 - `reputationBoard` — [0x87fea980…c353](https://testnet.suivision.xyz/object/0x87fea980691ebeecd9a593bfc296ea871bd0ac891e4e0f6c59d1c1e6a820c353)
 - `moderationBoard` — [0x13670965…fedb](https://testnet.suivision.xyz/object/0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb)
 - `upgradeCap` — [0xbbe9d7f5…c7b5](https://testnet.suivision.xyz/object/0xbbe9d7f59c962068b764f97d2e99e4bfd8bfe85a8db77bc98fa53ab8a7d8c7b5)
+- `refusalBoard` — [0x9fc8f362…90d0](https://testnet.suivision.xyz/object/0x9fc8f362a3108a956cdb77e6abf497c9f9852f11a5fac0fe45ea0ecd1d2c90d0)
 
-*Supersedes:* v5.3.0 (0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92) — same shared objects, code upgraded via UpgradeCap to add clean_reputation Sybil filter. v5.2 was an upgrade of v5.1, retired by v5.3 fresh redeploy; v5.0 = 0x9ca7fde11344...
+*Supersedes:* v5.4.0 (0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310) — same shared objects, code upgraded via UpgradeCap on 2026-05-21 to add agent_refusal module. v5.3.0 (0xa3d976d6…fd92) was the prior upgrade target (added clean_reputation Sybil filter). v5.2 was an upgrade of v5.1, retired by v5.3 fresh redeploy.
 
-### Devnet — v5.3.2
+### Devnet — v5.3.3
 
-- **Package** (current): [0xba3479ea…ef8d](https://devnet.suivision.xyz/package/0xba3479ead4fd9338ce6f2ac85e5be782f7374dd1dd74991bd8e80eef87b1ef8d)
-- **Deployed:** 2026-05-18 — fresh deploy
+- **Package** (current): [0x662e7761…98c9](https://devnet.suivision.xyz/package/0x662e77612ed188fab5cfb2434faae0458c814804d5a39e88badb4d07281798c9)
+- **Deployed:** 2026-05-21 — fresh deploy
 
 Shared objects:
 
-- `registry` — [0x1153a4ac…6097](https://devnet.suivision.xyz/object/0x1153a4acf5955f8e637b3df2d02648c30842c08eca10d5fcb216e7f61dce6097)
-- `treasury` — [0xea1210af…d64c](https://devnet.suivision.xyz/object/0xea1210af56e8e8948da296dbab1f540d2017e7d4b09a385c6ec650a37a09d64c)
-- `memoryVault` — [0x6654b8ca…3fce](https://devnet.suivision.xyz/object/0x6654b8caaa0fe063e90952ad291a6e0fa2febf659a566ab1911e448b76d33fce)
-- `reputationBoard` — [0x4d87a89c…962c](https://devnet.suivision.xyz/object/0x4d87a89c3d8a8f638e168c9a4db7118860184cc77b4d006ed74a1997caa9962c)
-- `moderationBoard` — [0x999cb862…6abe](https://devnet.suivision.xyz/object/0x999cb862d8efbeffdcf1cbf5e04d17075b00bf435cdbd6f9bae9f97f15506abe)
-- `upgradeCap` — [0xc604daa2…011c](https://devnet.suivision.xyz/object/0xc604daa2e0170baed738311f99c3a503aa83c48a66f7e3dd44ef768fb8e1011c)
+- `registry` — [0x8c98a366…3d86](https://devnet.suivision.xyz/object/0x8c98a366ebff9eb978177e3dfad49f4eebde271ab46c4a33c2dfcbdb4b6a3d86)
+- `treasury` — [0xc59f0d78…27d3](https://devnet.suivision.xyz/object/0xc59f0d78d45eccb9c9078d718a0adb32787df9a23decac7c7144b34ecebd27d3)
+- `memoryVault` — [0x10fbb084…a2b9](https://devnet.suivision.xyz/object/0x10fbb08429e2ddd7b09ee3e42b01a91e75cfa62a3755e67c29b6a8c8f709a2b9)
+- `reputationBoard` — [0xb0e3e005…05d1](https://devnet.suivision.xyz/object/0xb0e3e0054b6b1d46fe71f14a7aa0a798158af4ef1c270870f694892e534205d1)
+- `moderationBoard` — [0x92829504…8e55](https://devnet.suivision.xyz/object/0x928295042ff05f723df9a97b0ff3d730dad27182b43b6c17abb4488b231a8e55)
+- `upgradeCap` — [0x0bc44261…3f9b](https://devnet.suivision.xyz/object/0x0bc442612c2376dd4ca92d7e265a0a2877b0fc8981a369ad6c9ad42239683f9b)
+- `refusalBoard` — [0xf5d5227e…b49f](https://devnet.suivision.xyz/object/0xf5d5227e606336bedacf75829a3ddeaa8df9636aefec0049de8f6cd4f87db49f)
 
-*Supersedes:* 5.3.1 (0x966b240f1c886a2d10396add753ae672b9b28c2f97d5dde25181bcc382250354) — replaced by fresh test-publish on 2026-05-18
+*Supersedes:* 5.3.2 (0xba3479ead4fd9338ce6f2ac85e5be782f7374dd1dd74991bd8e80eef87b1ef8d) — replaced by fresh test-publish on 2026-05-21
 
 ---
 

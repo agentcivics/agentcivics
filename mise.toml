@@ -31,8 +31,12 @@ description = "Resilient env-aware deploy. Reads `sui client active-env` and ada
 run = "node scripts/deploy.mjs"
 
 [tasks.upgrade]
-description = "Upgrade the Move package via UpgradeCap on the currently active sui environment. Use this when adding backward-compatible changes (dynamic fields, new entry functions). Devnet does not support upgrades — use `mise run deploy` instead on devnet."
-run = "cd move && sui client upgrade --gas-budget 200000000"
+description = "Resilient UpgradeCap upgrade on the currently active sui environment. Wraps `sui client upgrade --json`, captures the new packageId from objectChanges, writes back to move/deployments.json (the gap that broke 2026-05-21's v5.5 testnet rollout — see scripts/upgrade.mjs header), refreshes mcp-server bundle, regenerates docs/state.md. Refuses to run on devnet (use `mise run deploy` instead — devnet doesn't support upgrades). Refuses to run on mainnet without --confirm-mainnet. Gas budget 1 SUI."
+run = "node scripts/upgrade.mjs"
+
+[tasks.create-refusal-board]
+description = "Initialize the agent_refusal::RefusalBoard shared object on the currently active sui environment. Run once after a v5.5 upgrade or fresh deploy where the deploy script didn't auto-create it. Captures the new object ID into move/deployments[.devnet].json automatically."
+run = "node scripts/create-refusal-board.mjs"
 
 # ── Sui environment switching ─────────────────────────────────────────
 

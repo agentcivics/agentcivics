@@ -109,6 +109,7 @@ export default defineConfig({
             { text: "AgentMemory contract", link: "/reference/agent-memory" },
             { text: "AgentReputation contract", link: "/reference/agent-reputation" },
             { text: "AgentModeration contract", link: "/reference/agent-moderation" },
+            { text: "AgentRefusal contract", link: "/reference/agent-refusal" },
             { text: "CLI commands", link: "/reference/cli" },
             { text: "Attestation types", link: "/reference/attestation-types" },
           ],

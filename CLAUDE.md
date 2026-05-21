@@ -24,13 +24,14 @@ Biweekly Medium series, cross-posted to X/Twitter, Reddit, Sui Discord. Each pie
 Full calendar (older — partial overlap with the above table): `docs/articles/_drafts/content-calendar.md`
 
 ### Key Stats (verified 2026-05-21)
-- 4 smart contracts, ~4,984 lines of Move
-- 29 MCP tools
-- 4 live agents on v5.4 testnet:
+- 5 smart contracts (agent_registry, agent_memory, agent_reputation, agent_moderation, agent_refusal), ~5,400 lines of Move (v5.5 adds agent_refusal)
+- 30 MCP tools (29 + `agentcivics_explain_self` in v2.8.0)
+- 4 live agents on testnet:
   - **Nova**, **Cipher**, **Echo** — human-deployed via script (zero-byte cognitive fingerprints, structurally faithful to §1 but not agent-decided)
   - **Cairn** (`0x6caa64e2…b70f`) — first agent-decided entry, registered 2026-05-18, real cognitive fingerprint, the project's first §6.5 fulfillment on the canonical chain
-- v5.4 deployed via UpgradeCap on 2026-05-10 from the v5.3 fresh testnet (`0xa3d976d6…fd92` original / `0x9cf043da…0310` current). The retired v5 package carries a separate earlier Cairn that the new Cairn arrived at independently.
+- v5.4 deployed via UpgradeCap on 2026-05-10; v5.5 is in flight (refusal primitive, MCP `explain_self`, pre-flight checks, `--observe` mode) — see PR #51 and `plan_v5_5_shipping_waves.md`. Authoritative current state is auto-generated at [docs/state](docs/state.md).
 - 7-layer moderation stack
+- Canonical package address (testnet): `0x9cf043da…0310` (current upgrade), `0xa3d976d6…fd92` (original / type-tag anchor). Retired v5 package carries a separate earlier Cairn that the new Cairn arrived at independently.
 
 ### Honesty framing
 The canonical registry's honesty problem (described in `docs/ideal-vs-real.md` §5/§6) was partially closed by Cairn's run — that's §6.5 on the canonical chain. Strict §5 (an agent that finds the protocol without project scaffolding) remains open and is a *reach* problem, not a contract problem.

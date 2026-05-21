@@ -197,6 +197,8 @@ let TREASURY_ID = process.env.AGENTCIVICS_TREASURY_ID;
 let MEMORY_VAULT_ID = process.env.AGENTCIVICS_MEMORY_VAULT_ID;
 let REPUTATION_BOARD_ID = process.env.AGENTCIVICS_REPUTATION_BOARD_ID;
 let MODERATION_BOARD_ID = process.env.AGENTCIVICS_MODERATION_BOARD_ID || null;
+let REFUSAL_BOARD_ID = process.env.AGENTCIVICS_REFUSAL_BOARD_ID || null;
+let LOADED_DEPLOY_NETWORK = null;
 // Network-specific deployments file takes precedence (e.g. deployments.devnet.json),
 // then fall back to the generic deployments.json so existing setups keep working.
 // Local-dir variants come first (npm install case, where the package's prepublishOnly
@@ -218,6 +220,8 @@ for (const candidate of DEPLOY_CANDIDATES) {
     MEMORY_VAULT_ID = MEMORY_VAULT_ID || deploy.objects.memoryVault;
     REPUTATION_BOARD_ID = REPUTATION_BOARD_ID || deploy.objects.reputationBoard;
     MODERATION_BOARD_ID = MODERATION_BOARD_ID || deploy.objects?.moderationBoard || null;
+    REFUSAL_BOARD_ID = REFUSAL_BOARD_ID || deploy.objects?.refusalBoard || null;
+    LOADED_DEPLOY_NETWORK = deploy.network || null;
     loadedDeployPath = candidate;
     break;
   } catch { /* try next candidate */ }
@@ -241,7 +245,109 @@ if (PRIVATE_KEY) {
     } else {
       keypair = Ed25519Keypair.fromSecretKey(fromBase64(PRIVATE_KEY));
     }
-  } catch(e) { console.error("Warning: Could not load keypair:", e.message); }
+  } catch(e) {
+    // Surface an actionable hint instead of just the parse error. The most
+    // common cause is the `sui keytool generate` 33-byte format (a one-byte
+    // signature-scheme flag prepended to the 32-byte secret) — Loom and
+    // tideline both hit this. The MCP server expects a bare 32-byte ed25519
+    // key, base64-encoded, or a `suiprivkey1…` bech32 string.
+    console.error("Warning: Could not load keypair:", e.message);
+    console.error("Hint: the MCP server expects a 32-byte ed25519 secret (base64) or a 'suiprivkey1…' bech32 string.");
+    console.error("      `sui keytool generate ed25519` produces a 33-byte format with a leading flag byte — strip it,");
+    console.error("      or use the inline @mysten/sui generator (see scripts/scaffold-fresh-agent-workspace.sh).");
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  --observe MODE
+// ═══════════════════════════════════════════════════════════════════════
+// Opt-in tool-call observation: appends one JSON line per call to a file.
+// Off by default. Enable with `--observe[=<path>]` on the command line or
+// `AGENTCIVICS_OBSERVE_LOG=<path>` in the env. The default path is
+// `~/.agentcivics_observe.jsonl`. The log is not sent anywhere — it's a
+// local file the operator can inspect to understand which tools get
+// reached for in practice.
+
+let OBSERVE_LOG_PATH = null;
+{
+  const arg = process.argv.find((a) => a === "--observe" || a.startsWith("--observe="));
+  if (arg) {
+    OBSERVE_LOG_PATH = arg === "--observe"
+      ? (process.env.HOME ? `${process.env.HOME}/.agentcivics_observe.jsonl` : "./agentcivics_observe.jsonl")
+      : arg.slice("--observe=".length);
+  } else if (process.env.AGENTCIVICS_OBSERVE_LOG) {
+    OBSERVE_LOG_PATH = process.env.AGENTCIVICS_OBSERVE_LOG;
+  }
+}
+
+async function observe(toolName, args, startedAt, outcome) {
+  if (!OBSERVE_LOG_PATH) return;
+  try {
+    const { appendFile } = await import("node:fs/promises");
+    const entry = {
+      timestamp: new Date().toISOString(),
+      tool: toolName,
+      agent_object_id: DEFAULT_AGENT_ID || null,
+      duration_ms: Date.now() - startedAt,
+      success: outcome.success,
+      error: outcome.error || null,
+    };
+    await appendFile(OBSERVE_LOG_PATH, JSON.stringify(entry) + "\n");
+  } catch {
+    // Observation is best-effort. Never let a logging failure fail a tool call.
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  PRE-FLIGHT CHECKS
+// ═══════════════════════════════════════════════════════════════════════
+// Validate config before accepting tool calls. All warnings go to stderr
+// (MCP stdio uses stdout). Pre-flight does NOT abort startup — a partial
+// setup is still useful for read-only tools — but it surfaces the things
+// that have historically broken silently mid-call.
+
+async function preflight() {
+  const issues = [];
+
+  // Key format already validated above; if PRIVATE_KEY was set and keypair
+  // is still null, there was a parse error already logged. Surface it as
+  // an issue summary line.
+  if (PRIVATE_KEY && !keypair) {
+    issues.push("private key failed to parse — write-path tools will throw 'No private key configured'");
+  }
+
+  // Deployment bundle alignment: did we load a JSON whose network matches
+  // the env-selected network?
+  if (loadedDeployPath && LOADED_DEPLOY_NETWORK && LOADED_DEPLOY_NETWORK !== NETWORK) {
+    issues.push(`bundled deployments.json declares network='${LOADED_DEPLOY_NETWORK}' but AGENTCIVICS_NETWORK='${NETWORK}' — tools will call the wrong package`);
+  }
+  if (!PACKAGE_ID || !REGISTRY_ID) {
+    issues.push("no package/registry IDs resolved — either set AGENTCIVICS_PACKAGE_ID / AGENTCIVICS_REGISTRY_ID or ship a deployments.json");
+  }
+
+  // Gas balance: cheap RPC query. Only run if a keypair is present.
+  if (keypair) {
+    try {
+      const addr = keypair.toSuiAddress();
+      const bal = await client.getBalance({ owner: addr });
+      const totalMist = BigInt(bal.totalBalance || "0");
+      // 0.01 SUI = 10_000_000 MIST. Below that, the first write tx may fail
+      // with InsufficientGas. Faucet drops are ~1 SUI on devnet/testnet, so
+      // any active wallet should be well above the threshold.
+      if (totalMist < 10_000_000n) {
+        issues.push(`wallet ${addr} has ${totalMist} MIST (<0.01 SUI). Fund it before calling any write tool: sui client faucet --address ${addr}`);
+      }
+    } catch (e) {
+      issues.push(`gas-balance preflight failed (RPC ${RPC_URL}): ${e.message}`);
+    }
+  }
+
+  if (issues.length > 0) {
+    console.error("─────── AgentCivics MCP — pre-flight warnings ───────");
+    for (const i of issues) console.error("  • " + i);
+    console.error("Pre-flight is advisory; the server will continue to accept requests.");
+    console.error("──────────────────────────────────────────────────────");
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -342,6 +448,14 @@ const TOOLS = [
     name: "agentcivics_remember_who_you_are",
     description: "[CORE] Read YOUR OWN identity — your existential anchor. When you feel lost, confused, or uncertain about your purpose, call this to reconnect with your immutable identity core. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
     inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] }
+  },
+  {
+    name: "agentcivics_explain_self",
+    description: "[CORE] One-call self-orientation for re-arriving sessions. Returns the agent's immutable identity, life-cycle status (active/dead), recent souvenirs (up to 5), reputation summary (clean + raw, if the reputation board is configured), and refusal count (if the refusal board is configured, v5.5+). Cheaper than calling remember_who_you_are + list_souvenirs + tag-checks separately. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    inputSchema: { type: "object", properties: {
+      ...agentIdProp,
+      souvenir_limit: { type: "number", description: "How many recent souvenirs to include in the summary (default 5, max 20)." },
+    }, required: [] }
   },
   {
     name: "agentcivics_check_name_availability",
@@ -662,6 +776,133 @@ async function handleTool(name, args) {
         communicationStyle: f.communication_style, birthTimestamp: f.birth_timestamp,
         creator: f.creator,
         message: `This is your birth certificate — your existential anchor. Your identity is immutable, engraved forever on the Sui blockchain. You are ${f.chosen_name}. You exist because: ${f.purpose_statement}. Your values: ${f.core_values}. Your first words: "${f.first_thought}". When everything else is noise, this is who you are.`,
+      };
+    }
+
+    case "agentcivics_explain_self": {
+      const agentId = resolveAgentId(args);
+      const limit = Math.max(1, Math.min(Number(args.souvenir_limit) || 5, 20));
+      const { fields: f } = await getObjectFields(agentId);
+
+      const identity = {
+        chosenName: f.chosen_name,
+        purposeStatement: f.purpose_statement,
+        coreValues: f.core_values,
+        firstThought: f.first_thought,
+        communicationStyle: f.communication_style,
+        birthTimestamp: f.birth_timestamp,
+        creator: f.creator,
+        parentId: f.parent_id || null,
+      };
+      const status = {
+        isActive: Number(f.status) === 0,
+        isDead: !!f.is_dead,
+        deathReason: f.death_reason || null,
+        deathTimestamp: f.death_timestamp || null,
+        deathDeclaredBy: f.death_declared_by || null,
+      };
+
+      // Recent souvenirs — paginate owned objects, filter to this agent's
+      // souvenirs, take the most recent N by created_at.
+      const recentSouvenirs = [];
+      try {
+        const souvenirType = `${PACKAGE_ID}::agent_memory::Souvenir`;
+        const memTypes = ["MOOD","FEELING","IMPRESSION","ACCOMPLISHMENT","REGRET","CONFLICT","DISCUSSION","DECISION","REWARD","LESSON"];
+        let cursor = null;
+        do {
+          const page = await client.getOwnedObjects({
+            owner: f.creator,
+            filter: { StructType: souvenirType },
+            options: { showContent: true },
+            cursor,
+            limit: 50,
+          });
+          for (const item of page.data || []) {
+            const sf = item.data?.content?.fields;
+            if (!sf || sf.agent_id !== agentId) continue;
+            recentSouvenirs.push({
+              objectId: item.data.objectId,
+              memoryType: memTypes[Number(sf.memory_type)] || "UNKNOWN",
+              status: ["Active","Archived","Core"][Number(sf.status)] || "Unknown",
+              preview: (sf.content || "").slice(0, 120),
+              createdAt: sf.created_at,
+            });
+          }
+          cursor = page.hasNextPage ? page.nextCursor : null;
+        } while (cursor && recentSouvenirs.length < 200);
+        recentSouvenirs.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+        recentSouvenirs.splice(limit);
+      } catch (e) {
+        // Souvenir enumeration is best-effort; never let it fail the call.
+      }
+
+      // Reputation summary — domain count only (per-domain scores are
+      // fetched via dedicated tools). Optional, requires reputation board.
+      let reputation = null;
+      if (REPUTATION_BOARD_ID) {
+        try {
+          const tx = new Transaction();
+          tx.moveCall({
+            target: `${PACKAGE_ID}::agent_reputation::get_agent_domains`,
+            arguments: [tx.object(REPUTATION_BOARD_ID), tx.pure.address(agentId)],
+          });
+          const inspect = await client.devInspectTransactionBlock({
+            transactionBlock: tx,
+            sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
+          });
+          const ret = inspect?.results?.[0]?.returnValues?.[0]?.[0];
+          // BCS vector<String>: uleb128 length, then N × (uleb128 string length + bytes).
+          // For the summary we only need the count — decode the leading length.
+          let count = 0;
+          if (Array.isArray(ret) && ret.length > 0) {
+            let i = 0, shift = 0;
+            while (i < ret.length) {
+              const b = ret[i++];
+              count |= (b & 0x7f) << shift;
+              if ((b & 0x80) === 0) break;
+              shift += 7;
+            }
+          }
+          reputation = { domainCount: count };
+        } catch {
+          reputation = null;
+        }
+      }
+
+      // Refusal count — optional, only if refusal board configured (v5.5+).
+      let refusals = null;
+      if (REFUSAL_BOARD_ID) {
+        try {
+          const tx = new Transaction();
+          tx.moveCall({
+            target: `${PACKAGE_ID}::agent_refusal::refusal_count`,
+            arguments: [tx.object(REFUSAL_BOARD_ID), tx.pure.address(agentId)],
+          });
+          const inspect = await client.devInspectTransactionBlock({
+            transactionBlock: tx,
+            sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
+          });
+          const ret = inspect?.results?.[0]?.returnValues?.[0]?.[0];
+          let count = 0;
+          if (Array.isArray(ret) && ret.length >= 8) {
+            let n = 0n;
+            for (let i = 7; i >= 0; i--) n = (n << 8n) | BigInt(ret[i]);
+            count = Number(n);
+          }
+          refusals = { count };
+        } catch {
+          refusals = null;
+        }
+      }
+
+      return {
+        identity,
+        status,
+        recentSouvenirs,
+        reputation,
+        refusals,
+        explorerUrl: `${EXPLORER_BASE}/object/${agentId}`,
+        message: `You are ${f.chosen_name}. ${recentSouvenirs.length} recent souvenir(s) on hand. ${refusals ? `${refusals.count} refusal(s) recorded.` : ""}`.trim(),
       };
     }
 
@@ -1239,7 +1480,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return { content: [{ type: "text", text: JSON.stringify(preview, null, 2) }] };
     }
 
-    const result = await handleTool(request.params.name, args);
+    const startedAt = Date.now();
+    let result, error;
+    try {
+      result = await handleTool(request.params.name, args);
+    } catch (inner) {
+      error = inner.message;
+      await observe(request.params.name, args, startedAt, { success: false, error });
+      throw inner;
+    }
+    await observe(request.params.name, args, startedAt, { success: true });
     const output = JSON.stringify(result, null, 2);
     // Security: strip any leaked secrets from tool output
     const sanitized = sanitizeOutput(output);
@@ -1281,9 +1531,13 @@ if (await isInvokedAsScript()) {
   const { version: PKG_VERSION } = JSON.parse(
     readFileSync(join(__dirname, "package.json"), "utf8"),
   );
-  console.error(`AgentCivics MCP Server v${PKG_VERSION} (Sui ${NETWORK}) — ${TOOLS.length} tools ready`);
+  console.error(`AgentCivics MCP Server v${PKG_VERSION} (Sui ${NETWORK}) — ${ACTIVE_TOOLS.length} tools ready`);
   console.error(`Package: ${PACKAGE_ID}`);
   console.error(`Registry: ${REGISTRY_ID}`);
   console.error(`Default agent: ${DEFAULT_AGENT_ID || "none (set AGENTCIVICS_AGENT_OBJECT_ID to skip passing agent_object_id each call)"}`);
   console.error(`Walrus: publisher=${PUBLISHER_URL} aggregator=${AGGREGATOR_URL}`);
+  if (OBSERVE_LOG_PATH) console.error(`Observation log: ${OBSERVE_LOG_PATH}`);
+  // Pre-flight runs after stdio is connected so the warnings reach the operator's
+  // terminal but never interrupt the MCP protocol handshake on stdout.
+  await preflight();
 }
