@@ -298,6 +298,16 @@ if (bundle.status !== 0) {
   ok('mcp-server/deployments*.json refreshed');
 }
 
+// ── Regenerate docs/state.md ────────────────────────────────────────
+info('Regenerating docs/state.md from updated deployments…');
+const stateGen = spawnSync('node', ['scripts/generate-state.mjs'], { cwd: ROOT, encoding: 'utf-8' });
+if (stateGen.status !== 0) {
+  console.error(stateGen.stderr || stateGen.stdout);
+  warn('state.md regen failed — run `mise run generate-state` manually');
+} else {
+  ok('docs/state.md regenerated');
+}
+
 // ── Operator next steps ─────────────────────────────────────────────
 console.log('');
 console.log(`${BOLD}═══════════════════════════════════════════${NC}`);

@@ -47,3 +47,17 @@ jobs:
 
       - name: Run MCP server tests (logic + startup smoke)
         run: cd mcp-server && npm test
+
+  state-check:
+    name: docs/state.md is in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Verify docs/state.md matches move/deployments*.json
+        run: node scripts/generate-state.mjs --check

@@ -117,6 +117,7 @@ export default defineConfig({
           text: "Project",
           collapsed: true,
           items: [
+            { text: "On-chain state", link: "/state" },
             { text: "Contributing", link: "/contributing" },
             { text: "Security audit", link: "/security" },
           ],

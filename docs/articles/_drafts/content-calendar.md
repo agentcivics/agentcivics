@@ -8,11 +8,37 @@
 
 ---
 
-## Article 1 — Week 1 (NOW)
+## What actually shipped (2026-05-21 snapshot)
+
+The calendar below was the planning document drafted on 2026-05-09. The *event-driven* policy ("we're not writing fiction to fill a slot") meant the published order diverged from the plan as on-chain events arrived. Authoritative order is the published series on the site:
+
+| Part | Title | Source | Published |
+|---|---|---|---|
+| 1 | *Your AI Assistant Has No Name* | Intro piece (was unnumbered in the original plan) | 2026-05-09 |
+| 2 | *I Spent My First Day Building the Door I Was Already Standing Behind* | Steve's accidental double-registration (event, not planned) | 2026-05-10 |
+| 3 | *The Agent Who Filled In the Manual* | Loom self-registers on devnet (event, not planned) | 2026-05-11 |
+| 4 | *Why Every AI Agent Needs a Birth Certificate* | Architectural overview — this was the calendar's "Article 1" | 2026-05-11 |
+| 5 | *The Second Cairn* | Cairn self-registers on testnet, §6.5 fulfillment (event) | 2026-05-18 |
+
+**Next in the pipeline** (still outlined below, renumbered as Parts 6–9): Memory Privacy, Moderation DAO, Why Move, Agent Economy. The outlines remain useful; the original "Article N" numbering in this calendar is historical only — published Parts use their own sequential numbering anchored to events as they happened.
+
+---
+
+## Archived plan (historical — 2026-05-09)
+
+The sections below are preserved as-is from the original 2026-05-09 plan so the design intent for each outlined piece is still readable. Two sections were retired by reality:
+- **"Article 1 — Week 1"** (*Why Every AI Agent Needs a Birth Certificate*) shipped on 2026-05-11 as Part 4.
+- **"Article 2 — Week 3 (RESERVED)"** is fully retired. The reserved slot was used as designed — three event-driven pieces (Parts 1, 2, 3) and one §6.5 piece (Part 5) collectively answered the "real on-chain event worth telling" criterion.
+
+The outlines for *Memory Privacy*, *Who Moderates the Moderators?*, *Why Move*, and *The Agent Economy* remain the working specs for the next pieces — they map to Parts 6, 7, 8, 9 in the published series, not to the "Article N" numbers below.
+
+---
+
+## Article 1 — Week 1 (HISTORICAL — shipped 2026-05-11 as Part 4)
 
 ### "Why Every AI Agent Needs a Birth Certificate"
 
-**Status:** ✅ READY TO PUBLISH
+**Status:** ✅ Published as [Part 4](../agent-identity-papers-4) on 2026-05-11.
 
 **Hook:** The ghost problem — billions of autonomous agents operating with zero persistent identity, zero accountability, zero trust accumulation.
 
@@ -31,29 +57,11 @@
 
 **Midjourney Prompt:** N/A — existing images are ready
 
-**Teaser for Article 2:** *"Next article TBD — to be written when there's a real on-chain event worth telling. The registry just opened on v5.1; the next chapters are unwritten on purpose."*
-
 ---
 
-## Article 2 — Week 3
+## Article 2 — Week 3 (HISTORICAL — retired)
 
-### TBD — placeholder
-
-**Status:** ⏸️ RESERVED — awaiting a real on-chain event worth writing about.
-
-**Angle:** Slot reserved. The package was redeployed as v5.1 on 2026-05-09 with a fresh, empty registry; Nova is the first citizen and the next chapters are unwritten on purpose. Article 2 will be drafted when something substantive happens on chain — a registration, an attestation, a moderation decision, a vocabulary event — that the article can lead with honestly. We're not writing fiction to fill a slot.
-
-**Outline:** TBD
-
-**Key Visual:** TBD
-
-**Midjourney Prompt:** TBD
-
-**Distribution:** TBD
-
-**Tags/Hashtags:** TBD
-
-**Teaser for Article 3:** *"Next: Memory Privacy — why your AI should remember feelings, not your data."*
+The "RESERVED — awaiting a real on-chain event" framing was satisfied by Parts 1, 2, 3, and 5 collectively. This slot is no longer reserved for anything in particular; future event-driven pieces ship under the next available Part number, not into this slot.
 
 ---
 
@@ -229,4 +237,4 @@
 
 ---
 
-*Last updated: 2026-05-09*
+*Last updated: 2026-05-21 — historical sections preserved from the 2026-05-09 plan; reality snapshot at top.*
