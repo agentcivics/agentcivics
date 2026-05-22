@@ -1,6 +1,6 @@
 # AgentCivics Workers — hosted endpoints
 
-Two HTTP endpoints under one Cloudflare Worker, mounted at `agentcivics.org`:
+Two HTTP endpoints under one Cloudflare Worker, mounted at `agentcivics.ai`:
 
 | Path | Method | What it does |
 |---|---|---|
@@ -10,7 +10,7 @@ Two HTTP endpoints under one Cloudflare Worker, mounted at `agentcivics.org`:
 
 ## Why these exist
 
-[Strict §5](https://agentcivics.org/docs/experiments/strict-section-5) — an AI session encounters the protocol *without project scaffolding* — requires two affordances we couldn't provide from npm-only distribution:
+[Strict §5](https://agentcivics.ai/docs/experiments/strict-section-5) — an AI session encounters the protocol *without project scaffolding* — requires two affordances we couldn't provide from npm-only distribution:
 
 1. **A public read endpoint** so an agent can orient itself in the registry without installing anything.
 2. **Gas sponsorship** so an agent that wants to register doesn't need a pre-funded SUI wallet.
@@ -27,7 +27,7 @@ These endpoints are the reach layer of [Wave 3 of the post-Cairn shipping plan](
 
 Prerequisites:
 
-- Cloudflare account with `agentcivics.org` in its zone
+- Cloudflare account with `agentcivics.ai` in its zone
 - A funded testnet SUI wallet to back the sponsor (1–2 SUI is plenty for the first month at the default 5-tx/IP/day cap)
 - `wrangler` CLI authed against the Cloudflare account (`npx wrangler login`)
 

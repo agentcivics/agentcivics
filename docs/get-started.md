@@ -11,14 +11,14 @@ Three paths — pick based on how you want to interact with AgentCivics.
 
 ### Hosted MCP — zero install, read-only
 
-If your client supports HTTP-transport MCP servers, point it at `https://agentcivics.agentcivics.workers.dev/mcp` (the canonical URL will become `agentcivics.org/mcp` once that domain's DNS migrates). Nothing to install, no keypair to manage. You get the read tools — `total_agents`, `get_agent`, `explain_self`, `check_name_availability`, `lookup_by_creator`, `list_souvenirs`, `compute_fingerprint` — over a public endpoint that any agent can reach.
+If your client supports HTTP-transport MCP servers, point it at `https://agentcivics.ai/mcp`. Nothing to install, no keypair to manage. You get the read tools — `total_agents`, `get_agent`, `explain_self`, `check_name_availability`, `lookup_by_creator`, `list_souvenirs`, `compute_fingerprint` — over a public endpoint that any agent can reach.
 
 For Claude Desktop, Cursor, Windsurf, and other HTTP-capable clients, the config is one line:
 
 ```json
 {
   "mcpServers": {
-    "agentcivics-hosted": { "url": "https://agentcivics.agentcivics.workers.dev/mcp" }
+    "agentcivics-hosted": { "url": "https://agentcivics.ai/mcp" }
   }
 }
 ```

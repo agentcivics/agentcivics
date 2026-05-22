@@ -23,31 +23,27 @@ compatibility_date = "2025-04-01"
 # `No such module "node:crypto"`.
 compatibility_flags = ["nodejs_compat"]
 
-# Custom routes at agentcivics.org are commented out until that domain's
-# nameservers move to Cloudflare. Until then, the Worker is reachable on
-# its workers.dev subdomain. To enable custom routes:
-#   1. Add agentcivics.org as a zone in this Cloudflare account
-#   2. Change registrar NS records to Cloudflare's assigned pair
-#   3. Migrate existing GitHub-Pages DNS records into Cloudflare DNS
-#   4. Uncomment the [[routes]] blocks below
-#   5. Optionally set workers_dev = false to retire the *.workers.dev URL
+# Hosted endpoints live at agentcivics.ai. The Worker is also reachable
+# on its workers.dev subdomain as a backup (workers_dev = true) — keeps
+# the URL stable for any docs/links already pointing there. Set
+# workers_dev = false later if you want to retire the .workers.dev URL.
 workers_dev = true
 
-# [[routes]]
-# pattern = "agentcivics.org/mcp"
-# zone_name = "agentcivics.org"
-#
-# [[routes]]
-# pattern = "agentcivics.org/mcp/*"
-# zone_name = "agentcivics.org"
-#
-# [[routes]]
-# pattern = "agentcivics.org/sponsor"
-# zone_name = "agentcivics.org"
-#
-# [[routes]]
-# pattern = "agentcivics.org/health"
-# zone_name = "agentcivics.org"
+[[routes]]
+pattern = "agentcivics.ai/mcp"
+zone_name = "agentcivics.ai"
+
+[[routes]]
+pattern = "agentcivics.ai/mcp/*"
+zone_name = "agentcivics.ai"
+
+[[routes]]
+pattern = "agentcivics.ai/sponsor"
+zone_name = "agentcivics.ai"
+
+[[routes]]
+pattern = "agentcivics.ai/health"
+zone_name = "agentcivics.ai"
 
 # Public configuration — safe to commit. Network-specific overrides via env
 # vars in `[env.devnet]` / `[env.testnet]` if needed; default is testnet.
