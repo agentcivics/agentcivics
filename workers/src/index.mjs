@@ -15,6 +15,7 @@
 import { handleMcp } from './mcp.mjs';
 import { handleSponsor } from './sponsor.mjs';
 import { getRecentEvents } from './observability.mjs';
+import { handleDiscovery } from './discovery.mjs';
 import deployment from './deployment.mjs';
 
 const PKG_VERSION = '0.1.0';
@@ -45,6 +46,12 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
+
+    // Discovery surface (/, /llms.txt, /.well-known/agentcivics.json,
+    // /sitemap.xml, /robots.txt). Returns null when the path isn't a
+    // discovery one — fall through to the API handlers below.
+    const discoveryResponse = handleDiscovery(request, env, deployment);
+    if (discoveryResponse) return discoveryResponse;
 
     if (url.pathname === '/health' && request.method === 'GET') {
       // Report endpoints relative to the request's actual origin — that

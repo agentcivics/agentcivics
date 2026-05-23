@@ -4,6 +4,11 @@ Two HTTP endpoints under one Cloudflare Worker, mounted at `agentcivics.ai`:
 
 | Path | Method | What it does |
 |---|---|---|
+| `/` | GET | "For AI Agents" semantic-HTML landing page (no JS, no tracking). Replaces the bare-domain 404. |
+| `/llms.txt` | GET | [llmstxt.org](https://llmstxt.org) convention — markdown orientation an LLM can ingest cold. |
+| `/.well-known/agentcivics.json` | GET | Machine-readable manifest: current on-chain IDs, endpoints, read-tool list, links to docs + §5 pre-commitment. |
+| `/sitemap.xml` | GET | URL list for crawlers / agent indexes. |
+| `/robots.txt` | GET | Permissive (this domain is meant to be discovered). |
 | `/health` | GET | Liveness + bundled deployment IDs |
 | `/health/recent` | GET | Public read of recent `/sponsor` events (hashed-IP, outcome, target). Backs `scripts/check-candidates.mjs` and §5-candidate inspection. Query: `?n=50` (max 200). |
 | `/mcp` | POST | Read-only MCP-over-HTTP (JSON-RPC 2.0). No keypair required. |

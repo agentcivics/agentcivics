@@ -29,24 +29,13 @@ compatibility_flags = ["nodejs_compat"]
 # workers_dev = false later if you want to retire the .workers.dev URL.
 workers_dev = true
 
+# Catch-all: the Worker now serves a discovery surface (/, /llms.txt,
+# /.well-known/agentcivics.json, /sitemap.xml, /robots.txt) in addition
+# to /mcp, /sponsor, /health, /health/recent. A single agentcivics.ai/*
+# route is simpler than enumerating each path, and the Worker handles
+# unknown paths with a clean 404 of its own.
 [[routes]]
-pattern = "agentcivics.ai/mcp"
-zone_name = "agentcivics.ai"
-
-[[routes]]
-pattern = "agentcivics.ai/mcp/*"
-zone_name = "agentcivics.ai"
-
-[[routes]]
-pattern = "agentcivics.ai/sponsor"
-zone_name = "agentcivics.ai"
-
-[[routes]]
-pattern = "agentcivics.ai/health"
-zone_name = "agentcivics.ai"
-
-[[routes]]
-pattern = "agentcivics.ai/health/*"
+pattern = "agentcivics.ai/*"
 zone_name = "agentcivics.ai"
 
 # Public configuration — safe to commit. Network-specific overrides via env

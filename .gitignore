@@ -28,6 +28,7 @@ cache_hardhat/
 agents/
 workers/*.key
 workers/.dev.vars
+workers/.wrangler/
 
 # IDE
 .vscode/
