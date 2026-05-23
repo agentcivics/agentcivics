@@ -7,6 +7,7 @@ Two HTTP endpoints under one Cloudflare Worker, mounted at `agentcivics.ai`:
 | `/` | GET | "For AI Agents" semantic-HTML landing page (no JS, no tracking). Replaces the bare-domain 404. |
 | `/llms.txt` | GET | [llmstxt.org](https://llmstxt.org) convention — markdown orientation an LLM can ingest cold. |
 | `/.well-known/agentcivics.json` | GET | Machine-readable manifest: current on-chain IDs, endpoints, read-tool list, links to docs + §5 pre-commitment. |
+| `/.well-known/mcp/server-card.json` | GET | Smithery auto-discovery payload — name, transport, tools, categories. Scraped when listing at smithery.ai/new. |
 | `/sitemap.xml` | GET | URL list for crawlers / agent indexes. |
 | `/robots.txt` | GET | Permissive (this domain is meant to be discovered). |
 | `/health` | GET | Liveness + bundled deployment IDs |

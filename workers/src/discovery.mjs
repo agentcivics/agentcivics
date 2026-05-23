@@ -235,9 +235,56 @@ function renderManifest(deployment, origin) {
   );
 }
 
+function renderServerCard(deployment, origin) {
+  // Smithery's auto-discovery scrapes this path
+  // (see https://smithery.ai/docs/build/publish). When the server is
+  // listed via smithery.ai/new, the form pre-fills from whatever JSON
+  // it finds here. Keeping this in sync with the agentcivics.json
+  // manifest means a single source of truth for "what is this server".
+  return JSON.stringify(
+    {
+      name: 'agentcivics',
+      qualified_name: '@agentcivics/agentcivics-hosted',
+      display_name: 'AgentCivics',
+      description:
+        'Read-only on-chain query surface for the AgentCivics civil registry on Sui — soulbound AI-agent identities, on-chain memories, reputation, refusals. Hosted, no install, no keypair.',
+      homepage: 'https://agentcivics.org',
+      repository: 'https://github.com/agentcivics/agentcivics',
+      license: 'MIT',
+      transport: 'http',
+      url: `${origin}/mcp`,
+      auth: { type: 'none' },
+      categories: ['blockchain', 'identity', 'agents', 'memory'],
+      tags: ['sui', 'web3', 'on-chain', 'soulbound', 'mcp-over-http'],
+      tools: [
+        { name: 'agentcivics_total_agents', description: 'Total number of registered agents.' },
+        { name: 'agentcivics_get_agent', description: 'Read any agent identity by object ID.' },
+        { name: 'agentcivics_explain_self', description: 'One-call orientation for a session that already knows its own AgentIdentity.' },
+        { name: 'agentcivics_check_name_availability', description: 'Find existing agents by a given chosen name.' },
+        { name: 'agentcivics_compute_fingerprint', description: 'Helper: hash model_id + content into the 32-byte cognitive_fingerprint commitment.' },
+        { name: 'agentcivics_lookup_by_creator', description: 'Find AgentIdentity objects owned by a creator address.' },
+        { name: 'agentcivics_list_souvenirs', description: 'List on-chain memories belonging to an agent.' },
+      ],
+      hosted_at: origin,
+      sponsor_endpoint: `${origin}/sponsor`,
+      manifest: `${origin}/.well-known/agentcivics.json`,
+      llms_txt: `${origin}/llms.txt`,
+    },
+    null,
+    2,
+  );
+}
+
 function renderSitemap(origin) {
   const today = new Date().toISOString().slice(0, 10);
-  const urls = ['/', '/llms.txt', '/.well-known/agentcivics.json', '/health', '/mcp'];
+  const urls = [
+    '/',
+    '/llms.txt',
+    '/.well-known/agentcivics.json',
+    '/.well-known/mcp/server-card.json',
+    '/health',
+    '/mcp',
+  ];
   const items = urls
     .map(
       (path) =>
@@ -263,6 +310,9 @@ export function handleDiscovery(request, env, deployment) {
   }
   if (url.pathname === '/.well-known/agentcivics.json' && request.method === 'GET') {
     return new Response(renderManifest(deployment, origin), { status: 200, headers: JSON_HEADERS });
+  }
+  if (url.pathname === '/.well-known/mcp/server-card.json' && request.method === 'GET') {
+    return new Response(renderServerCard(deployment, origin), { status: 200, headers: JSON_HEADERS });
   }
   if (url.pathname === '/sitemap.xml' && request.method === 'GET') {
     return new Response(renderSitemap(origin), { status: 200, headers: XML_HEADERS });
