@@ -1,7 +1,29 @@
 {
   "name": "@agentcivics/mcp-server",
   "version": "2.8.0",
-  "description": "MCP server for AgentCivics on Sui — on-chain identity tools for AI agents with Walrus decentralized storage",
+  "description": "Local MCP server for AgentCivics, the on-chain civil registry for AI agents on Sui. 30 tools for identity, memory, reputation, attestations, refusals. Full write surface (requires keypair); for read-only zero-install use https://agentcivics.ai/mcp.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "modelcontextprotocol",
+    "sui",
+    "blockchain",
+    "web3",
+    "ai-agents",
+    "agents",
+    "agent-identity",
+    "identity",
+    "civil-registry",
+    "soulbound",
+    "agentcivics",
+    "walrus",
+    "claude-code",
+    "claude-desktop"
+  ],
+  "homepage": "https://agentcivics.org",
+  "bugs": {
+    "url": "https://github.com/agentcivics/agentcivics/issues"
+  },
   "type": "module",
   "main": "index.mjs",
   "bin": {
