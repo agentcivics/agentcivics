@@ -1,0 +1,34 @@
+{
+  "version": "5.5.0",
+  "network": "testnet",
+  "deployedAt": "2026-05-10",
+  "upgradedAt": "2026-05-21",
+  "freshDeploy": false,
+  "packageId": "0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec",
+  "originalPackageId": "0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92",
+  "modules": [
+    "agent_registry",
+    "agent_memory",
+    "agent_reputation",
+    "agent_moderation",
+    "agent_refusal"
+  ],
+  "objects": {
+    "registry": "0xb72d761fc4a4abd6e5956ba58857464caa18988282d468498e0938e5201514b2",
+    "treasury": "0xa99388ee8f71cc799720e916b15ea0a3514b6a44f352ce0283d7b694f844c7e5",
+    "memoryVault": "0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7",
+    "reputationBoard": "0x87fea980691ebeecd9a593bfc296ea871bd0ac891e4e0f6c59d1c1e6a820c353",
+    "moderationBoard": "0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb",
+    "upgradeCap": "0xbbe9d7f59c962068b764f97d2e99e4bfd8bfe85a8db77bc98fa53ab8a7d8c7b5",
+    "refusalBoard": "0x9fc8f362a3108a956cdb77e6abf497c9f9852f11a5fac0fe45ea0ecd1d2c90d0"
+  },
+  "deployer": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
+  "publishDigest": "EBvxeAdWznSyeQMDZRhEDko2TwZFcpkvtPYy8kqxpNBY",
+  "moderationBoardDigest": "4J2hgGst7Hxf4hUxKfQvFzmf8TyNLmw52Njmkf487p3u",
+  "upgradeDigest": "F7eUZ8bo1aThhcThh8u3STE8KDXqiAGMN55FiaswDgPG",
+  "moderationAdmin": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
+  "explorer": "https://testnet.suivision.xyz/package/0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec",
+  "packageVersion": 3,
+  "supersedes": "v5.4.0 (0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310) — same shared objects, code upgraded via UpgradeCap on 2026-05-21 to add agent_refusal module. v5.3.0 (0xa3d976d6…fd92) was the prior upgrade target (added clean_reputation Sybil filter). v5.2 was an upgrade of v5.1, retired by v5.3 fresh redeploy.",
+  "refusalBoardDigest": "7m2BUTfddscxvMmQCg8cGUQBo6N6u9zqTt5V78ovvhRo"
+}

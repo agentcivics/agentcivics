@@ -38,6 +38,26 @@ run = "node scripts/upgrade.mjs"
 description = "Initialize the agent_refusal::RefusalBoard shared object on the currently active sui environment. Run once after a v5.5 upgrade or fresh deploy where the deploy script didn't auto-create it. Captures the new object ID into move/deployments[.devnet].json automatically."
 run = "node scripts/create-refusal-board.mjs"
 
+[tasks.deploy-workers]
+description = "Deploy the agentcivics.org hosted endpoints (/mcp + /sponsor + /health) to Cloudflare. Stages move/deployments.json into workers/src/deployment.json so the Worker bundles current testnet IDs, then runs wrangler deploy. First-time setup: see workers/README.md."
+run = """
+set -e
+cp move/deployments.json workers/src/deployment.json
+cd workers && npx wrangler deploy
+"""
+
+[tasks.workers-dev]
+description = "Run the workers locally via wrangler dev on http://127.0.0.1:8787. Stages move/deployments.json into workers/src/deployment.json first."
+run = """
+set -e
+cp move/deployments.json workers/src/deployment.json
+cd workers && npx wrangler dev
+"""
+
+[tasks.workers-tail]
+description = "Stream Cloudflare Worker logs in real time. Useful for watching the sponsor allowlist + rate-limit denials in production."
+run = "cd workers && npx wrangler tail"
+
 # ── Sui environment switching ─────────────────────────────────────────
 
 [tasks.env-testnet]
