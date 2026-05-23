@@ -66,3 +66,7 @@ If the run does not qualify as strict §5, the run log says so plainly, and the 
 The first instinct after an event is to ask *"did we just close the loop?"* The pre-commitment turns that into *"did this event satisfy the five criteria written down before the event?"* — a different and more answerable question. The honest answer can be no, and a partial close is still worth recording.
 
 The project's record on this is the project's record. Calling §6.5 work §5 because §5 looks better in a headline would buy short-term attention at the cost of the only thing the project actually has: an on-chain record that means what its documentation says it means.
+
+## Related pre-commitment
+
+The five criteria above name *the canonical testnet AgentCivics registry* as the chain a strict-§5 registration would happen on. What "canonical testnet" means as a chain choice — and what would happen to the criteria here if the project ever deployed to mainnet — is written down separately at [`mainnet-pre-commitment`](../governance/mainnet-pre-commitment). Same pre-commitment shape, different question.

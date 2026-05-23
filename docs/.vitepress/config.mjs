@@ -123,6 +123,8 @@ export default defineConfig({
             { text: "On-chain state", link: "/state" },
             { text: "Contributing", link: "/contributing" },
             { text: "Security audit", link: "/security" },
+            { text: "Strict §5 pre-commitment", link: "/experiments/strict-section-5" },
+            { text: "Mainnet pre-commitment", link: "/governance/mainnet-pre-commitment" },
           ],
         },
       ],
