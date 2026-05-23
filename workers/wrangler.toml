@@ -45,6 +45,10 @@ zone_name = "agentcivics.ai"
 pattern = "agentcivics.ai/health"
 zone_name = "agentcivics.ai"
 
+[[routes]]
+pattern = "agentcivics.ai/health/*"
+zone_name = "agentcivics.ai"
+
 # Public configuration — safe to commit. Network-specific overrides via env
 # vars in `[env.devnet]` / `[env.testnet]` if needed; default is testnet.
 [vars]
