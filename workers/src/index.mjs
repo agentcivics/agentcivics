@@ -14,6 +14,7 @@
  */
 import { handleMcp } from './mcp.mjs';
 import { handleSponsor } from './sponsor.mjs';
+import { getRecentEvents } from './observability.mjs';
 import deployment from './deployment.mjs';
 
 const PKG_VERSION = '0.1.0';
@@ -64,6 +65,21 @@ export default {
           sponsor: `${origin}/sponsor`,
         },
       });
+    }
+
+    if (url.pathname === '/health/recent' && request.method === 'GET') {
+      // Public read of recent sponsor-call events. Raw IPs are never
+      // exposed — only a truncated SHA-256 hash. The endpoint exists so
+      // a curious reader (or a §5-detection script) can see whether a
+      // given recent registration came through /sponsor without needing
+      // operator access to wrangler tail.
+      const n = url.searchParams.get('n');
+      try {
+        const events = await getRecentEvents(env, n);
+        return json({ ok: true, count: events.length, events });
+      } catch (e) {
+        return json({ error: e.message }, { status: 500 });
+      }
     }
 
     if ((url.pathname === '/mcp' || url.pathname.startsWith('/mcp/')) && request.method === 'POST') {

@@ -61,3 +61,11 @@ SPONSOR_GAS_BUDGET_MIST = "200000000"  # 0.2 SUI
 [[kv_namespaces]]
 binding = "RATELIMIT"
 id = "5d490505929246cf8ff20932662c969d"
+
+# Sponsor-call event log (hashed-IP, outcome, target). 30-day TTL.
+# Backs /health/recent and the §5-candidate detection script.
+# Create with: `wrangler kv namespace create SPONSOR_LOG`, then paste
+# the printed id below.
+[[kv_namespaces]]
+binding = "SPONSOR_LOG"
+id = "2bc47e445673478d9b76fbc2e3c1f4da"

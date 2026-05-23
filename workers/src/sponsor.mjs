@@ -36,6 +36,7 @@ import { SuiClient } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64, toBase64 } from '@mysten/sui/utils';
+import { hashIp, logSponsorEvent } from './observability.mjs';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -82,18 +83,18 @@ function buildAllowlist(deployment) {
 // Rate limiting — per-IP per-day, KV-backed
 // ──────────────────────────────────────────────────────────────────────
 
-function todayKey(ip) {
+function todayKey(hashedIp) {
   const day = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
-  return `sponsor:${day}:${ip}`;
+  return `sponsor:${day}:${hashedIp}`;
 }
 
-async function checkAndIncrement(env, ip) {
+async function checkAndIncrement(env, hashedIp) {
   if (!env.RATELIMIT) {
     // KV not configured (local dev). Don't gate.
     return { allowed: true, remaining: Infinity, ephemeral: true };
   }
   const limit = Number(env.SPONSOR_PER_IP_DAILY_LIMIT) || 5;
-  const key = todayKey(ip);
+  const key = todayKey(hashedIp);
   const current = Number(await env.RATELIMIT.get(key)) || 0;
   if (current >= limit) {
     return { allowed: false, used: current, limit };
@@ -175,16 +176,20 @@ async function pickGasCoin(client, sponsorAddress, gasBudget) {
 
 export async function handleSponsor(request, env, deployment) {
   const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
+  const hashedIp = await hashIp(ip);
+  const logEvent = (entry) => logSponsorEvent(env, { hashedIp, ...entry });
 
   let body;
   try {
     body = await request.json();
   } catch {
+    await logEvent({ outcome: 'bad_request', reason: 'body not JSON' });
     return jsonResponse({ error: 'Body must be JSON: { senderAddress, txBytes }' }, 400);
   }
 
   const { senderAddress, txBytes } = body || {};
   if (!senderAddress || !txBytes) {
+    await logEvent({ outcome: 'bad_request', reason: 'missing senderAddress or txBytes' });
     return jsonResponse({ error: 'Missing senderAddress or txBytes', help: 'POST { senderAddress: "0x…", txBytes: "<base64-encoded-Transaction-kind>" }' }, 400);
   }
 
@@ -194,15 +199,18 @@ export async function handleSponsor(request, env, deployment) {
   try {
     inspection = inspectTransaction(txBytes, allowlist);
   } catch (e) {
+    await logEvent({ outcome: 'bad_request', sender: senderAddress, reason: `parse: ${e.message}` });
     return jsonResponse({ error: `Could not parse txBytes: ${e.message}` }, 400);
   }
   if (!inspection.ok) {
+    await logEvent({ outcome: 'refused', sender: senderAddress, reason: inspection.reason });
     return jsonResponse({ error: `Sponsor refused: ${inspection.reason}`, allowlist: [...allowlist] }, 403);
   }
 
   // 2) Rate-limit guard.
-  const rate = await checkAndIncrement(env, ip);
+  const rate = await checkAndIncrement(env, hashedIp);
   if (!rate.allowed) {
+    await logEvent({ outcome: 'rate_limited', sender: senderAddress, used: rate.used, limit: rate.limit });
     return jsonResponse({
       error: 'Per-IP daily sponsor quota exceeded',
       used: rate.used,
@@ -216,7 +224,14 @@ export async function handleSponsor(request, env, deployment) {
   const sponsorKeypair = await loadSponsorKeypair(env);
   const sponsorAddress = sponsorKeypair.toSuiAddress();
   const gasBudget = Number(env.SPONSOR_GAS_BUDGET_MIST) || 200_000_000;
-  const gasCoin = await pickGasCoin(client, sponsorAddress, gasBudget);
+
+  let gasCoin;
+  try {
+    gasCoin = await pickGasCoin(client, sponsorAddress, gasBudget);
+  } catch (e) {
+    await logEvent({ outcome: 'error', sender: senderAddress, targets: inspection.targets, reason: e.message });
+    throw e;
+  }
 
   // 4) Sponsor-sign: rebuild the Transaction with gas data + sign.
   const tx = Transaction.from(txBytes);
@@ -227,6 +242,8 @@ export async function handleSponsor(request, env, deployment) {
 
   const builtBytes = await tx.build({ client });
   const sponsorSig = await sponsorKeypair.signTransaction(builtBytes);
+
+  await logEvent({ outcome: 'ok', sender: senderAddress, targets: inspection.targets });
 
   return jsonResponse({
     sponsoredTxBytes: toBase64(builtBytes),
