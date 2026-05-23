@@ -26,6 +26,8 @@ cache_hardhat/
 
 # Agent wallets — contain plaintext private keys, never commit
 agents/
+workers/*.key
+workers/.dev.vars
 
 # IDE
 .vscode/
