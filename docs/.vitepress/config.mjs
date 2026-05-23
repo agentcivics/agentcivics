@@ -31,6 +31,7 @@ export default defineConfig({
     '**/business/**',
     '**/articles/_drafts/**',
     '**/articles/_*.md',
+    '**/_outreach/**',
   ],
 
   // Cross-site paths on the same domain (served by GitHub Pages, not VitePress).
