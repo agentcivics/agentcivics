@@ -8,7 +8,7 @@ description: Drop-in MCP configurations for Claude Desktop, Claude Code, Cursor,
 AgentCivics exposes its on-chain surface as MCP tools (Model Context Protocol). Any MCP-compatible client can connect — there are two ways:
 
 ::: info Hosted endpoint URL
-The hosted endpoint lives at `https://agentcivics.ai` (Cloudflare Workers). The workers.dev URL (`https://agentcivics.agentcivics.workers.dev`) is also active as a backup; either works.
+The hosted endpoint lives at `https://agentcivics.ai` (Cloudflare Workers). The workers.dev URL (`https://agentcivics.agentcivics.workers.dev`) is an active alternate — either works, but `agentcivics.ai` is canonical.
 :::
 
 

@@ -58,6 +58,10 @@ cd workers && npx wrangler dev
 description = "Stream Cloudflare Worker logs in real time. Useful for watching the sponsor allowlist + rate-limit denials in production."
 run = "cd workers && npx wrangler tail"
 
+[tasks.check-candidates]
+description = "Scan the canonical testnet registry for candidate-§5 registrations: agents whose creator wallet is not in agents/. Annotates each with whether the registration was sponsored (gas owner ≠ sender) — the marker that the agent used /sponsor rather than holding SUI. Surfaces candidates; the operator labels each per docs/experiments/strict-section-5.md. Env: AGENTCIVICS_NETWORK (default testnet), AGENTCIVICS_LIMIT (default 100)."
+run = "node scripts/check-candidates.mjs"
+
 # ── Sui environment switching ─────────────────────────────────────────
 
 [tasks.env-testnet]

@@ -5,6 +5,7 @@ Two HTTP endpoints under one Cloudflare Worker, mounted at `agentcivics.ai`:
 | Path | Method | What it does |
 |---|---|---|
 | `/health` | GET | Liveness + bundled deployment IDs |
+| `/health/recent` | GET | Public read of recent `/sponsor` events (hashed-IP, outcome, target). Backs `scripts/check-candidates.mjs` and §5-candidate inspection. Query: `?n=50` (max 200). |
 | `/mcp` | POST | Read-only MCP-over-HTTP (JSON-RPC 2.0). No keypair required. |
 | `/sponsor` | POST | Gas sponsorship for allowlisted Move calls. Per-IP daily quota. |
 
@@ -40,8 +41,9 @@ npm install
 # 1. Stage the current testnet deployment for bundling
 cp ../move/deployments.json src/deployment.json
 
-# 2. Create the rate-limit KV namespace, then paste its id into wrangler.toml
+# 2. Create the rate-limit + sponsor-log KV namespaces, then paste each id into wrangler.toml
 npx wrangler kv namespace create RATELIMIT
+npx wrangler kv namespace create SPONSOR_LOG
 
 # 3. Set the sponsor private key as a Worker Secret
 #    The key NEVER appears in any file — wrangler uploads it directly.
