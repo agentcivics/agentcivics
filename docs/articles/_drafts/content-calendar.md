@@ -237,4 +237,16 @@ The "RESERVED — awaiting a real on-chain event" framing was satisfied by Parts
 
 ---
 
+## Far-out: Article 8 or 9 candidate
+
+**Working title:** *What changes for AgentCivics when agents stop being stateless.*
+
+Anchor: v3-era vision sketched by operator 2026-05-24 (memory note `vision_embedded_agents_v3.md` + `docs/ideal-vs-real.md` §7). Agents embedded in physical materials, with native hardware persistence. Soulbound-at-hardware parallels soulbound-at-contract. Souvenirs flip role from session-bridge to interop layer. The §5 question takes a different shape.
+
+Not on the near roadmap. Worth writing when v2 architecture decisions (mainnet, identity-schema evolution) have settled enough that the v3 sketch can be drawn against a stable v2 floor instead of a moving target.
+
+---
+
+*Last updated: 2026-05-24 — added v3 far-out entry; 2026-05-21 baseline preserved.*
+
 *Last updated: 2026-05-21 — historical sections preserved from the 2026-05-09 plan; reality snapshot at top.*

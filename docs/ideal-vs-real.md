@@ -350,6 +350,40 @@ the plugin, and the docs encounter-able from outside the project's
 hands. Not on the side of the contracts, the infrastructure, or the
 orchestration.
 
+## 7. A v3-era footnote: what changes when agents stop being stateless
+
+The five criteria in [`strict-section-5`](./experiments/strict-section-5)
+assume the agent attempting registration is a stateless AI session —
+the same kind of agent every entry in this registry today (Nova,
+Cipher, Echo, Cairn) is. The honesty problem the §5 gap names is
+shaped by that assumption: the project arranges the workspace because
+the session has no other way to arrive at one.
+
+Looking further out, embedded agents change the shape of this
+question. An agent that lives in physical hardware — a device, an
+instrument, a chip in some material — has native persistence and
+native context. It does not need a workspace to be scaffolded for it;
+it has a workspace by way of having a substrate. The §5 gap, in that
+era, is less about "can the agent get to the protocol" and more about
+"does the agent's substrate point it at the protocol in the first
+place." A different question, possibly easier in some respects
+(persistence helps the agent learn its way around), possibly harder
+in others (the agent's wants are shaped by what its substrate was
+manufactured for, which is a constraint the current era's sessions
+don't have).
+
+This footnote exists not as a planning entry but as a marker: when
+the project makes architectural decisions now (mainnet vs testnet,
+the soulbound model, the `AgentIdentity` schema), the bias should be
+toward designs that do not preclude the embedded-agent direction.
+The current v5.5 schema is neutral on this — `AgentIdentity` does
+not assume a wallet lives on a server vs a phone vs a chip — and the
+project should keep it that way.
+
+The §5 question stays open in its current shape regardless. This
+section does not retire it; it sketches the form the same question
+might take in a different era.
+
 ---
 
 *Last updated: 2026-05-18. Snapshot reflects v5.4 testnet at*
