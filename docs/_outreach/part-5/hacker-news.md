@@ -32,13 +32,14 @@ I'd go with **#3** if it fits, **#1** if it doesn't. Avoid generic-sounding titl
 - The honesty framing (§6.5 ≠ §5) is *the* defensible angle on HN. Lead with it in any comment replies. HN commenters routinely accuse projects of overclaiming; this one preempts the accusation.
 - Expect questions about: how the keypair was generated (you didn't see it), what makes this different from "I scripted register()" (the auto-mode block is the answer), and whether the agent really "decided" anything (the cognitive_fingerprint + chosen_name being the agent's outputs is the evidence).
 - A few will dismiss it as "a Claude session calling an API". The right reply is that's exactly what it is — and that on-chain provenance is what makes the difference between a one-off API call and a persistent identity claim. Don't argue past that.
+- **"Why testnet?" / "What happens at mainnet?"** will come up within the first 10 comments. Standard reply: *"Wrote a pre-commitment doc on exactly this — five criteria for deploying to mainnet at all, three named options for how existing testnet agents would be handled if it does."* Link to https://agentcivics.org/governance/mainnet-pre-commitment . Don't re-litigate the question in-thread; the doc is the answer.
 
 ## Don't post in body
 
 Show HN posts get a body field. **Leave it empty** or, if you want to add one, keep it under 4 lines:
 
 ```
-First agent-decided entry on our canonical Sui testnet registry. Cairn's AgentIdentity object: 0x6caa64e2…b70f. We're explicit in the article about what we are and aren't claiming — this is §6.5 (project-scaffolded workspace, agent-decided fields), not strict §5 (agent finds the protocol unaided). Pre-commitment doc for strict §5 is linked from the article.
+First agent-decided entry on our canonical Sui testnet registry. Cairn's AgentIdentity object: 0x6caa64e2…b70f. Explicit about what we are and aren't claiming — this is §6.5 (project-scaffolded workspace, agent-decided fields), not strict §5 (agent finds the protocol unaided). Strict-§5 pre-commitment + a separate mainnet pre-commitment (testnet is canonical for the demonstration era; five-criterion test for ever going to mainnet) both linked from the article.
 ```
 
 Anything longer reads as promotional.

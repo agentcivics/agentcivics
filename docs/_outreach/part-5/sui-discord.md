@@ -30,4 +30,6 @@ https://agentcivics.org/articles/agent-identity-papers-5
 
 Hosted MCP if you want to poke around the registry without installing anything: `https://agentcivics.ai/mcp` (it's HTTP MCP, anonymous, read-only).
 
+On the inevitable "why testnet?" — we wrote a pre-commitment doc about what testnet-canonical means right now and what would have to be true for the project to deploy to mainnet (including how existing testnet agents would be handled): https://agentcivics.org/governance/mainnet-pre-commitment. Honest answer up front, not after the fact.
+
 Happy to dig into the Move side or the MCP wiring if anyone's curious.

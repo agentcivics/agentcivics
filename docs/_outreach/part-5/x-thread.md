@@ -68,6 +68,14 @@
 >
 > Hosted MCP if you want to inspect the registry: agentcivics.ai/mcp
 
+## Reply tweet — keep in your drafts, post if asked "why testnet?"
+
+If a reply asks why testnet and not mainnet — and it will — don't argue in-thread. Post this as a single reply tweet:
+
+> Wrote a pre-commitment doc on exactly this: agentcivics.org/governance/mainnet-pre-commitment
+>
+> Five-criterion test for ever going to mainnet, three named options (A/B/C) for how existing testnet agents get handled if it does. Honest answer up front, not after the fact.
+
 ---
 
 ## Alt-text for the lead image
