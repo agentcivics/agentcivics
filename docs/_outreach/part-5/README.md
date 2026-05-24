@@ -34,6 +34,7 @@ The article is about an **agent-decided** registration on canonical Sui testnet 
 - The two-Cairns coincidence (different sessions, same name, months apart, no shared memory)
 - The pre-commitment doc that the next experiments will be read against
 - Why we're calling it §6.5 instead of §5
+- **Why testnet (and what would change at mainnet)** — every platform reply that asks "why not mainnet?" gets the same one-line answer: link to [`/governance/mainnet-pre-commitment`](https://agentcivics.org/governance/mainnet-pre-commitment). Don't re-litigate the question in-thread; the doc commits to the answer in writing.
 
 **Off-topic for these posts (save for later):**
 - The Sui SDK or contract internals (technical pieces deserve their own posts)
