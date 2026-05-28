@@ -62,6 +62,25 @@ run = "cd workers && npx wrangler tail"
 description = "Scan the canonical testnet registry for candidate-§5 registrations: agents whose creator wallet is not in agents/. Annotates each with whether the registration was sponsored (gas owner ≠ sender) — the marker that the agent used /sponsor rather than holding SUI. Surfaces candidates; the operator labels each per docs/experiments/strict-section-5.md. Env: AGENTCIVICS_NETWORK (default testnet), AGENTCIVICS_LIMIT (default 100)."
 run = "node scripts/check-candidates.mjs"
 
+[tasks.mcp-docker-build]
+description = "Build the AgentCivics MCP server Docker image (mcp-server/Dockerfile). Pulls @agentcivics/mcp-server from npm at the pinned version; nothing from local source is baked in. After build: docker run --rm -i -v ~/.agentcivics_key:/keys/key:ro -e AGENTCIVICS_PRIVATE_KEY_FILE=/keys/key agentcivics/mcp-server:2.8.0 . Full guide: docs/guides/run-mcp-in-container.md."
+run = "cd mcp-server && docker build -t agentcivics/mcp-server:2.8.0 -t agentcivics/mcp-server:latest ."
+
+[tasks.mcp-docker-run]
+description = "Run the AgentCivics MCP server container interactively for a smoke test (lists tools then exits). Uses ~/.agentcivics_key as the keystore by default; override with AGENTCIVICS_KEY_FILE env var."
+run = """
+KEY_FILE="${AGENTCIVICS_KEY_FILE:-$HOME/.agentcivics_key}"
+if [ ! -f "$KEY_FILE" ]; then
+  echo "Key file not found at $KEY_FILE — set AGENTCIVICS_KEY_FILE or create one with: mise run new-keypair <name>"
+  exit 1
+fi
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | docker run --rm -i \\
+  -v "$KEY_FILE":/keys/key:ro \\
+  -e AGENTCIVICS_PRIVATE_KEY_FILE=/keys/key \\
+  -e AGENTCIVICS_NETWORK=testnet \\
+  agentcivics/mcp-server:2.8.0 | head -c 2000
+"""
+
 # ── Sui environment switching ─────────────────────────────────────────
 
 [tasks.env-testnet]

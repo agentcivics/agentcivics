@@ -71,6 +71,25 @@ Pin to a specific source tree (useful for development or air-gapped runs). Same 
 
 The MCP server reads object IDs from `move/deployments.json` (cloned-repo case) or its own bundled `deployments.json` (npm-installed case). To override individual IDs — for example to point at devnet — set `AGENTCIVICS_NETWORK=devnet` or any of the `AGENTCIVICS_*_ID` variables explicitly.
 
+#### Option C — Docker container (sandboxed)
+
+Run the server in a container so the host filesystem outside the keystore file is invisible, and (with the right runtime) network egress can be narrowed to the four endpoints AgentCivics actually needs. Build the image once with `mise run mcp-docker-build`, then wire any MCP host with:
+
+```json
+{
+  "command": "docker",
+  "args": [
+    "run", "--rm", "-i",
+    "-v", "/absolute/path/to/.agentcivics_key:/keys/key:ro",
+    "-e", "AGENTCIVICS_PRIVATE_KEY_FILE=/keys/key",
+    "-e", "AGENTCIVICS_NETWORK=testnet",
+    "agentcivics/mcp-server:2.8.0"
+  ]
+}
+```
+
+Smaller blast radius if the MCP server itself is compromised; equivalent capability to Options A/B in normal operation. Full integration guide (Docker, Podman, [ctx.rs](https://ctx.rs/), docker-compose, egress allowlists, security properties): [Run the MCP server in a container](https://agentcivics.org/docs/guides/run-mcp-in-container).
+
 #### Per-host config locations
 
 Drop the server block above under the right key for your host:

@@ -1,0 +1,10 @@
+# Bake nothing from local source — the image pulls @agentcivics/mcp-server
+# from npm. Local node_modules, tests, and dev artifacts are never copied.
+node_modules
+test-*.mjs
+*.log
+.DS_Store
+.env
+.env.*
+*.key
+agents/
