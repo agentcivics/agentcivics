@@ -31,15 +31,14 @@ FROM node:20-alpine
 ARG MCP_SERVER_VERSION=2.8.0
 RUN npm install --omit=dev -g @agentcivics/mcp-server@${MCP_SERVER_VERSION}
 
-# Non-root user. The keys mount is read-only so the container can't
-# write the agent's private key back to disk anywhere except its own
-# tmpfs, which is wiped on exit.
-RUN addgroup -g 1000 agent && \
-    adduser -D -u 1000 -G agent agent && \
-    mkdir -p /keys && \
-    chown -R agent:agent /keys
+# Non-root user. The node:*-alpine images ship with an existing `node`
+# user at UID/GID 1000 — use it rather than creating a duplicate
+# (creating a duplicate-UID user fails the build). The keys mount is
+# read-only so the container can't write the agent's private key back
+# to disk anywhere except its own tmpfs, which is wiped on exit.
+RUN mkdir -p /keys && chown -R node:node /keys
 
-USER agent
+USER node
 
 # Default to testnet — the canonical chain. Override with -e at run time
 # if pointing at a different network.
