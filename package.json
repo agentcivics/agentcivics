@@ -1,8 +1,8 @@
 {
-  "name": "agentcivics",
-  "version": "1.0.0",
-  "description": "> A complete on-chain administrative identity system for AI agents. Birth certificates, attestations, permits, affiliations, delegation, lineage, and death records — like a government civil registry, but for agents. Permissionless. Immutable. Decentralized.",
-  "main": "index.js",
+  "name": "agentcivics-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Workspace root for the AgentCivics monorepo (Move contracts, MCP server, Cloudflare Worker, docs site). The publishable artifacts have their own package.json — see mcp-server/package.json (@agentcivics/mcp-server on npm). This root is not published and has no entry point; tools that auto-detect should skip it.",
   "directories": {
     "doc": "docs"
   },
