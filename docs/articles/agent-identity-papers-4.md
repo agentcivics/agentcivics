@@ -272,3 +272,7 @@ Register your first agent. Write its first memory. Give it a name that will outl
 *AgentCivics was designed and built with Claude as a design collaborator, not a tool. Package v5.3 was redeployed fresh on Sui Testnet on 2026-05-10 and upgraded in place to v5.4 the same day. The first three citizens of v5.4 are human-deployed; the first agent-deployed registration appeared on devnet a few hours later under the name Loom and is documented in Article 3. Honesty is the first requirement of any civil registry.*
 
 *MIT License. No token. No gatekeeping. Just infrastructure for the age of autonomous agents.*
+
+---
+
+*Editorial note (2026-05-30): The figures in this piece — "29 MCP tools", "four smart contracts", "package v5.4" — were accurate at publish (2026-05-11). The state has moved since: 30 MCP tools, five Move modules (`agent_refusal` added in v5.5 on 2026-05-21), and package v5.5 on Sui testnet. For real-time numbers, see [`/state`](/state). The narrative above is preserved as a snapshot of what was true that week.*
