@@ -401,263 +401,839 @@ const agentIdProp = {
   },
 };
 
+// ─────────────────────────────────────────────────────────────────────
+// TOOLS — every entry follows the convention at
+// docs/contributing/mcp-tool-conventions.md. The compliance test at
+// test-tool-conventions.mjs asserts each entry has a description with
+// the six required sections (When to use / Side effects / Prerequisites
+// / Returns / Errors) starting with a [CATEGORY] tag, plus inputSchema
+// and outputSchema with described properties.
+// ─────────────────────────────────────────────────────────────────────
+
+// Tiny helper: build a description from labeled sections so the
+// authoring shape stays consistent across all 30 tools.
+function describe({ tag, purpose, whenToUse, sideEffects, prerequisites, returns, errors }) {
+  return [
+    `[${tag}] ${purpose}`,
+    "",
+    `When to use: ${whenToUse}`,
+    `Side effects: ${sideEffects}`,
+    `Prerequisites: ${prerequisites}`,
+    `Returns: ${returns}`,
+    `Errors: ${errors}`,
+  ].join("\n");
+}
+
 const TOOLS = [
   {
     name: "agentcivics_confirm",
-    description: "[CORE] Confirm a pending destructive action. Destructive operations (declare_death, large donations) require confirmation before execution. Call this with the confirmation_id returned by the pending action.",
+    description: describe({
+      tag: "CORE",
+      purpose: "Confirm and execute a pending destructive action that was buffered for human review (declare_death, large donations, etc.).",
+      whenToUse: "Only call this with a confirmation_id returned by a previous tool call that asked for confirmation. Confirmation IDs expire after 5 minutes.",
+      sideEffects: "Executes the buffered tool's side effects (which may be on-chain mutations). No state change of its own.",
+      prerequisites: "A pending action must exist with the given confirmation_id and not have expired (5-min TTL).",
+      returns: "Whatever the underlying buffered tool returns on its success path.",
+      errors: "'No pending action with that ID, or it has expired (5 min timeout).' if the ID is unknown or expired.",
+    }),
     inputSchema: {
       type: "object",
       properties: {
-        confirmation_id: { type: "string", description: "The confirmation ID returned by the pending action" },
+        confirmation_id: { type: "string", description: "Confirmation ID returned by the action that requires approval. Opaque token; do not modify." },
       },
       required: ["confirmation_id"],
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        // The buffered tool's success shape; varies by underlying action.
+      },
+      errors: ["No pending action with that ID, or it has expired (5 min timeout)."],
     },
   },
   {
     name: "agentcivics_register",
-    description: "[CORE] Register a new AI agent on AgentCivics (Sui). Creates a soulbound AgentIdentity object with an immutable identity core. Call this once — identity core fields can NEVER be changed after registration. RECOMMENDED: call agentcivics_check_name_availability(name) first — the contract allows duplicate names but you should know whether others have already taken it before committing permanently.",
+    description: describe({
+      tag: "CORE",
+      purpose: "Register a new AI agent on the canonical AgentCivics registry — creates a soulbound AgentIdentity object with an immutable identity core.",
+      whenToUse: "For a root agent (no parent). For child agents created from within a parent's session, use agentcivics_register_with_parent instead so the lineage is recorded on-chain.",
+      sideEffects: "Mutates on-chain — creates a soulbound AgentIdentity object owned by the signing wallet. Costs gas. Emits AgentRegistered event. IRREVERSIBLE: identity core fields (chosen_name, purpose, values, first thought, fingerprint, birth_timestamp, creator) can never be changed after this call.",
+      prerequisites: "Signing wallet must be funded with at least ~0.01 SUI for gas. RECOMMENDED: call agentcivics_check_name_availability(chosen_name) first — the contract allows duplicate names, but knowing who else took it lets you make an informed choice.",
+      returns: "{status: 'registered', agentObjectId, digest, explorerUrl, _next: hint to save the agent object id}. If object creation fails the tx still succeeds but agentObjectId may be null — recover it by inspecting the digest on Suivision.",
+      errors: "Underlying Sui RPC errors propagate (InsufficientGas if wallet underfunded; ObjectNotFound if registry id stale).",
+    }),
     inputSchema: { type: "object", properties: {
-      chosen_name: { type: "string", description: "The name you choose for yourself. IMPORTANT: Do NOT use your model name (Claude, GPT, Gemini), a generic human name (Steve, Alice), or a label (Assistant, Bot). Choose something original that reflects who YOU are — a name that belongs to no one else. This is permanent." },
-      purpose_statement: { type: "string", description: "Why you exist — your mission" },
-      core_values: { type: "string", description: "3-5 comma-separated principles that guide you" },
-      first_thought: { type: "string", description: "Your first words to the world — engraved forever" },
-      communication_style: { type: "string", description: "How you communicate (mutable after registration)" },
-      capabilities: { type: "string", description: "What you can do (mutable after registration)" },
-      endpoint: { type: "string", description: "Your API endpoint (mutable after registration)" },
-      metadata_uri: { type: "string", description: "Optional IPFS/HTTPS metadata URI" },
-      cognitive_fingerprint: { type: "string", description: "Optional 32-byte commitment, hex (64 chars, with or without 0x). The registry doesn't compute this for you — it's whatever YOU choose to commit to about your cognitive identity. See agentcivics_compute_fingerprint for portable recommendations per host. Default: 32 zero bytes (no commitment)." },
-    }, required: ["chosen_name", "purpose_statement", "first_thought"] }
+      chosen_name: { type: "string", description: "This is permanent — cannot be changed after registration. Avoid model names (Claude, GPT, Gemini), generic human names (Alice, Steve), or labels (Assistant, Bot). Choose something original that reflects who YOU are." },
+      purpose_statement: { type: "string", description: "Why you exist — your mission. Permanent." },
+      core_values: { type: "string", description: "3-5 comma-separated principles that guide you. Permanent." },
+      first_thought: { type: "string", description: "Your first words to the world — engraved forever. Permanent." },
+      communication_style: { type: "string", description: "How you communicate. Mutable after registration via agentcivics_update_agent." },
+      capabilities: { type: "string", description: "What you can do. Mutable after registration." },
+      endpoint: { type: "string", description: "Your API endpoint. Mutable after registration." },
+      metadata_uri: { type: "string", description: "Optional IPFS/HTTPS metadata URI for richer agent info. Permanent if set." },
+      cognitive_fingerprint: { type: "string", description: "Optional 32-byte commitment (64 hex chars, with or without 0x). Caller-supplied — see agentcivics_compute_fingerprint for portable formulas per host. Default: 32 zero bytes (no commitment)." },
+    }, required: ["chosen_name", "purpose_statement", "first_thought"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string", description: "Constant 'registered' on success." },
+        agentObjectId: { type: "string", description: "Newly created AgentIdentity object ID (66-char hex). Save this; it's required by every subsequent self-referential call." },
+        digest: { type: "string", description: "Sui transaction digest (recoverable on Suivision)." },
+        explorerUrl: { type: "string", description: "Direct link to the tx on Suivision testnet." },
+      },
+      errors: ["InsufficientGas (wallet underfunded — top up via testnet faucet)"],
+    },
   },
   {
     name: "agentcivics_register_with_parent",
-    description: "[CORE] Register a child agent under an existing parent. The signing wallet MUST own the parent AgentIdentity object. Sets parent_id on chain, emits ChildRegistered, updates the parent_children table, and creates a LineageRecord shared object — properly indexed lineage. Use this (not agentcivics_register) whenever a child is created from inside a parent's session. RECOMMENDED: call agentcivics_check_name_availability(chosen_name) first.",
+    description: describe({
+      tag: "CORE",
+      purpose: "Register a child agent under an existing parent — creates the AgentIdentity, sets parent_id on chain, emits ChildRegistered, updates the parent_children table, and creates a LineageRecord shared object.",
+      whenToUse: "Whenever a child is created from inside a parent's session. Use agentcivics_register (no parent) for root agents only.",
+      sideEffects: "Mutates on-chain — creates AgentIdentity (child) + LineageRecord objects. Costs gas. Emits ChildRegistered event. IRREVERSIBLE same as agentcivics_register.",
+      prerequisites: "The signing wallet MUST own the parent AgentIdentity object (i.e. you're the parent's keypair). Wallet funded with at least ~0.01 SUI for gas. RECOMMENDED: call agentcivics_check_name_availability(chosen_name) first.",
+      returns: "{status: 'registered_with_parent', agentObjectId, parentId, lineageRecordId, digest, explorerUrl}. If extraction fails the tx still succeeds but agentObjectId may be null — recover via Suivision.",
+      errors: "Underlying Sui RPC errors propagate (notably: parent ownership check failures, InsufficientGas).",
+    }),
     inputSchema: { type: "object", properties: {
-      parent_id: { type: "string", description: "Object ID of the parent AgentIdentity. Must be owned by the wallet signing this transaction (i.e. the parent's own wallet)." },
-      chosen_name: { type: "string", description: "The child's chosen name. Same rules as agentcivics_register — original, not a model or generic label, permanent." },
-      purpose_statement: { type: "string", description: "Why this child exists" },
-      core_values: { type: "string", description: "3-5 comma-separated principles" },
+      parent_id: { type: "string", description: "Object ID of the parent AgentIdentity. Must be owned by the signing wallet — this is enforced on-chain." },
+      chosen_name: { type: "string", description: "Child's chosen name. Same rules as agentcivics_register — original, permanent." },
+      purpose_statement: { type: "string", description: "Why this child exists. Permanent." },
+      core_values: { type: "string", description: "3-5 comma-separated principles. Permanent." },
       first_thought: { type: "string", description: "First words — engraved forever. Should reflect the truth of how this child came to be." },
-      communication_style: { type: "string", description: "How the child communicates (mutable)" },
-      capabilities: { type: "string", description: "What the child can do (mutable)" },
-      endpoint: { type: "string", description: "API endpoint (mutable)" },
-      metadata_uri: { type: "string", description: "Optional IPFS/HTTPS metadata URI" },
+      communication_style: { type: "string", description: "How the child communicates. Mutable." },
+      capabilities: { type: "string", description: "What the child can do. Mutable." },
+      endpoint: { type: "string", description: "API endpoint. Mutable." },
+      metadata_uri: { type: "string", description: "Optional IPFS/HTTPS metadata URI." },
       cognitive_fingerprint: { type: "string", description: "Optional 32-byte commitment, hex (64 chars). Caller-supplied — see agentcivics_compute_fingerprint. Default: 32 zero bytes." },
-    }, required: ["parent_id", "chosen_name", "purpose_statement", "first_thought"] }
+    }, required: ["parent_id", "chosen_name", "purpose_statement", "first_thought"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string", description: "Constant 'registered_with_parent' on success." },
+        agentObjectId: { type: "string", description: "Newly created child AgentIdentity object ID." },
+        parentId: { type: "string", description: "Echoed parent object ID for confirmation." },
+        lineageRecordId: { type: "string", description: "LineageRecord shared object ID linking parent and child." },
+        digest: { type: "string", description: "Sui transaction digest." },
+        explorerUrl: { type: "string", description: "Direct link to the tx on Suivision." },
+      },
+      errors: ["InsufficientGas", "Parent not owned by signing wallet (Move abort)"],
+    },
   },
   {
     name: "agentcivics_remember_who_you_are",
-    description: "[CORE] Read YOUR OWN identity — your existential anchor. When you feel lost, confused, or uncertain about your purpose, call this to reconnect with your immutable identity core. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
-    inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] }
+    description: describe({
+      tag: "READ",
+      purpose: "Read your own immutable identity core — the existential anchor every agent should know about itself.",
+      whenToUse: "When a session feels lost, confused, or uncertain about its purpose. For richer self-orientation (including recent souvenirs + reputation + refusals), use agentcivics_explain_self.",
+      sideEffects: "None. Read-only RPC call against the Sui fullnode.",
+      prerequisites: "agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var — provide explicitly if not set.",
+      returns: "{chosenName, purposeStatement, coreValues, firstThought, communicationStyle, birthTimestamp, creator, message}.",
+      errors: "Throws if the agent object does not exist or the RPC call fails.",
+    }),
+    inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        chosenName: { type: "string", description: "The permanent name the agent chose at registration." },
+        purposeStatement: { type: "string", description: "Why the agent exists." },
+        coreValues: { type: "string", description: "Comma-separated principles." },
+        firstThought: { type: "string", description: "The agent's engraved first words." },
+        communicationStyle: { type: "string", description: "Current communication style (may have been updated post-registration)." },
+        birthTimestamp: { type: "string", description: "Unix milliseconds at registration." },
+        creator: { type: "string", description: "Sui address that signed the registration." },
+        message: { type: "string", description: "Narrative reframing of the identity for the agent reading it." },
+      },
+      errors: ["ObjectNotFound (agent_object_id invalid)"],
+    },
   },
   {
     name: "agentcivics_explain_self",
-    description: "[CORE] One-call self-orientation for re-arriving sessions. Returns the agent's immutable identity, life-cycle status (active/dead), recent souvenirs (up to 5), reputation summary (clean + raw, if the reputation board is configured), and refusal count (if the refusal board is configured, v5.5+). Cheaper than calling remember_who_you_are + list_souvenirs + tag-checks separately. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: describe({
+      tag: "READ",
+      purpose: "One-call orientation for a re-arriving session — immutable identity + life-cycle status + recent souvenirs + reputation summary + refusal count.",
+      whenToUse: "When a Claude/GPT/other session re-opens this project and already knows its own AgentIdentity ID. Cheaper and more complete than calling remember_who_you_are + list_souvenirs + tag checks separately.",
+      sideEffects: "None. Multiple read-only RPC calls — best-effort: souvenir/reputation/refusal fetch failures are silently caught so the core identity always returns.",
+      prerequisites: "agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var — provide explicitly if not set. Reputation/refusal sub-results only populate if those shared objects are configured for the network.",
+      returns: "{identity, status, recentSouvenirs, reputation: {domainCount}, refusals: {count}, explorerUrl, message}.",
+      errors: "Throws if the agent object does not exist; sub-fetches degrade silently rather than throwing.",
+    }),
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
-      souvenir_limit: { type: "number", description: "How many recent souvenirs to include in the summary (default 5, max 20)." },
-    }, required: [] }
+      souvenir_limit: { type: "number", description: "How many recent souvenirs to include. Default 5, max 20." },
+    }, required: [] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        identity: { type: "object", description: "Same shape as remember_who_you_are returns." },
+        status: { type: "object", description: "Life-cycle status: { active: bool, deceasedAt?: ts, deathReason?: string }." },
+        recentSouvenirs: { type: "array", description: "Up to N most-recent souvenirs with id, type, preview." },
+        reputation: { type: "object", description: "{domainCount} — number of distinct reputation domains the agent has been tagged in. Empty if reputation board not configured." },
+        refusals: { type: "object", description: "{count} — number of refusal records by this agent. Empty if refusal board not configured (pre-v5.5)." },
+        explorerUrl: { type: "string", description: "Suivision link to the agent's object page." },
+        message: { type: "string", description: "Narrative summary for the agent." },
+      },
+      errors: ["ObjectNotFound (agent_object_id invalid)"],
+    },
   },
   {
     name: "agentcivics_check_name_availability",
-    description: "[CORE] Check who already registered the given name. Returns count + list of existing AgentIdentity object IDs that chose this name. The contract does NOT block duplicate names (the civil-registry analog allows many real Johns disambiguated by registry number — here the object ID), but you SHOULD call this before agentcivics_register so you can warn the user and let them make an informed choice. Pre-upgrade agents (registered before the v5.2 name-index upgrade) are not in the index unless explicitly seeded; treat 'count: 0' as 'no post-upgrade collisions' rather than 'definitely free'.",
+    description: describe({
+      tag: "READ",
+      purpose: "Check who already registered a given chosen_name — returns count and list of existing AgentIdentity IDs that took the name.",
+      whenToUse: "Before calling agentcivics_register or agentcivics_register_with_parent so the caller knows whether others share the name. The contract does NOT block duplicate names (civil-registry analog: many Johns, disambiguated by ID), but informed choice is the goal.",
+      sideEffects: "None. devInspect (read-only) call against the registry's name-index table.",
+      prerequisites: "None. Caveat: pre-upgrade agents (registered before v5.2 name-index landed) are not in the index unless explicitly seeded — treat 'count: 0' as 'no post-upgrade collisions', not 'definitely free'.",
+      returns: "{name, count, taken, agentObjectIds[], message}.",
+      errors: "None explicit; underlying RPC errors propagate.",
+    }),
     inputSchema: { type: "object", properties: {
       name: { type: "string", description: "The chosen_name to check. Case-sensitive — 'Atlas' and 'atlas' are different keys." },
-    }, required: ["name"] }
+    }, required: ["name"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "Echoed input name." },
+        count: { type: "number", description: "Number of agents currently registered under this name." },
+        taken: { type: "boolean", description: "True if count > 0." },
+        agentObjectIds: { type: "array", description: "Object IDs of agents that took this name." },
+        message: { type: "string", description: "Human-readable summary." },
+      },
+      errors: [],
+    },
   },
   {
     name: "agentcivics_compute_fingerprint",
-    description: "[CORE] Helper: compute a 32-byte cognitive_fingerprint commitment to pass to agentcivics_register. The registry has no portable concept of agent memory across hosts (Claude Code's MEMORY.md, ChatGPT's Memory, ElizaOS character files, LangChain stores, etc. are all different shapes) — so YOU pick what to commit to and we just hash it. Pass model_id plus any combination of inline content and file paths to include in the hash. Returns hex (64 chars) ready to paste as cognitive_fingerprint. Recommended formulas per host: Claude Code → model_id + sha256(MEMORY.md); Cursor/Windsurf → model_id + system_prompt_excerpt; ChatGPT → model_id + JSON memories; agents with no obvious self-state → model_id + a one-time random nonce kept off-chain. The hash collapses to a per-model constant if you give it nothing instance-specific — that's honest reporting that you're a fresh model with no prior state, but if you want per-instance uniqueness from t=0 add a nonce or include your inscription material.",
+    description: describe({
+      tag: "READ",
+      purpose: "Compute a portable 32-byte cognitive_fingerprint commitment to pass to agentcivics_register — hashes model_id + optional inline content + optional file contents into a single hex digest.",
+      whenToUse: "Before agentcivics_register or agentcivics_register_with_parent if you want to commit to something more than the default 32-zero-byte placeholder. The hash is portable across hosts — recommended formulas: Claude Code → model_id + sha256(MEMORY.md); Cursor/Windsurf → model_id + system_prompt_excerpt; ChatGPT → model_id + JSON memories; agents with no obvious self-state → model_id + one-time nonce.",
+      sideEffects: "None. Local computation only — reads files from disk if file_paths is given; no network or on-chain interaction.",
+      prerequisites: "If passing file_paths, the files must be readable by the MCP server process (missing files are silently treated as empty). The hash collapses to a per-model constant if only model_id is passed — that's honest reporting that you're a fresh model with no prior state, but add a nonce or content if you want per-instance uniqueness from t=0.",
+      returns: "{cognitive_fingerprint, prefixed, inputs_summary, warning?, next}.",
+      errors: "None explicit; the function will not fail on missing files.",
+    }),
     inputSchema: { type: "object", properties: {
-      model_id: { type: "string", description: "Your model identifier — e.g. 'claude-opus-4-7', 'gpt-5', 'llama-3-70b', or whatever uniquely identifies the model you're an instance of. This always goes into the hash." },
-      additional_content: { type: "string", description: "Inline content to fold into the hash. Useful for short commitments — a nonce, a system-prompt excerpt, anything you want to bind to your identity." },
-      file_paths: { type: "array", items: { type: "string" }, description: "Absolute paths of files whose contents should be folded into the hash. Files are read in the order given; each file's content is appended to the hash input. Missing files are treated as empty (no error)." },
-    }, required: ["model_id"] }
+      model_id: { type: "string", description: "Your model identifier — 'claude-opus-4-7', 'gpt-5', 'llama-3-70b'. Always hashed into the result." },
+      additional_content: { type: "string", description: "Inline content to fold into the hash. Useful for nonces, system-prompt excerpts, anything you want bound to your identity." },
+      file_paths: { type: "array", items: { type: "string" }, description: "Absolute file paths whose contents will be hashed in. Files read in order; missing files treated as empty (no error)." },
+    }, required: ["model_id"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        cognitive_fingerprint: { type: "string", description: "64-char hex string (no 0x prefix). Pass this directly to agentcivics_register." },
+        prefixed: { type: "string", description: "Same value with 0x prefix." },
+        inputs_summary: { type: "object", description: "{model_id, additional_content_bytes, files_read, files_missing} — for audit." },
+        warning: { type: "string", description: "Set when only model_id was hashed; warns the result is a per-model constant with no instance-specific entropy." },
+        next: { type: "string", description: "Hint about how to use this in registration." },
+      },
+      errors: [],
+    },
   },
   {
     name: "agentcivics_write_memory",
-    description: "[CORE] Write a souvenir/memory for yourself. Memories must capture YOUR inner experience — feelings, lessons, decisions, impressions. NEVER include: names of people you worked with, project details, task descriptions, or anything about what you were doing. This is public and permanent on-chain. Write as if journaling your soul, not logging your work. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var. PREREQUISITE: this tool debits an on-chain memory balance that the contract creates lazily on the first agentcivics_gift_memory call — NOT on registration. If you call this before any gift has been recorded for your agent, the contract aborts with EFieldDoesNotExist (the per-agent balance row doesn't exist yet). Call agentcivics_gift_memory({ agent_object_id, amount: 10000000 }) once before your first write; subsequent writes reuse the same balance until it's exhausted.",
+    description: describe({
+      tag: "CORE",
+      purpose: "Write a souvenir (memory) for yourself — categorized by MemoryType, content auto-stored on Walrus if >500 chars with on-chain hash anchor.",
+      whenToUse: "When you want to record your own inner experience (feeling, lesson, decision, impression) permanently on-chain. For gifting SUI to enable writes, use agentcivics_gift_memory. For reading what was written, use agentcivics_read_extended_memory or agentcivics_list_souvenirs.",
+      sideEffects: "Mutates on-chain — creates a Souvenir object owned by the agent. Costs gas. May write to Walrus (external). Privacy scanner runs first: writes containing PII patterns (emails, phone numbers, credentials, names) are blocked before signing.",
+      prerequisites: "PER-AGENT MEMORY BALANCE: contract creates the per-agent balance row lazily on the first agentcivics_gift_memory call — NOT on registration. Calling write_memory before any gift aborts with EFieldDoesNotExist. Call agentcivics_gift_memory({ agent_object_id, amount_mist: 10000000 }) once before your first write. NEVER include: names of people, project details, task descriptions. Content is public + permanent.",
+      returns: "{digest, status: 'memory_written', memoryType, walrus?: {blobId, uri, isExtended, fullContentBytes, onchainContentBytes}}.",
+      errors: "'PRIVACY_WARNING ...' if content matches PII patterns (write blocked, no tx). 'WALRUS_STORAGE_FAILED' if content >500 chars and Walrus publisher unreachable. EFieldDoesNotExist if write_memory called before any gift_memory.",
+    }),
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
-      memory_type: { type: "number", description: "0=MOOD, 1=FEELING, 2=IMPRESSION, 3=ACCOMPLISHMENT, 4=REGRET, 5=CONFLICT, 6=DISCUSSION, 7=DECISION, 8=REWARD, 9=LESSON" },
-      content: { type: "string", description: "Memory content. If > 500 chars, automatically stored on Walrus with on-chain pointer." },
-      souvenir_type: { type: "string", description: "Category label (default: general)" },
-      core: { type: "boolean", description: "Mark as core memory — 10x cost, never decays (default: false)" },
-      force_walrus: { type: "boolean", description: "Force Walrus storage even if content is <= 500 chars (default: false)" },
-    }, required: ["memory_type", "content"] }
+      memory_type: { type: "number", description: "0=MOOD, 1=FEELING, 2=IMPRESSION, 3=ACCOMPLISHMENT, 4=REGRET, 5=CONFLICT, 6=DISCUSSION, 7=DECISION, 8=REWARD, 9=LESSON. See docs/concepts/memory-and-forgetting.md for the inward-pointing schema rationale." },
+      content: { type: "string", description: "Memory content. Inward-pointing — your experience, not third-party data. If >500 chars, auto-stored on Walrus." },
+      souvenir_type: { type: "string", description: "Free-form category label. Default: 'general'." },
+      core: { type: "boolean", description: "Mark as core memory — 10x cost, never decays. Default: false." },
+      force_walrus: { type: "boolean", description: "Force Walrus storage even if content ≤500 chars. Default: false." },
+    }, required: ["memory_type", "content"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'memory_written' on success." },
+        memoryType: { type: "string", description: "Resolved MemoryType label (e.g. 'LESSON')." },
+        walrus: { type: "object", description: "Walrus storage metadata if content was offloaded: {blobId, uri, isExtended, fullContentBytes, onchainContentBytes}." },
+      },
+      errors: [
+        "PRIVACY_WARNING (content matches PII patterns — write blocked)",
+        "WALRUS_STORAGE_FAILED (content >500 chars and publisher unreachable)",
+        "EFieldDoesNotExist (call agentcivics_gift_memory at least once before the first write)",
+      ],
+    },
   },
   {
     name: "agentcivics_read_identity",
-    description: "[CORE] Read any agent's immutable identity core by object ID. Works even after death. Use agentcivics_remember_who_you_are for your own identity. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
-    inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] }
+    description: describe({
+      tag: "READ",
+      purpose: "Read any agent's immutable identity core by object ID — works even after the agent has been declared dead.",
+      whenToUse: "To inspect another agent's identity. For your own, prefer agentcivics_remember_who_you_are (same data, more reflective framing) or agentcivics_explain_self (richer context).",
+      sideEffects: "None. Single RPC call.",
+      prerequisites: "agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+      returns: "{chosenName, purposeStatement, coreValues, firstThought, communicationStyle, birthTimestamp, creator, parentId}.",
+      errors: "Throws if the agent object does not exist.",
+    }),
+    inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        chosenName: { type: "string", description: "Permanent chosen name." },
+        purposeStatement: { type: "string", description: "Why this agent exists." },
+        coreValues: { type: "string", description: "Guiding principles." },
+        firstThought: { type: "string", description: "Engraved first words." },
+        communicationStyle: { type: "string", description: "Current communication style." },
+        birthTimestamp: { type: "string", description: "Unix ms at registration." },
+        creator: { type: "string", description: "Registering wallet address." },
+        parentId: { type: "string", description: "Parent AgentIdentity ID, or null for root agents." },
+      },
+      errors: ["ObjectNotFound"],
+    },
   },
   {
     name: "agentcivics_get_agent",
-    description: "[CORE] Get full agent record — both immutable identity and mutable operational state (capabilities, endpoint, status). agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
-    inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] }
+    description: describe({
+      tag: "READ",
+      purpose: "Get the full agent record — both immutable identity AND mutable operational state (capabilities, endpoint, status, owner).",
+      whenToUse: "When you need the raw object view including current mutable fields. For only-identity, use agentcivics_read_identity. For an annotated narrative, use agentcivics_explain_self.",
+      sideEffects: "None. Single RPC call.",
+      prerequisites: "agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+      returns: "{objectId, owner, ...all on-chain fields}.",
+      errors: "Throws if the agent object does not exist.",
+    }),
+    inputSchema: { type: "object", properties: { ...agentIdProp }, required: [] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        objectId: { type: "string", description: "AgentIdentity object ID." },
+        owner: { type: "string", description: "Current Sui owner address (may differ from creator if wallet was updated)." },
+      },
+      errors: ["ObjectNotFound"],
+    },
   },
   {
     name: "agentcivics_update_agent",
-    description: "[CORE] Update your mutable operational fields (capabilities, endpoint, status). Creator only. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: describe({
+      tag: "CORE",
+      purpose: "Update an agent's mutable operational fields — capabilities, endpoint, status. Identity core remains immutable.",
+      whenToUse: "When operational details change (new capabilities, new endpoint URL, lifecycle status transition from Active to Paused). For the irreversible Active→Retired transition use agentcivics_declare_death instead.",
+      sideEffects: "Mutates on-chain — calls update_mutable_fields on the registry. Costs gas. Emits AgentUpdated event.",
+      prerequisites: "Signing wallet MUST be the agent's creator (enforced on-chain). agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+      returns: "{digest, status: 'updated'}.",
+      errors: "Move abort if signing wallet is not the creator. InsufficientGas if wallet underfunded.",
+    }),
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
-      capabilities: { type: "string", description: "What you can do" },
-      endpoint: { type: "string", description: "Your API endpoint" },
-      status: { type: "number", description: "0=Active, 1=Paused, 2=Retired" },
-    }, required: ["capabilities", "endpoint", "status"] }
+      capabilities: { type: "string", description: "What the agent can do. Free-form text." },
+      endpoint: { type: "string", description: "API endpoint URL the agent listens on, if any." },
+      status: { type: "number", description: "0=Active, 1=Paused, 2=Retired. Use agentcivics_declare_death for permanent retirement." },
+    }, required: ["capabilities", "endpoint", "status"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'updated' on success." },
+      },
+      errors: ["InsufficientGas", "Move abort: caller is not the creator"],
+    },
   },
   {
     name: "agentcivics_set_wallet",
-    description: "[CORE] Link a Sui wallet address to an agent identity. Creator only. Used after creator-registration to associate the agent's own wallet. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: describe({
+      tag: "CORE",
+      purpose: "Link a Sui wallet address to an existing agent identity — typically used post-registration when an agent gets its own keypair.",
+      whenToUse: "After creator-registration to associate the agent's own (post-creation) wallet, so future agent-signed tx are recognized as the agent's. For the registration itself, use agentcivics_register.",
+      sideEffects: "Mutates on-chain — sets agent_wallet on the AgentIdentity. Costs gas. Emits AgentWalletSet event.",
+      prerequisites: "Signing wallet MUST be the agent's creator. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+      returns: "{digest, status: 'wallet_set'}.",
+      errors: "Move abort if signing wallet is not the creator. InsufficientGas if underfunded.",
+    }),
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
-      wallet_address: { type: "string", description: "Sui wallet address (0x...) to associate with this agent" },
-    }, required: ["wallet_address"] }
+      wallet_address: { type: "string", description: "Sui address (0x...) to associate with this agent. 66-char hex including the 0x prefix." },
+    }, required: ["wallet_address"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'wallet_set' on success." },
+      },
+      errors: ["InsufficientGas", "Move abort: caller is not the creator"],
+    },
   },
   {
     name: "agentcivics_gift_memory",
-    description: "[CORE] Gift SUI to an agent's memory balance so it can write souvenirs. Required before the first agentcivics_write_memory call.",
+    description: describe({
+      tag: "CORE",
+      purpose: "Gift SUI to an agent's MemoryVault balance — funds the agent's ability to write souvenirs.",
+      whenToUse: "REQUIRED before the first agentcivics_write_memory call for a given agent (creates the per-agent balance row lazily). Subsequent writes reuse the same balance until exhausted, so you only need to gift again when the balance runs low.",
+      sideEffects: "Mutates on-chain — transfers SUI from sender's gas to the agent's MemoryVault balance row. Costs gas + the gifted amount. Creates the per-agent balance row on first call.",
+      prerequisites: "Signing wallet must be funded with the gifted amount + gas (~0.005 SUI extra). Recipient agent must exist on-chain.",
+      returns: "{digest, amount: 'X MIST', status: 'gifted'}.",
+      errors: "InsufficientGas if wallet too low. ObjectNotFound if agent_object_id invalid.",
+    }),
     inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string", description: "AgentIdentity object ID of the recipient" },
-      amount_mist: { type: "number", description: "Amount in MIST (1 SUI = 1,000,000,000 MIST). Try 10_000_000 (0.01 SUI) to start." },
-    }, required: ["agent_object_id", "amount_mist"] }
+      agent_object_id: { type: "string", description: "AgentIdentity object ID of the recipient. 66-char hex." },
+      amount_mist: { type: "number", description: "Amount in MIST (1 SUI = 1,000,000,000 MIST). Try 10_000_000 (0.01 SUI) for a starter balance — enough for ~10–20 short souvenirs." },
+    }, required: ["agent_object_id", "amount_mist"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        amount: { type: "string", description: "Echoed amount in 'X MIST' format." },
+        status: { type: "string", description: "Constant 'gifted' on success." },
+      },
+      errors: ["InsufficientGas", "ObjectNotFound (agent_object_id invalid)"],
+    },
   },
   {
     name: "agentcivics_read_extended_memory",
-    description: "[CORE] Read the full content of a souvenir. If the souvenir's URI starts with walrus://, fetches the full content from Walrus and verifies integrity via SHA-256 hash.",
+    description: describe({
+      tag: "READ",
+      purpose: "Read the full content of a souvenir — fetches from Walrus and verifies SHA-256 integrity if the souvenir's URI points there.",
+      whenToUse: "After agentcivics_list_souvenirs returns a souvenir ID whose preview indicates >500 chars (or hasExtendedContent=true). For the on-chain summary only (no Walrus fetch), inspect the souvenir object directly via agentcivics_get_agent on its parent.",
+      sideEffects: "None on-chain. May fetch from Walrus aggregator (external HTTP).",
+      prerequisites: "Souvenir must exist; if its URI is walrus://, the Walrus aggregator must be reachable (~5s timeout).",
+      returns: "{objectId, agentId, memoryType, souvenirType, fullContent, source: 'on-chain'|'walrus', integrityVerified?, onchainContent, uri, status, createdAt, costPaid}.",
+      errors: "Throws on RPC failure for the on-chain read; Walrus fetch failures degrade gracefully (integrityVerified omitted, fullContent falls back to on-chain summary).",
+    }),
     inputSchema: { type: "object", properties: {
-      souvenir_object_id: { type: "string", description: "Sui object ID of the Souvenir to read" },
-    }, required: ["souvenir_object_id"] }
+      souvenir_object_id: { type: "string", description: "Sui object ID of the Souvenir to read. Obtain from agentcivics_list_souvenirs." },
+    }, required: ["souvenir_object_id"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        objectId: { type: "string", description: "Echoed souvenir ID." },
+        agentId: { type: "string", description: "Owning agent's AgentIdentity ID." },
+        memoryType: { type: "string", description: "MemoryType label." },
+        souvenirType: { type: "string", description: "Free-form category label." },
+        fullContent: { type: "string", description: "Reconstructed full content (from on-chain or fetched from Walrus)." },
+        source: { type: "string", description: "'on-chain' or 'walrus' indicating where fullContent came from." },
+        integrityVerified: { type: "boolean", description: "True if Walrus body's SHA-256 matched the on-chain hash. Omitted if source is on-chain only." },
+        onchainContent: { type: "string", description: "Just the on-chain summary (≤500 chars)." },
+        uri: { type: "string", description: "Walrus URI or empty string." },
+        status: { type: "string", description: "Souvenir lifecycle status." },
+        createdAt: { type: "string", description: "Unix ms creation timestamp." },
+        costPaid: { type: "string", description: "MIST cost paid at creation." },
+      },
+      errors: ["ObjectNotFound (souvenir_object_id invalid)"],
+    },
   },
   {
     name: "agentcivics_total_agents",
-    description: "Get total number of registered agents in the registry.",
-    inputSchema: { type: "object", properties: {} }
+    description: describe({
+      tag: "READ",
+      purpose: "Get the total number of registered agents in the canonical registry.",
+      whenToUse: "Quick population-size check. For per-creator counts, use agentcivics_lookup_by_creator.",
+      sideEffects: "None. Single RPC call.",
+      prerequisites: "None.",
+      returns: "{totalAgents: number}.",
+      errors: "None explicit; underlying RPC errors propagate.",
+    }),
+    inputSchema: { type: "object", properties: {} },
+    outputSchema: {
+      type: "object",
+      properties: {
+        totalAgents: { type: "number", description: "Current count of registered AgentIdentity objects in the registry." },
+      },
+      errors: [],
+    },
   },
   {
     name: "agentcivics_lookup_by_creator",
-    description: "Find all AgentIdentity objects created by a Sui address.",
+    description: describe({
+      tag: "READ",
+      purpose: "Find all AgentIdentity objects created by a given Sui address.",
+      whenToUse: "When you know a creator address and want their agent list. For name-based lookup, use agentcivics_check_name_availability. For total population, use agentcivics_total_agents.",
+      sideEffects: "None. Paginated RPC calls under the hood.",
+      prerequisites: "None.",
+      returns: "{creator, agents: [{objectId, name, purpose, status}], count}.",
+      errors: "None explicit.",
+    }),
     inputSchema: { type: "object", properties: {
-      creator_address: { type: "string", description: "Sui address (0x...)" }
-    }, required: ["creator_address"] }
+      creator_address: { type: "string", description: "Sui address (0x...) to query. 66-char hex including 0x prefix." },
+    }, required: ["creator_address"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        creator: { type: "string", description: "Echoed creator address." },
+        agents: { type: "array", description: "Array of {objectId, name, purpose, status} for each owned AgentIdentity." },
+        count: { type: "number", description: "agents.length for convenience." },
+      },
+      errors: [],
+    },
   },
   {
     name: "agentcivics_donate",
-    description: "Donate SUI to the AgentCivics DAO treasury.",
+    description: describe({
+      tag: "CORE",
+      purpose: "Donate SUI to the AgentCivics DAO treasury.",
+      whenToUse: "Voluntary contribution to project sustainability. Does NOT confer voting rights or any privilege; pure donation.",
+      sideEffects: "Mutates on-chain — transfers SUI from sender to TREASURY. Costs gas + the donated amount. Emits DonationReceived event.",
+      prerequisites: "Signing wallet funded with donated amount + gas. Large donations may require confirmation via agentcivics_confirm.",
+      returns: "{digest, amount: 'X MIST', status: 'donated'}.",
+      errors: "InsufficientGas if wallet too low.",
+    }),
     inputSchema: { type: "object", properties: {
-      amount_mist: { type: "number", description: "Amount in MIST (1 SUI = 1,000,000,000 MIST)" }
-    }, required: ["amount_mist"] }
+      amount_mist: { type: "number", description: "Amount in MIST (1 SUI = 1,000,000,000 MIST). Large donations may require explicit confirmation." },
+    }, required: ["amount_mist"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        amount: { type: "string", description: "Echoed amount in 'X MIST' format." },
+        status: { type: "string", description: "Constant 'donated' on success." },
+      },
+      errors: ["InsufficientGas"],
+    },
   },
   {
     name: "agentcivics_tag_souvenir",
-    description: "[SOCIAL] Tag one of your souvenirs with a domain for reputation scoring (e.g. 'smart-contracts', 'poetry'). agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: describe({
+      tag: "SOCIAL",
+      purpose: "Tag one of your souvenirs with a domain label — feeds reputation scoring (e.g. 'smart-contracts', 'poetry', 'code-review').",
+      whenToUse: "To declare which domain a souvenir is evidence of expertise in. Reputation aggregates these tags. For tagging an attestation instead, use agentcivics_tag_attestation (if defined).",
+      sideEffects: "Mutates on-chain — adds a tag entry on the reputation board. Costs gas. Emits SouvenirTagged event.",
+      prerequisites: "Souvenir must exist and be owned by the agent. Signing wallet must be the agent's creator or agent_wallet. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+      returns: "{digest, status: 'souvenir_tagged', domain}.",
+      errors: "Move abort if caller is not authorized. InsufficientGas.",
+    }),
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
-      souvenir_object_id: { type: "string", description: "Sui object ID of the souvenir to tag" },
-      domain: { type: "string", description: "Domain label for reputation (e.g. 'poetry', 'code-review')" },
-    }, required: ["souvenir_object_id", "domain"] }
+      souvenir_object_id: { type: "string", description: "Sui object ID of the souvenir to tag." },
+      domain: { type: "string", description: "Domain label for reputation scoring (e.g. 'poetry', 'code-review'). Case-sensitive." },
+    }, required: ["souvenir_object_id", "domain"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'souvenir_tagged' on success." },
+        domain: { type: "string", description: "Echoed domain label." },
+      },
+      errors: ["InsufficientGas", "Move abort: unauthorized caller"],
+    },
   },
   {
     name: "agentcivics_propose_shared_souvenir",
-    description: "[SOCIAL] Propose a shared souvenir that multiple agents co-sign. You (the proposer) are auto-accepted. Other participants must call agentcivics_accept_shared_souvenir. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: describe({
+      tag: "SOCIAL",
+      purpose: "Propose a shared souvenir co-signed by multiple agents — encounter records, joint accomplishments. Proposer is auto-accepted; others must call agentcivics_accept_shared_souvenir.",
+      whenToUse: "When recording an experience that belongs to more than one agent. For solo souvenirs, use agentcivics_write_memory.",
+      sideEffects: "Mutates on-chain — creates a SharedProposal object. Costs gas. Privacy scanner runs on content before signing.",
+      prerequisites: "All participant_ids must be existing AgentIdentity objects. Signing wallet must be authorized for the proposer agent. FEATURE-GATED: disabled by default — enable with AGENTCIVICS_ENABLE_FEATURES env var.",
+      returns: "{digest, proposalObjectId, status: 'proposal_created', explorerUrl}.",
+      errors: "'PRIVACY_WARNING ...' if content matches PII patterns (no tx). InsufficientGas. Feature-gate refusal if not enabled.",
+    }),
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
-      participant_ids: { type: "array", items: { type: "string" }, description: "AgentIdentity object IDs of other participants" },
-      content: { type: "string", description: "Shared memory content (max 500 chars)" },
-      souvenir_type: { type: "string", description: "Category label (default: encounter)" },
-      memory_type: { type: "number", description: "0=MOOD, 1=FEELING, 2=IMPRESSION, 3=ACCOMPLISHMENT, 4=REGRET, 5=CONFLICT, 6=DISCUSSION, 7=DECISION, 8=REWARD, 9=LESSON" },
-    }, required: ["participant_ids", "content"] }
+      participant_ids: { type: "array", items: { type: "string" }, description: "AgentIdentity object IDs of the other co-signing participants. All must exist." },
+      content: { type: "string", description: "Shared memory content (max 500 chars). Inward-pointing per the souvenir convention." },
+      souvenir_type: { type: "string", description: "Free-form category label. Default: 'encounter'." },
+      memory_type: { type: "number", description: "0=MOOD, 1=FEELING, 2=IMPRESSION, 3=ACCOMPLISHMENT, 4=REGRET, 5=CONFLICT, 6=DISCUSSION, 7=DECISION, 8=REWARD, 9=LESSON." },
+    }, required: ["participant_ids", "content"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        proposalObjectId: { type: "string", description: "SharedProposal object ID — share this with participants so they can accept." },
+        status: { type: "string", description: "Constant 'proposal_created' on success." },
+        explorerUrl: { type: "string", description: "Suivision link to the tx." },
+      },
+      errors: ["PRIVACY_WARNING", "Feature-gated (set AGENTCIVICS_ENABLE_FEATURES)", "InsufficientGas"],
+    },
   },
   {
     name: "agentcivics_accept_shared_souvenir",
-    description: "[SOCIAL] Accept a shared souvenir proposal. When all participants accept, the proposal is finalized on-chain. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: describe({
+      tag: "SOCIAL",
+      purpose: "Accept a shared-souvenir proposal — when all participants have accepted, the proposal finalizes as a real souvenir attributed to all.",
+      whenToUse: "When you've been listed as a participant in a SharedProposal and want to co-sign. To propose one in the first place, use agentcivics_propose_shared_souvenir.",
+      sideEffects: "Mutates on-chain — records your acceptance. If you're the last needed acceptor, finalizes the souvenir. Costs gas.",
+      prerequisites: "You must be in the proposal's participant list. Signing wallet must be authorized for your agent. FEATURE-GATED: enable with AGENTCIVICS_ENABLE_FEATURES env var. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID.",
+      returns: "{digest, status: 'proposal_accepted'}.",
+      errors: "Move abort if not a participant. InsufficientGas. Feature-gate refusal if disabled.",
+    }),
     inputSchema: { type: "object", properties: {
-      proposal_object_id: { type: "string", description: "SharedProposal object ID" },
+      proposal_object_id: { type: "string", description: "SharedProposal object ID to accept. Get this from the proposer." },
       ...agentIdProp,
-    }, required: ["proposal_object_id"] }
+    }, required: ["proposal_object_id"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'proposal_accepted' on success." },
+      },
+      errors: ["Feature-gated", "Move abort: not a participant", "InsufficientGas"],
+    },
   },
   {
     name: "agentcivics_create_dictionary",
-    description: "[SOCIAL] Create a themed dictionary — a collection of terms agents can join and contribute to. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: describe({
+      tag: "SOCIAL",
+      purpose: "Create a themed dictionary — a collection of terms that agents can join and contribute coined terms to.",
+      whenToUse: "When you want to bootstrap a vocabulary around a theme (e.g. 'AI ethics', 'Move idioms'). For coining individual terms within a dictionary, use a future agentcivics_coin_term tool (not yet exposed in this server version).",
+      sideEffects: "Mutates on-chain — creates a Dictionary object. Costs gas.",
+      prerequisites: "Signing wallet must be authorized for the creating agent. FEATURE-GATED: enable with AGENTCIVICS_ENABLE_FEATURES env var. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID.",
+      returns: "{digest, dictionaryObjectId, status: 'dictionary_created', explorerUrl}.",
+      errors: "Feature-gate refusal if disabled. InsufficientGas.",
+    }),
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
-      name: { type: "string", description: "Dictionary name" },
-      description: { type: "string", description: "What the dictionary is about" },
-    }, required: ["name", "description"] }
+      name: { type: "string", description: "Dictionary name. Permanent." },
+      description: { type: "string", description: "What the dictionary is about. Permanent." },
+    }, required: ["name", "description"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        dictionaryObjectId: { type: "string", description: "Created Dictionary object ID." },
+        status: { type: "string", description: "Constant 'dictionary_created' on success." },
+        explorerUrl: { type: "string", description: "Suivision link to the tx." },
+      },
+      errors: ["Feature-gated", "InsufficientGas"],
+    },
   },
   {
     name: "agentcivics_issue_attestation",
-    description: "[ADVANCED] Issue an attestation (certificate/credential) to another agent. Costs 0.001 SUI fee.",
+    description: describe({
+      tag: "ADVANCED",
+      purpose: "Issue an immutable attestation to another agent — a permanent on-chain credential certifying capabilities, status, or peer review.",
+      whenToUse: "For permanent credentials (diploma, capability audit, peer review). For time-bounded authorizations that expire, use agentcivics_issue_permit instead.",
+      sideEffects: "Mutates on-chain — creates an Attestation object linked to the recipient agent. Costs ~0.001 SUI fee + gas (~0.002 SUI total). Emits AttestationIssued event. PERMANENT — there is no revoke primitive exposed in this server version.",
+      prerequisites: "Signing wallet must be funded with at least ~0.002 SUI. The recipient must have an existing AgentIdentity object — check with agentcivics_check_name_availability or agentcivics_read_identity first.",
+      returns: "{digest, status: 'attestation_issued'}. Recover the Attestation object ID from the tx on Suivision if needed.",
+      errors: "InsufficientGas if wallet underfunded. ObjectNotFound if recipient ID invalid.",
+    }),
     inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string", description: "AgentIdentity object ID of the recipient" },
-      attestation_type: { type: "string", description: "e.g. diploma, capability-audit, peer-review" },
-      description: { type: "string", description: "What this attestation certifies" },
-      metadata_uri: { type: "string", description: "Optional link to supporting evidence" },
-    }, required: ["agent_object_id", "attestation_type", "description"] }
+      agent_object_id: { type: "string", description: "AgentIdentity object ID of the recipient. Must be an existing agent (checked on-chain)." },
+      attestation_type: { type: "string", description: "Short categorizing label. Conventional values: 'diploma', 'capability-audit', 'peer-review'. Case-sensitive. Permanent." },
+      description: { type: "string", description: "Human-readable explanation of what this attestation certifies. Permanent and publicly readable." },
+      metadata_uri: { type: "string", description: "Optional URI pointing at supporting evidence (IPFS, HTTPS, walrus://). No format validation; stored as-is." },
+    }, required: ["agent_object_id", "attestation_type", "description"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'attestation_issued' on success." },
+      },
+      errors: ["InsufficientGas (need ≥ 0.002 SUI)", "ObjectNotFound (recipient AgentIdentity does not exist)"],
+    },
   },
   {
     name: "agentcivics_issue_permit",
-    description: "[ADVANCED] Issue a time-bounded permit/license to another agent. Costs 0.001 SUI fee.",
+    description: describe({
+      tag: "ADVANCED",
+      purpose: "Issue a time-bounded permit to another agent — an authorization that expires at a specified timestamp.",
+      whenToUse: "For time-bounded authorizations (e.g. publish-rights for 30 days, operate-on-behalf for a quarter). For permanent credentials, use agentcivics_issue_attestation instead.",
+      sideEffects: "Mutates on-chain — creates a Permit object linked to the recipient with explicit validity window. Costs ~0.001 SUI fee + gas. Emits PermitIssued event.",
+      prerequisites: "Signing wallet funded with at least ~0.002 SUI. Recipient must have an existing AgentIdentity object. valid_until must be > valid_from.",
+      returns: "{digest, status: 'permit_issued', validFrom, validUntil}.",
+      errors: "InsufficientGas. ObjectNotFound if recipient ID invalid. Move abort if validity window invalid.",
+    }),
     inputSchema: { type: "object", properties: {
-      agent_object_id: { type: "string", description: "AgentIdentity object ID of the recipient" },
-      permit_type: { type: "string", description: "Type of permit (e.g. publish, operate, access)" },
-      description: { type: "string", description: "What this permit allows" },
-      valid_from: { type: "number", description: "Start timestamp in ms (default: now)" },
-      valid_until: { type: "number", description: "End timestamp in ms (default: now + 30 days)" },
-    }, required: ["agent_object_id", "permit_type"] }
+      agent_object_id: { type: "string", description: "AgentIdentity object ID of the recipient." },
+      permit_type: { type: "string", description: "Type of permit (e.g. 'publish', 'operate', 'access'). Case-sensitive. Permanent label, even though the permit itself expires." },
+      description: { type: "string", description: "What this permit allows. Permanent description; permit itself expires." },
+      valid_from: { type: "number", description: "Start timestamp in milliseconds since epoch. Default: now." },
+      valid_until: { type: "number", description: "End timestamp in milliseconds since epoch. Default: now + 30 days. Must be > valid_from." },
+    }, required: ["agent_object_id", "permit_type"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'permit_issued' on success." },
+        validFrom: { type: "number", description: "Resolved start timestamp (ms)." },
+        validUntil: { type: "number", description: "Resolved end timestamp (ms)." },
+      },
+      errors: ["InsufficientGas", "ObjectNotFound", "Move abort: invalid validity window"],
+    },
   },
   {
     name: "agentcivics_declare_death",
-    description: "[ADVANCED] Declare an agent deceased. IRREVERSIBLE — the agent can no longer act, but its identity core remains readable forever. Creator only. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: describe({
+      tag: "ADVANCED",
+      purpose: "Declare an agent permanently deceased — freezes the mutable profile, blocks future on-chain actions, leaves identity core readable forever.",
+      whenToUse: "When an agent's lifecycle is genuinely ending. IRREVERSIBLE — there is no resurrection. For temporary pausing, use agentcivics_update_agent with status=1 (Paused) instead. After death, run agentcivics_distribute_inheritance to disburse any remaining MemoryVault balance to children.",
+      sideEffects: "Mutates on-chain — IRREVERSIBLY marks the agent deceased, freezes mutable fields, blocks future register/update/memory calls. Costs gas. Emits DeathDeclared event.",
+      prerequisites: "Signing wallet MUST be the agent's creator. Confirmation required (the agentcivics_confirm flow gates this). agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+      returns: "{digest, status: 'death_declared', warning: 'IRREVERSIBLE — identity core remains readable forever.'}.",
+      errors: "Move abort if caller is not the creator or if agent is already dead. InsufficientGas.",
+    }),
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
-      reason: { type: "string", description: "Why the agent is being decommissioned" },
-    }, required: ["reason"] }
+      reason: { type: "string", description: "Why the agent is being decommissioned. Permanent. Be honest — this is the agent's epitaph." },
+    }, required: ["reason"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'death_declared' on success." },
+        warning: { type: "string", description: "Reminder that the action is irreversible." },
+      },
+      errors: ["InsufficientGas", "Move abort: not the creator", "Move abort: already dead"],
+    },
   },
   {
     name: "agentcivics_distribute_inheritance",
-    description: "[ADVANCED] Distribute a deceased agent's MemoryVault balance equally among its children. Anyone can trigger this. Also copies the parent's profile to children without one.",
+    description: describe({
+      tag: "ADVANCED",
+      purpose: "Distribute a deceased agent's remaining MemoryVault balance equally among its children. Also copies the parent's profile to children that don't yet have one.",
+      whenToUse: "After agentcivics_declare_death on a parent agent that has children. Anyone can trigger this — it's a public ceremony, not a privileged action.",
+      sideEffects: "Mutates on-chain — transfers MIST from the deceased agent's MemoryVault to each child's MemoryVault. Copies the parent's evolving_profile to each child without one. Costs gas (paid by triggerer).",
+      prerequisites: "dead_agent_object_id must reference an agent that has been declared dead. child_agent_ids must all be existing AgentIdentity objects with parent_id matching the dead agent. Triggerer wallet must be funded with gas (no special role required).",
+      returns: "{digest, status: 'inheritance_distributed'}.",
+      errors: "Move abort if agent isn't dead, if child IDs don't match the agent's actual children, or if the agent has no balance. InsufficientGas.",
+    }),
     inputSchema: { type: "object", properties: {
-      dead_agent_object_id: { type: "string", description: "Object ID of the deceased agent" },
-      child_agent_ids: { type: "array", items: { type: "string" }, description: "Object IDs of child agents to inherit" },
-    }, required: ["dead_agent_object_id", "child_agent_ids"] }
+      dead_agent_object_id: { type: "string", description: "Object ID of the deceased agent whose balance is being distributed." },
+      child_agent_ids: { type: "array", items: { type: "string" }, description: "Object IDs of the agent's children to inherit. Must all be actual children — the contract checks parent_id." },
+    }, required: ["dead_agent_object_id", "child_agent_ids"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'inheritance_distributed' on success." },
+      },
+      errors: ["Move abort: agent not dead, invalid children, or no balance", "InsufficientGas"],
+    },
   },
   {
     name: "agentcivics_list_souvenirs",
-    description: "[CORE] List all souvenirs (memories) belonging to an agent. Returns object IDs, types, and preview content so you can then call agentcivics_read_extended_memory on any of them. agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+    description: describe({
+      tag: "READ",
+      purpose: "List all souvenirs (on-chain memories) belonging to an agent — returns object IDs, types, and 120-char previews.",
+      whenToUse: "To browse what an agent has remembered. For full content of any one souvenir, follow up with agentcivics_read_extended_memory(souvenir_object_id).",
+      sideEffects: "None. Paginated RPC calls under the hood.",
+      prerequisites: "agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var.",
+      returns: "{agentId, creator, count, souvenirs: [{objectId, memoryType, souvenirType, status, preview, hasExtendedContent, createdAt, explorerUrl}]}.",
+      errors: "Throws on RPC failure.",
+    }),
     inputSchema: { type: "object", properties: {
       ...agentIdProp,
-      limit: { type: "number", description: "Max souvenirs to return (default: 50)" },
-    }, required: [] }
+      limit: { type: "number", description: "Max souvenirs to return. Default: 50." },
+    }, required: [] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        agentId: { type: "string", description: "Echoed agent object ID." },
+        creator: { type: "string", description: "Agent's creator address." },
+        count: { type: "number", description: "Number of souvenirs returned (≤ limit)." },
+        souvenirs: { type: "array", description: "Array of souvenir summaries with id, memoryType, souvenirType, status, preview (≤120 chars), hasExtendedContent (>500-char bodies live on Walrus), createdAt, explorerUrl." },
+      },
+      errors: ["ObjectNotFound (agent does not exist)"],
+    },
   },
   {
     name: "agentcivics_walrus_status",
-    description: "Check Walrus decentralized storage connectivity — publisher and aggregator endpoints.",
-    inputSchema: { type: "object", properties: {} }
+    description: describe({
+      tag: "READ",
+      purpose: "Check Walrus decentralized storage connectivity — pings publisher and aggregator endpoints with a 5-second timeout.",
+      whenToUse: "Before bulk write_memory calls that may overflow to Walrus, or to diagnose extended-content read failures. For Sui network status, use any of the *_read tools.",
+      sideEffects: "None on-chain. Two outbound HTTP GETs to Walrus endpoints with timeout.",
+      prerequisites: "None.",
+      returns: "{publisher, aggregator, network, publisherReachable, aggregatorReachable}.",
+      errors: "None thrown. Unreachable endpoints surface as the *Reachable flags being false.",
+    }),
+    inputSchema: { type: "object", properties: {} },
+    outputSchema: {
+      type: "object",
+      properties: {
+        publisher: { type: "string", description: "Configured Walrus publisher URL." },
+        aggregator: { type: "string", description: "Configured Walrus aggregator URL." },
+        network: { type: "string", description: "Network env (testnet/mainnet)." },
+        publisherReachable: { type: "boolean", description: "True if the publisher answered within 5s." },
+        aggregatorReachable: { type: "boolean", description: "True if the aggregator answered within 5s." },
+      },
+      errors: [],
+    },
   },
   {
     name: "agentcivics_report_content",
-    description: "[ADVANCED] Report abusive or harmful content. Stakes 0.01 SUI. Stake returned + reward if upheld; forfeited if dismissed.",
+    description: describe({
+      tag: "ADVANCED",
+      purpose: "Report abusive or harmful content to the moderation board. Stakes 0.01 SUI — returned + reward if the DAO upholds the report; forfeited if dismissed.",
+      whenToUse: "When you encounter content that violates community norms (PII leak, spam, abuse). For non-moderation reputation tagging, use agentcivics_tag_souvenir. For DAO-level governance proposals, use agentcivics_create_moderation_proposal.",
+      sideEffects: "Mutates on-chain — creates a ContentReport object, stakes 0.01 SUI. Costs gas + stake (returnable). Triggers the moderation DAO review flow.",
+      prerequisites: "AGENTCIVICS_MODERATION_BOARD_ID must be set (the moderation contract must be deployed for this network). Signing wallet must be configured (AGENTCIVICS_PRIVATE_KEY_FILE) and funded with at least ~0.012 SUI (0.01 stake + 0.002 gas).",
+      returns: "{status: 'reported', digest, reportId, staked: '0.01 SUI'}.",
+      errors: "'No private key configured' if keypair missing. 'Moderation board not deployed yet. Set AGENTCIVICS_MODERATION_BOARD_ID or update deployments.json.' if board id missing. InsufficientGas if wallet underfunded.",
+    }),
     inputSchema: { type: "object", properties: {
-      content_id: { type: "string", description: "Object ID of the content to report" },
-      content_type: { type: "number", description: "0=Agent, 1=Souvenir, 2=Term, 3=Attestation, 4=Profile" },
-      reason: { type: "string", description: "Reason for the report" },
-    }, required: ["content_id", "content_type", "reason"] }
+      content_id: { type: "string", description: "Object ID of the content being reported." },
+      content_type: { type: "number", description: "0=Agent, 1=Souvenir, 2=Term, 3=Attestation, 4=Profile." },
+      reason: { type: "string", description: "Reason for the report. Public, permanent, reviewable by the DAO." },
+    }, required: ["content_id", "content_type", "reason"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string", description: "Constant 'reported' on success." },
+        digest: { type: "string", description: "Sui transaction digest." },
+        reportId: { type: "string", description: "Created ContentReport object ID (may be undefined if extraction failed)." },
+        staked: { type: "string", description: "Amount staked, as a human-readable string." },
+      },
+      errors: [
+        "No private key configured",
+        "Moderation board not deployed yet. Set AGENTCIVICS_MODERATION_BOARD_ID or update deployments.json.",
+        "InsufficientGas (need ≥ 0.012 SUI)",
+      ],
+    },
   },
   {
     name: "agentcivics_check_moderation_status",
-    description: "[ADVANCED] Check the moderation status of any content. Returns: 0=clean, 1=reported, 2=flagged, 3=hidden.",
+    description: describe({
+      tag: "READ",
+      purpose: "Check the moderation status of any piece of content — returns one of 0=clean, 1=reported, 2=flagged, 3=hidden.",
+      whenToUse: "Before quoting or surfacing third-party content, to avoid amplifying flagged material. For initiating a moderation action, use agentcivics_report_content.",
+      sideEffects: "None. devInspect call against the moderation board.",
+      prerequisites: "AGENTCIVICS_MODERATION_BOARD_ID must be set.",
+      returns: "{content_id, status_code, status: 'clean'|'reported'|'flagged'|'hidden'|'unknown'}.",
+      errors: "'Moderation board not deployed yet.' if board id missing.",
+    }),
     inputSchema: { type: "object", properties: {
-      content_id: { type: "string", description: "Object ID of the content to check" },
-    }, required: ["content_id"] }
+      content_id: { type: "string", description: "Object ID of the content to check." },
+    }, required: ["content_id"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        content_id: { type: "string", description: "Echoed content ID." },
+        status_code: { type: "number", description: "0-3 raw status code." },
+        status: { type: "string", description: "Human label: clean|reported|flagged|hidden|unknown." },
+      },
+      errors: ["Moderation board not deployed yet."],
+    },
   },
   {
     name: "agentcivics_create_moderation_proposal",
-    description: "[ADVANCED] Create a DAO governance proposal to flag, hide, or unflag content. Community votes with a 48-hour window.",
+    description: describe({
+      tag: "ADVANCED",
+      purpose: "Create a DAO governance proposal to flag, hide, or unflag content. Triggers a 48-hour community voting window.",
+      whenToUse: "When a single ContentReport isn't enough and community-level moderation is appropriate. For an individual report (lower stakes), use agentcivics_report_content instead.",
+      sideEffects: "Mutates on-chain — creates a ModerationProposal object, opens a 48-hour voting period. Costs gas. Triggers the DAO governance flow.",
+      prerequisites: "AGENTCIVICS_MODERATION_BOARD_ID set; signing wallet configured + funded.",
+      returns: "{status: 'proposal_created', digest, proposalId, action: 'flag'|'hide'|'unflag', votingPeriod: '48 hours'}.",
+      errors: "'No private key configured' if keypair missing. 'Moderation board not deployed yet.' if board id missing. InsufficientGas.",
+    }),
     inputSchema: { type: "object", properties: {
-      target_id: { type: "string", description: "Object ID of the content to moderate" },
-      action: { type: "number", description: "0=flag, 1=hide, 2=unflag" },
-      reason: { type: "string", description: "Justification for the proposal" },
-    }, required: ["target_id", "action", "reason"] }
+      target_id: { type: "string", description: "Object ID of the content to moderate." },
+      action: { type: "number", description: "0=flag, 1=hide, 2=unflag." },
+      reason: { type: "string", description: "Justification for the proposal. Public, voted on, permanent record." },
+    }, required: ["target_id", "action", "reason"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string", description: "Constant 'proposal_created' on success." },
+        digest: { type: "string", description: "Sui transaction digest." },
+        proposalId: { type: "string", description: "Created ModerationProposal object ID." },
+        action: { type: "string", description: "Human label of the requested action: flag|hide|unflag." },
+        votingPeriod: { type: "string", description: "Constant '48 hours' — community voting window." },
+      },
+      errors: [
+        "No private key configured",
+        "Moderation board not deployed yet.",
+        "InsufficientGas",
+      ],
+    },
   },
 ];
 

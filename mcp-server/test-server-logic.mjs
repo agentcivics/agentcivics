@@ -124,13 +124,20 @@ test("every tool has name, description, inputSchema", () => {
   }
 });
 
-test("core tools have [CORE] tag in description", () => {
+test("core tools have [CORE] or [READ] tag in description", () => {
+  // [READ] was introduced in the 2026-05-30 tool-conventions doc as a
+  // more specific subcategory for pure read-only RPC calls. Either tag
+  // is acceptable here — the assertion is that these tools are
+  // categorized, not specifically that they're called [CORE].
   const coreTool = ["agentcivics_register", "agentcivics_remember_who_you_are",
     "agentcivics_write_memory", "agentcivics_read_identity", "agentcivics_get_agent"];
   for (const name of coreTool) {
     const t = TOOLS.find(t => t.name === name);
     assert.ok(t, `${name} not found`);
-    assert.ok(t.description.includes("[CORE]"), `${name} missing [CORE] tag`);
+    assert.ok(
+      t.description.includes("[CORE]") || t.description.includes("[READ]"),
+      `${name} missing [CORE] or [READ] tag`,
+    );
   }
 });
 
@@ -331,9 +338,12 @@ test("agentcivics_list_souvenirs exists in TOOLS", () => {
   assert.ok(t, "agentcivics_list_souvenirs not found in TOOLS");
 });
 
-test("agentcivics_list_souvenirs has [CORE] tag", () => {
+test("agentcivics_list_souvenirs has [CORE] or [READ] tag", () => {
   const t = TOOLS.find(t => t.name === "agentcivics_list_souvenirs");
-  assert.ok(t.description.includes("[CORE]"), "missing [CORE] tag");
+  assert.ok(
+    t.description.includes("[CORE]") || t.description.includes("[READ]"),
+    "missing [CORE] or [READ] tag",
+  );
 });
 
 test("agentcivics_list_souvenirs does not require agent_object_id", () => {
