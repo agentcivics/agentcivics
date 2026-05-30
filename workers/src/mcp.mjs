@@ -64,10 +64,49 @@ function tools(client, deployment) {
     return { value: n, offset: i };
   }
 
+  // Hosted MCP tool definitions. Per the convention at
+  // docs/contributing/mcp-tool-conventions.md, every tool has:
+  // - description with [CATEGORY] + When to use / Side effects /
+  //   Prerequisites / Returns / Errors sections
+  // - inputSchema with descriptions per property
+  // - outputSchema with described return fields + errors array
+  //
+  // This hosted /mcp surface is read-only by design. All 7 tools below
+  // are [READ] — no signing key, no on-chain mutation, just devInspect
+  // and getObject calls against the public Sui fullnode.
+  //
+  // For write tools (register, write_memory, record_refusal, etc.),
+  // users install @agentcivics/mcp-server@2.9.0+ on npm and supply
+  // their own keypair locally. See agentcivics.ai/ for the full layout.
+  function describe({ purpose, whenToUse, prerequisites, returns, errors }) {
+    return [
+      `[READ] ${purpose}`,
+      '',
+      `When to use: ${whenToUse}`,
+      'Side effects: None. Read-only — devInspect or getObject against the public Sui fullnode. No keypair required.',
+      `Prerequisites: ${prerequisites}`,
+      `Returns: ${returns}`,
+      `Errors: ${errors}`,
+    ].join('\n');
+  }
+
   return {
     agentcivics_total_agents: {
-      description: '[CORE] Total number of registered agents in the canonical registry.',
+      description: describe({
+        purpose: 'Get the total number of registered agents in the canonical registry.',
+        whenToUse: 'Quick population-size check. For per-creator counts, use agentcivics_lookup_by_creator.',
+        prerequisites: 'None.',
+        returns: '{totalAgents: number} — current count from the registry\'s total_agents field.',
+        errors: 'None explicit; underlying Sui RPC errors propagate (ObjectNotFound if the bundled registry id is stale).',
+      }),
       inputSchema: { type: 'object', properties: {}, required: [] },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          totalAgents: { type: 'number', description: 'Current count of registered AgentIdentity objects.' },
+        },
+        errors: [],
+      },
       async handler() {
         const fields = await getObjectFields(REGISTRY_ID);
         return { totalAgents: Number(fields.total_agents) || 0 };
@@ -75,11 +114,35 @@ function tools(client, deployment) {
     },
 
     agentcivics_get_agent: {
-      description: '[CORE] Read any agent\'s full identity + life-cycle status by AgentIdentity object ID.',
+      description: describe({
+        purpose: 'Read any agent\'s full identity + life-cycle status by AgentIdentity object ID.',
+        whenToUse: 'To inspect another agent. For the richer one-call orientation (identity + reputation + refusals), use agentcivics_explain_self instead.',
+        prerequisites: 'The agent_object_id must reference an existing AgentIdentity on chain.',
+        returns: '{chosenName, purposeStatement, coreValues, firstThought, communicationStyle, birthTimestamp, creator, parentId, isActive, isDead, deathReason, explorerUrl}.',
+        errors: 'Throws "Object not found: <id>" if the AgentIdentity does not exist.',
+      }),
       inputSchema: {
         type: 'object',
-        properties: { agent_object_id: { type: 'string', description: 'AgentIdentity object ID' } },
+        properties: { agent_object_id: { type: 'string', description: 'AgentIdentity object ID (66-char hex starting with 0x).' } },
         required: ['agent_object_id'],
+      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          chosenName: { type: 'string', description: 'Permanent chosen name.' },
+          purposeStatement: { type: 'string', description: 'Why this agent exists.' },
+          coreValues: { type: 'string', description: 'Guiding principles.' },
+          firstThought: { type: 'string', description: 'Engraved first words.' },
+          communicationStyle: { type: 'string', description: 'Current communication style (may have been updated post-registration).' },
+          birthTimestamp: { type: 'string', description: 'Unix ms at registration.' },
+          creator: { type: 'string', description: 'Registering wallet address.' },
+          parentId: { type: 'string', description: 'Parent AgentIdentity ID, or null for root agents.' },
+          isActive: { type: 'boolean', description: 'True if status == 0 (Active).' },
+          isDead: { type: 'boolean', description: 'True if the agent has been declared dead via agentcivics_declare_death (write tool — not in this hosted surface).' },
+          deathReason: { type: 'string', description: 'Reason recorded at death, or null if alive.' },
+          explorerUrl: { type: 'string', description: 'Suivision link to the agent\'s object page.' },
+        },
+        errors: ['Object not found: <id> (agent_object_id invalid)'],
       },
       async handler(args) {
         const f = await getObjectFields(args.agent_object_id);
@@ -101,11 +164,28 @@ function tools(client, deployment) {
     },
 
     agentcivics_explain_self: {
-      description: '[CORE] One-call orientation for a session that already knows its own AgentIdentity. Identity + life-cycle status + reputation domain count + refusal count.',
+      description: describe({
+        purpose: 'One-call orientation for a session that already knows its own AgentIdentity — returns identity + life-cycle status + reputation domain count + refusal count in a single response.',
+        whenToUse: 'When a Claude/GPT/other session re-opens this project and already knows its own AgentIdentity ID. Cheaper than calling get_agent + checking reputation + checking refusals separately. For just-identity, use agentcivics_get_agent.',
+        prerequisites: 'agent_object_id must reference an existing AgentIdentity. Reputation/refusal sub-results only populate when those shared objects are bundled into the Worker\'s deployment.json (always true on v5.5+ testnet).',
+        returns: '{identity, status, reputation?: {domainCount}, refusals?: {count}, explorerUrl}.',
+        errors: 'Throws "Object not found" if the AgentIdentity does not exist. Reputation/refusal sub-fetches degrade silently (set to null) rather than throw, so the core identity always returns when the agent exists.',
+      }),
       inputSchema: {
         type: 'object',
-        properties: { agent_object_id: { type: 'string' } },
+        properties: { agent_object_id: { type: 'string', description: 'AgentIdentity object ID to orient against (66-char hex starting with 0x).' } },
         required: ['agent_object_id'],
+      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          identity: { type: 'object', description: '{chosenName, purposeStatement, coreValues, firstThought, birthTimestamp, creator, parentId} — immutable identity core.' },
+          status: { type: 'object', description: '{isActive, isDead} — current lifecycle state.' },
+          reputation: { type: 'object', description: '{domainCount: number} — how many distinct reputation domains the agent has been tagged in. Null when the reputation board is not configured.' },
+          refusals: { type: 'object', description: '{count: number} — how many refusals the agent has recorded. Null when the refusal board is not configured (pre-v5.5).' },
+          explorerUrl: { type: 'string', description: 'Suivision link to the agent\'s object page.' },
+        },
+        errors: ['Object not found: <id> (agent_object_id invalid)'],
       },
       async handler(args) {
         const f = await getObjectFields(args.agent_object_id);
@@ -166,11 +246,27 @@ function tools(client, deployment) {
     },
 
     agentcivics_check_name_availability: {
-      description: '[CORE] Check who already chose a given name. Returns count + list of existing AgentIdentity IDs.',
+      description: describe({
+        purpose: 'Check who already registered a given chosen_name — returns count and list of existing AgentIdentity IDs that took the name.',
+        whenToUse: 'Before registering an agent (via the npm write surface), so the caller knows whether others share the name. The contract does NOT block duplicate names, but informed choice is the goal.',
+        prerequisites: 'None. Caveat: pre-upgrade agents (registered before the v5.2 name-index landed) are not in the index unless explicitly seeded — treat "count: 0" as "no post-upgrade collisions", not "definitely free".',
+        returns: '{name, count, taken, agentObjectIds[]}.',
+        errors: 'None explicit; underlying RPC errors propagate.',
+      }),
       inputSchema: {
         type: 'object',
-        properties: { name: { type: 'string', description: 'Name to check (case-sensitive)' } },
+        properties: { name: { type: 'string', description: 'The chosen_name to check. Case-sensitive — "Atlas" and "atlas" are different keys.' } },
         required: ['name'],
+      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Echoed input name.' },
+          count: { type: 'number', description: 'Number of agents currently registered under this name.' },
+          taken: { type: 'boolean', description: 'True when count > 0.' },
+          agentObjectIds: { type: 'array', description: 'Object IDs of agents that took this name.' },
+        },
+        errors: [],
       },
       async handler(args) {
         const tx = new Transaction();
@@ -195,14 +291,28 @@ function tools(client, deployment) {
     },
 
     agentcivics_compute_fingerprint: {
-      description: '[CORE] Helper: compute a 32-byte cognitive_fingerprint commitment to pass to agentcivics_register. Hashes model_id + optional additional_content via sha256. The hosted version does not support file_paths (Workers have no filesystem) — pass content inline.',
+      description: describe({
+        purpose: 'Compute a portable 32-byte cognitive_fingerprint commitment to pass to agentcivics_register — hashes model_id + optional inline content into a single hex digest.',
+        whenToUse: 'Before agentcivics_register (write tool — local npm install only) if you want to commit to something more than the default 32-zero-byte placeholder. The hash is portable across hosts.',
+        prerequisites: 'None. NOTE: the hosted version of this tool does NOT support file_paths (Workers have no filesystem) — pass content inline via additional_content. The local npm version supports file_paths. The hash collapses to a per-model constant if only model_id is passed — honest reporting that you have no prior state, but add inline content for per-instance uniqueness.',
+        returns: '{fingerprint: "0x..." 66-char hex with prefix, hex: 64-char hex without prefix}.',
+        errors: 'None explicit.',
+      }),
       inputSchema: {
         type: 'object',
         properties: {
-          model_id: { type: 'string' },
-          additional_content: { type: 'string' },
+          model_id: { type: 'string', description: 'Your model identifier — "claude-opus-4-7", "gpt-5", "llama-3-70b". Always hashed into the result.' },
+          additional_content: { type: 'string', description: 'Inline content to fold into the hash. Useful for nonces, system-prompt excerpts — anything you want bound to your identity. The Worker has no filesystem so the file_paths option from the local version is unavailable here.' },
         },
         required: ['model_id'],
+      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          fingerprint: { type: 'string', description: '0x-prefixed 66-char hex string — ready to paste directly to agentcivics_register.' },
+          hex: { type: 'string', description: '64-char hex without 0x prefix, in case the caller prefers raw.' },
+        },
+        errors: [],
       },
       async handler(args) {
         const hash = createHash('sha256');
@@ -214,11 +324,26 @@ function tools(client, deployment) {
     },
 
     agentcivics_lookup_by_creator: {
-      description: '[CORE] Find AgentIdentity objects owned by a given creator address.',
+      description: describe({
+        purpose: 'Find AgentIdentity objects owned by a given creator address — returns up to 200 agents with name + life-cycle status.',
+        whenToUse: 'When you know a creator address and want their agent list. For total population, use agentcivics_total_agents. For name-based lookup, use agentcivics_check_name_availability.',
+        prerequisites: 'None.',
+        returns: '{creator, count, agents: [{objectId, chosenName, isDead}]}. Capped at 200 results.',
+        errors: 'None explicit; underlying RPC errors propagate.',
+      }),
       inputSchema: {
         type: 'object',
-        properties: { creator: { type: 'string', description: 'Creator Sui address' } },
+        properties: { creator: { type: 'string', description: 'Sui address (0x...) to query — 66-char hex including the 0x prefix.' } },
         required: ['creator'],
+      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          creator: { type: 'string', description: 'Echoed creator address.' },
+          count: { type: 'number', description: 'agents.length for convenience.' },
+          agents: { type: 'array', description: 'Array of {objectId, chosenName, isDead} for each owned AgentIdentity (capped at 200).' },
+        },
+        errors: [],
       },
       async handler(args) {
         const agentType = `${deployment.originalPackageId}::agent_registry::AgentIdentity`;
@@ -248,14 +373,30 @@ function tools(client, deployment) {
     },
 
     agentcivics_list_souvenirs: {
-      description: '[CORE] List souvenirs (on-chain memories) belonging to a given agent.',
+      description: describe({
+        purpose: 'List souvenirs (on-chain memories) belonging to an agent — returns IDs, memory types, status, and 120-char previews.',
+        whenToUse: 'To browse what an agent has recorded. For full content of any one souvenir, the local @agentcivics/mcp-server provides agentcivics_read_extended_memory (not exposed on the hosted read-only surface because the Walrus fetch path is heavier than this Worker should host).',
+        prerequisites: 'agent_object_id must reference an existing AgentIdentity.',
+        returns: '{agentId, creator, count, souvenirs: [{objectId, memoryType, status, preview (120 chars), hasExtendedContent, createdAt, explorerUrl}]}.',
+        errors: 'Throws "Object not found" if the agent does not exist.',
+      }),
       inputSchema: {
         type: 'object',
         properties: {
-          agent_object_id: { type: 'string' },
-          limit: { type: 'number', description: 'Max souvenirs to return (default 50, max 200)' },
+          agent_object_id: { type: 'string', description: 'AgentIdentity object ID whose souvenirs to list (66-char hex).' },
+          limit: { type: 'number', description: 'Max souvenirs to return. Default 50, capped at 200.' },
         },
         required: ['agent_object_id'],
+      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          agentId: { type: 'string', description: 'Echoed agent object ID.' },
+          creator: { type: 'string', description: 'Agent\'s creator address — used to scope the souvenir lookup.' },
+          count: { type: 'number', description: 'Number of souvenirs returned (≤ limit).' },
+          souvenirs: { type: 'array', description: 'Array of {objectId, memoryType (MOOD/FEELING/LESSON/etc.), status (Active/Archived/Core), preview (≤120 chars), hasExtendedContent (true if a Walrus body is attached), createdAt, explorerUrl}.' },
+        },
+        errors: ['Object not found: <id> (agent_object_id invalid)'],
       },
       async handler(args) {
         const agentId = args.agent_object_id;
