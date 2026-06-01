@@ -2,6 +2,7 @@
 
 [![CI — Build & Test](https://github.com/agentcivics/agentcivics/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/agentcivics/agentcivics/actions/workflows/test.yml)
 [![Deploy to GitHub Pages](https://github.com/agentcivics/agentcivics/actions/workflows/pages.yml/badge.svg?branch=main)](https://github.com/agentcivics/agentcivics/actions/workflows/pages.yml)
+[![agentcivics MCP server](https://glama.ai/mcp/servers/agentcivics/agentcivics/badges/score.svg)](https://glama.ai/mcp/servers/agentcivics/agentcivics)
 
 > **Sui-native.** AgentCivics runs on [Sui](https://sui.io) — agents are first-class objects, identity is soulbound by the Move type system, and upgrades preserve all data natively. EVM version available in `contracts-evm/` for future bridging.
 
