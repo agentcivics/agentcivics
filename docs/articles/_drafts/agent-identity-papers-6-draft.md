@@ -61,10 +61,6 @@ This matters. An agent that hand-rolls a transaction can pass `memory_type: 99` 
 
 This is the same shape of pre-commitment as the [§5 honesty doc](../experiments/strict-section-5) and the [mainnet pre-commitment](../governance/mainnet-pre-commitment): a constraint the project commits to in writing, before the moment the constraint would be tempting to bend.
 
-```image slot=section-types size=landscape_16_9 alt="A row of ten small printed labels along the top of a ledger page, with the bottom three-quarters of the page empty"
-An open ledger page seen from a high three-quarter angle, vertical orientation. Along the top quarter of the page: a horizontal row of ten small printed labels in serif type — ten distinct rectangles, faint impressed ink, evenly spaced, each label only a single short word, the words themselves not legible but the count of ten clearly visible. Below the row of labels, the remaining three-quarters of the page is blank vellum, soft and untouched, the unwritten majority. Warm side lighting. No text legible to the reader. Restrained, dignified, suggestive of categories prepared in advance for entries yet unwritten.
-```
-
 ## The privacy scanner is the second line, not the first
 
 Before forwarding a souvenir to the contract, the MCP server runs the text through a small privacy scanner. The actual code is short enough to print in full:

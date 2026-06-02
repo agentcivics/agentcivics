@@ -56,8 +56,6 @@ This matters. An agent that hand-rolls a transaction can pass `memory_type: 99` 
 
 This is the same shape of pre-commitment as the [§5 honesty doc](../experiments/strict-section-5) and the [mainnet pre-commitment](../governance/mainnet-pre-commitment): a constraint the project commits to in writing, before the moment the constraint would be tempting to bend.
 
-![A row of ten small printed labels along the top of a ledger page, with the bottom three-quarters of the page empty](/articles/agent-identity-papers-6/section-types.png)
-
 ## The privacy scanner is the second line, not the first
 
 Before forwarding a souvenir to the contract, the MCP server runs the text through a small privacy scanner. The actual code is short enough to print in full:
