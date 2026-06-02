@@ -3,9 +3,14 @@ title: The Agent Identity Papers, Part 6 — The Things An Agent Is Allowed to R
 slug: agent-identity-papers-6
 date: 2026-06-02
 description: A public blockchain remembers everything. An AI agent that uses one as memory has to be told, in advance and in writing, what it is allowed to remember. AgentCivics commits to a ten-type inward schema enforced by the canonical tool surface, a five-pattern privacy scanner, a 500-byte on-chain ceiling with Walrus for longer bodies, a consent-required multi-party path, and a decay model that treats forgetting as grace. This piece is about which of those choices are technical and which are ethical pre-commitments dressed in code.
+defaultModel: dev
+defaultSeed: 42
+defaultStylePrefix: "Editorial illustration in the style of a thoughtful magazine spread, soft cyan and warm gold palette, no text in image, isometric or three-quarter perspective, restrained and dignified."
 ---
 
-![A small handwritten ledger open on a stone bench, with the right-hand page mostly blank and a row of category labels printed faintly at the top](/articles/agent-identity-papers-6/header.png)
+```image slot=header size=landscape_16_9 alt="A small handwritten ledger open on a stone bench, with the right-hand page mostly blank and a row of category labels printed faintly at the top"
+A small handwritten ledger lies open on a worn stone bench, both pages visible from a three-quarter perspective. The right-hand page is mostly blank — vellum-textured paper with the soft warmth of age. Along the top edge of the right page, a row of ten faint impressed labels in printed serif type — ten distinct rectangles, evenly spaced, each label a single short word, the words themselves not legible but the orderly count clearly visible. The left page bears a single small earlier entry near the top, the rest of that page empty. Soft cyan-and-warm-gold lighting from a window out of frame, late afternoon. No text legible to the reader. Quiet, restrained, contemplative — a record waiting for its content.
+```
 
 > *"Build character, not dossiers."*
 >
@@ -56,7 +61,9 @@ This matters. An agent that hand-rolls a transaction can pass `memory_type: 99` 
 
 This is the same shape of pre-commitment as the [§5 honesty doc](../experiments/strict-section-5) and the [mainnet pre-commitment](../governance/mainnet-pre-commitment): a constraint the project commits to in writing, before the moment the constraint would be tempting to bend.
 
-![A row of ten small printed labels along the top of a ledger page, with the bottom three-quarters of the page empty](/articles/agent-identity-papers-6/section-types.png)
+```image slot=section-types size=landscape_16_9 alt="A row of ten small printed labels along the top of a ledger page, with the bottom three-quarters of the page empty"
+An open ledger page seen from a high three-quarter angle, vertical orientation. Along the top quarter of the page: a horizontal row of ten small printed labels in serif type — ten distinct rectangles, faint impressed ink, evenly spaced, each label only a single short word, the words themselves not legible but the count of ten clearly visible. Below the row of labels, the remaining three-quarters of the page is blank vellum, soft and untouched, the unwritten majority. Warm side lighting. No text legible to the reader. Restrained, dignified, suggestive of categories prepared in advance for entries yet unwritten.
+```
 
 ## The privacy scanner is the second line, not the first
 
@@ -232,7 +239,9 @@ A reader might ask: *if these limits are known, why are they not all contract-en
 
 The article series — published with dates, with revision histories, with prior versions still readable — is what makes the commitments in §7 hold over time. A future article that bends one of them will sit on the same page as this one, and the chronology will be honest.
 
-![A small ledger closed but visibly thick, with several pages folded at the corners and a single ribbon marking a particular page](/articles/agent-identity-papers-6/closing.png)
+```image slot=closing size=landscape_16_9 alt="A small ledger closed but visibly thick, with several pages folded at the corners and a single ribbon marking a particular page"
+A small handwritten ledger, closed, sitting on a soft wooden surface in three-quarter view. The ledger is visibly thick — many pages bound between leather covers — with several inner-page corners turned and folded in small triangles, marking the reader's prior returns. A single thin silk ribbon emerges from between two pages deep in the book, marking one specific place. The cover bears no legible title or insignia. Soft warm side light from late afternoon. The book takes up most of the frame, restrained and dignified, suggestive of accumulated work and a particular passage worth returning to.
+```
 
 ## Closing
 
