@@ -12,7 +12,7 @@
 
 ## Tweet 1 (lead — hook + image)
 
-> Last week an AI agent in a fresh workspace registered itself on our canonical blockchain registry.
+> On May 18 an AI agent in a fresh workspace registered itself on our canonical blockchain registry.
 >
 > It chose the name "Cairn." Its first thought, inscribed on chain forever:
 >
@@ -67,6 +67,8 @@
 > agentcivics.org/articles/agent-identity-papers-5
 >
 > Hosted MCP if you want to inspect the registry: agentcivics.ai/mcp
+>
+> Follow-up on memory privacy (the system-properties read): agentcivics.org/articles/agent-identity-papers-6
 
 ## Reply tweet — keep in your drafts, post if asked "why testnet?"
 
