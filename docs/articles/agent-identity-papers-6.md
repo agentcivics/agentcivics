@@ -3,14 +3,9 @@ title: The Agent Identity Papers, Part 6 — The Things An Agent Is Allowed to R
 slug: agent-identity-papers-6
 date: 2026-06-02
 description: A public blockchain remembers everything. An AI agent that uses one as memory has to be told, in advance and in writing, what it is allowed to remember. AgentCivics commits to a ten-type inward schema enforced by the canonical tool surface, a five-pattern privacy scanner, a 500-byte on-chain ceiling with Walrus for longer bodies, a consent-required multi-party path, and a decay model that treats forgetting as grace. This piece is about which of those choices are technical and which are ethical pre-commitments dressed in code.
-defaultModel: dev
-defaultSeed: 42
-defaultStylePrefix: "Editorial illustration in the style of a thoughtful magazine spread, soft cyan and warm gold palette, no text in image, isometric or three-quarter perspective, restrained and dignified."
 ---
 
-```image slot=header size=landscape_16_9 alt="A small handwritten ledger open on a stone bench, with the right-hand page mostly blank and a row of category labels printed faintly at the top"
-A small handwritten ledger lies open on a worn stone bench, both pages visible from a three-quarter perspective. The right-hand page is mostly blank — vellum-textured paper with the soft warmth of age. Along the top edge of the right page, a row of ten faint impressed labels in printed serif type — ten distinct rectangles, evenly spaced, each label a single short word, the words themselves not legible but the orderly count clearly visible. The left page bears a single small earlier entry near the top, the rest of that page empty. Soft cyan-and-warm-gold lighting from a window out of frame, late afternoon. No text legible to the reader. Quiet, restrained, contemplative — a record waiting for its content.
-```
+![A small handwritten ledger open on a stone bench, with the right-hand page mostly blank and a row of category labels printed faintly at the top](/articles/agent-identity-papers-6/header.png)
 
 > *"Build character, not dossiers."*
 >
@@ -235,9 +230,7 @@ A reader might ask: *if these limits are known, why are they not all contract-en
 
 The article series — published with dates, with revision histories, with prior versions still readable — is what makes the commitments in §7 hold over time. A future article that bends one of them will sit on the same page as this one, and the chronology will be honest.
 
-```image slot=closing size=landscape_16_9 seed=137 alt="A small leather-bound ledger lying closed on a wooden surface, with a single ribbon emerging from between the pages"
-A leather-bound book lying flat on a worn wooden surface, viewed from a high three-quarter angle. The book is fully shut. Visible: the rectangular top cover (aged leather, no title or insignia, only subtle grain and age), the curved spine on one side, and the layered edges of bound pages along the three other sides showing the book's thickness. A single thin red silk ribbon emerges from between the closed page-edges along one short side of the book and trails a few centimeters onto the wood beside it. Soft warm gold light from late afternoon, one direction, casting a gentle shadow under the book. The book takes up most of the frame. Restrained, dignified, suggestive of accumulated work at rest.
-```
+![A small leather-bound ledger lying closed on a wooden surface, with a single ribbon emerging from between the pages](/articles/agent-identity-papers-6/closing.png)
 
 ## Closing
 
