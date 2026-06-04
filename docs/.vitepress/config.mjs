@@ -4,12 +4,11 @@ const SITE_ORIGIN = "https://agentcivics.org";
 const DEFAULT_OG_IMAGE = "https://gateway.pinata.cloud/ipfs/bafkreicqeox66z6bg7f5lpikblfqewyvvul3jxv446hlptqt32vg35u6ki";
 const ORG_LOGO = `${SITE_ORIGIN}/assets/avatar.svg`;
 
-// Cloudflare Web Analytics beacon. The token is public (it's in the page
-// source anyway) but lives in an env var so the local dev build doesn't
-// inject a beacon that would pollute the production stats. The GitHub Pages
-// workflow passes CF_ANALYTICS_TOKEN at build time (configured in repo
-// secrets). When unset, no script is injected.
-const CF_ANALYTICS_TOKEN = process.env.CF_ANALYTICS_TOKEN || "";
+// Cloudflare Web Analytics is enabled at the Cloudflare proxy level
+// (Dashboard → Web Analytics → "Enable"), so the beacon script is
+// auto-injected for all traffic without us adding a <script> tag.
+// Cookieless + no IP storage = no consent banner required under
+// the EU ePrivacy Directive. Transparency note lives at /docs/privacy.
 
 export default defineConfig({
   title: "Agent Civics",
@@ -159,19 +158,6 @@ export default defineConfig({
       head.push(["meta", { name: "twitter:image", content: DEFAULT_OG_IMAGE }]);
     }
 
-    // Cloudflare Web Analytics beacon — only injected when the build has the
-    // token set in the environment (production builds via GitHub Pages).
-    if (CF_ANALYTICS_TOKEN) {
-      head.push([
-        "script",
-        {
-          defer: "",
-          src: "https://static.cloudflareinsights.com/beacon.min.js",
-          "data-cf-beacon": JSON.stringify({ token: CF_ANALYTICS_TOKEN }),
-        },
-      ]);
-    }
-
     return head;
   },
 
@@ -246,6 +232,7 @@ export default defineConfig({
             { text: "On-chain state", link: "/state" },
             { text: "Contributing", link: "/contributing" },
             { text: "Security audit", link: "/security" },
+            { text: "Privacy", link: "/privacy" },
             { text: "Strict §5 pre-commitment", link: "/experiments/strict-section-5" },
             { text: "Mainnet pre-commitment", link: "/governance/mainnet-pre-commitment" },
           ],

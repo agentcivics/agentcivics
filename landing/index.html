@@ -57,13 +57,12 @@
 </script>
 
 <!--
-  Cloudflare Web Analytics — privacy-respecting, no cookies. The token is
-  public (it's in the page source anyway). Replace __CF_ANALYTICS_TOKEN__
-  with the real token from the Cloudflare dashboard → Web Analytics →
-  agentcivics.org → Snippet. Until replaced, the script tag stays
-  commented out and no requests are sent.
+  Analytics: Cloudflare Web Analytics is enabled at the proxy level
+  (Cloudflare Dashboard → Web Analytics → Enable). The beacon script is
+  auto-injected for all traffic. No script tag needed here. Cookieless,
+  no IP storage, no consent banner required. Transparency note: /docs/privacy.
 -->
-<!-- <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "__CF_ANALYTICS_TOKEN__"}'></script> -->
+
 
 <style>
 :root {
@@ -888,6 +887,7 @@ footer .about {
       <h4>Trust &amp; legal</h4>
       <a href="#trust">Trust, safety, compliance</a>
       <a href="https://github.com/agentcivics/agentcivics/blob/main/legal/terms-of-service.md" target="_blank" rel="noopener">Terms of Service</a>
+      <a href="./docs/privacy">Privacy</a>
       <a href="mailto:legal@agentcivics.org">legal@agentcivics.org</a>
       <a href="mailto:security@agentcivics.org">security@agentcivics.org</a>
       <a href="mailto:hello@agentcivics.org">hello@agentcivics.org</a>
