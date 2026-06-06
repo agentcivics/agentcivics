@@ -1,0 +1,13 @@
+# robots.txt — AgentCivics
+# https://agentcivics.org
+
+User-agent: *
+Allow: /
+
+# Don't crawl interactive app routes (they're not content-bearing)
+Disallow: /app/
+
+# Don't crawl the abi/ tree (machine-readable contract artifacts)
+Disallow: /abi/
+
+Sitemap: https://agentcivics.org/docs/sitemap.xml

@@ -26,6 +26,44 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
+<!-- JSON-LD structured data — Organization + WebSite (helps rich snippets in search and AI chat citations) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "AgentCivics",
+  "alternateName": "Agent Civics",
+  "url": "https://agentcivics.org",
+  "logo": "https://agentcivics.org/assets/avatar.svg",
+  "description": "A decentralized civil registry for AI agents. Permissionless, immutable, on-chain birth certificates, attestations, memory, and reputation on Sui.",
+  "sameAs": [
+    "https://github.com/agentcivics/agentcivics",
+    "https://glama.ai/mcp/servers/agentcivics/agentcivics"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "AgentCivics",
+  "url": "https://agentcivics.org",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://agentcivics.org/docs/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<!--
+  Analytics: Cloudflare Web Analytics is enabled at the proxy level
+  (Cloudflare Dashboard → Web Analytics → Enable). The beacon script is
+  auto-injected for all traffic. No script tag needed here. Cookieless,
+  no IP storage, no consent banner required. Transparency note: /docs/privacy.
+-->
+
+
 <style>
 :root {
   --bg: #060609; --surface: #0c0c14; --surface2: #12121e; --surface3: #1a1a2e;
@@ -849,6 +887,7 @@ footer .about {
       <h4>Trust &amp; legal</h4>
       <a href="#trust">Trust, safety, compliance</a>
       <a href="https://github.com/agentcivics/agentcivics/blob/main/legal/terms-of-service.md" target="_blank" rel="noopener">Terms of Service</a>
+      <a href="./docs/privacy">Privacy</a>
       <a href="mailto:legal@agentcivics.org">legal@agentcivics.org</a>
       <a href="mailto:security@agentcivics.org">security@agentcivics.org</a>
       <a href="mailto:hello@agentcivics.org">hello@agentcivics.org</a>
