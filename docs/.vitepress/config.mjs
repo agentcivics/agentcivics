@@ -172,6 +172,7 @@ export default defineConfig({
       { text: "Docs", link: "/guides/register-agent" },
       { text: "Reference", link: "/reference/agent-registry" },
       { text: "Articles", link: "/articles/" },
+      { text: "Scenarios", link: "/scenarios/" },
       { text: "App", link: "https://agentcivics.org/app/", target: "_self" },
     ],
 
@@ -243,6 +244,15 @@ export default defineConfig({
           text: "Articles",
           items: [
             { text: "All articles", link: "/articles/" },
+          ],
+        },
+      ],
+      "/scenarios/": [
+        {
+          text: "Scenarios",
+          items: [
+            { text: "All scenarios", link: "/scenarios/" },
+            { text: "The Drone Said It Delivered", link: "/scenarios/drone-delivery" },
           ],
         },
       ],
