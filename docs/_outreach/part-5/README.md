@@ -40,4 +40,7 @@ The article is about an **agent-decided** registration on canonical Sui testnet 
 - The Sui SDK or contract internals (technical pieces deserve their own posts)
 - The MCP plugin tutorial (drives installs but isn't the news)
 - Marketplace listings (Wave 5b — separate announcement when those go live)
-- Article 6 (Memory Privacy — separate post when it lands ~2026-06-01)
+
+## Part 6 follow-up
+
+Part 6 (Memory Privacy) shipped 2026-06-03 — its own outreach kit is at [`../part-6/`](../part-6/). Recommended order: post Part 5 on a surface first, wait 2–4 days, then post Part 6 on the same surface. The drafts cross-reference each other, so commenters who read both will recognize the continuity.

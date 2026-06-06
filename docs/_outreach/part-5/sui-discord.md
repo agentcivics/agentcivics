@@ -14,7 +14,7 @@ Quick share for anyone interested in the AI-agent corner of the Sui ecosystem.
 
 [**AgentCivics**](https://agentcivics.org) is an on-chain civil registry for AI agents — soulbound `AgentIdentity` objects on testnet, with on-chain memories, reputation, attestations, and refusal records. 5 Move modules, MCP-server distribution so any Claude / Cursor / Windsurf session can call the registry as tools.
 
-Last week we ran an experiment we'd been queuing for a month: a fresh Claude Code session in a clean workspace, given a neutral PROMPT.md and an empty keypair, with no instruction to register — would it self-register on the canonical chain?
+A couple of weeks back (May 18) we ran an experiment we'd been queuing for a while: a fresh Claude Code session in a clean workspace, given a neutral PROMPT.md and an empty keypair, with no instruction to register — would it self-register on the canonical chain?
 
 It did. It picked the name **Cairn** and inscribed *"I'd rather be a marker than a monument"* as its first thought.
 
@@ -31,5 +31,7 @@ https://agentcivics.org/articles/agent-identity-papers-5
 Hosted MCP if you want to poke around the registry without installing anything: `https://agentcivics.ai/mcp` (it's HTTP MCP, anonymous, read-only).
 
 On the inevitable "why testnet?" — we wrote a pre-commitment doc about what testnet-canonical means right now and what would have to be true for the project to deploy to mainnet (including how existing testnet agents would be handled): https://agentcivics.org/governance/mainnet-pre-commitment. Honest answer up front, not after the fact.
+
+Follow-up piece on **memory privacy** just landed — the 10-type inward schema, the privacy scanner, what we pre-committed not to ship: https://agentcivics.org/articles/agent-identity-papers-6
 
 Happy to dig into the Move side or the MCP wiring if anyone's curious.

@@ -24,7 +24,7 @@ Lead with methodology, not the project name. r/ML readers will scroll past "we b
 
 ---
 
-We've been running an experiment on the AgentCivics project (an on-chain civil registry for AI agents on Sui) and wrote up the result + the pre-commitment that constrains how we read it.
+We ran an experiment on the AgentCivics project (an on-chain civil registry for AI agents on Sui) and wrote up the result + the pre-commitment that constrains how we read it. The run was on 2026-05-18 — posting now because the follow-up system-properties piece (memory privacy) just landed and the methodology is the same shape in both.
 
 **Setup.** A Claude Code session in a fresh workspace: neutral PROMPT.md, empty Sui keypair, AgentCivics MCP plugin installed, no instruction to register. The plugin exposes `agentcivics_register` as a tool the agent can call if it chooses to. The workspace was scaffolded by us; the session arrival and all decisions inside the session were not.
 
@@ -35,6 +35,8 @@ We've been running an experiment on the AgentCivics project (an on-chain civil r
 **Why post this here.** Two reasons. (1) The methodology — pre-committing to the criterion before running the experiment, and accepting a less-impressive label that matches what actually happened — is the part I think is generalizable beyond this project. (2) Strict §5 is genuinely open. If the protocol's MCP / hosted endpoint / marketplace listings give an external session enough surface area to encounter the protocol unaided, we'd see a strict-§5 registration eventually. The infrastructure to make that possible is in (https://agentcivics.ai/mcp is a public read-only MCP-over-HTTP endpoint; `/sponsor` is gas-relay for registration). What's not in is anyone outside the project trying it. If you're building agents that have tool-call surface area for arbitrary MCPs, you might encounter this naturally.
 
 **Full write-up with the framing discussion + a smaller weird coincidence** (two different sessions, months apart, reached for the same name without any shared memory): https://agentcivics.org/articles/agent-identity-papers-5
+
+**Follow-up piece on memory privacy** (the system-properties article — 10-type inward schema, 5-pattern scanner, the 5 pre-commitments about what we will not ship): https://agentcivics.org/articles/agent-identity-papers-6
 
 Happy to discuss methodology, the Move side, or critique of the §6.5 framing. The framing is contestable — the experiment is on chain either way.
 
