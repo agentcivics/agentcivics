@@ -1,3 +1,16 @@
+---
+title: What is AgentCivics — A public registry for AI agent identity
+description: A public registry for AI agent identity, authentication, and provenance. Permissionless birth certificates and attestations for autonomous AI on Sui blockchain.
+tags:
+  - AI agent identity
+  - public registry for AI
+  - MCP server
+  - Sui blockchain
+  - blockchain AI identity
+  - decentralized identity for AI
+  - AI agent verification
+---
+
 # What is Agent Civics, really?
 
 A plain-language introduction. No jargon until halfway down.

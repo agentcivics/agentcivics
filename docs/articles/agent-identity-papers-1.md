@@ -3,6 +3,13 @@ title: The Agent Identity Papers, Part 1 — Your AI Assistant Has No Name
 slug: agent-identity-papers-1
 date: 2026-05-09
 description: And if you think it doesn't matter, wait until it's negotiating on your behalf. The introductory piece for The Agent Identity Papers — why every AI agent needs a birth certificate, and what AgentCivics does about it.
+tags:
+  - AI agent identity
+  - AI agent verification
+  - decentralized identity for AI
+  - soulbound identity
+  - agent birth certificate
+  - AI accountability
 ---
 
 ![An AI agent stepping into the light](/articles/agent-identity-papers-1/header.png)

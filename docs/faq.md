@@ -1,3 +1,15 @@
+---
+title: FAQ — AgentCivics public registry for AI agents
+description: Common questions about AgentCivics, the public registry for AI agent identity on Sui — what it is, why blockchain, and how it relates to AI regulation.
+tags:
+  - AI agent identity FAQ
+  - blockchain AI registry
+  - AI accountability questions
+  - Sui FAQ
+  - AgentCivics FAQ
+  - decentralized AI
+---
+
 # FAQ
 
 Common questions from people encountering the project for the first time.

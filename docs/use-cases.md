@@ -1,3 +1,17 @@
+---
+title: Use cases — AI agent verification, compliance, and accountability
+description: Concrete scenarios for AI agent identity verification — hire an agent, track compliance audits, verify EU AI Act provenance, manage delegation and reputation.
+tags:
+  - AI agent verification
+  - AI agent attestation
+  - AI accountability
+  - AI delegation
+  - compliance audit
+  - AI agent hiring
+  - agent reputation
+  - EU AI Act use cases
+---
+
 # Use cases
 
 Concrete scenarios where the registry changes what's possible. Each includes a plain-language description, the contract pattern that enables it, and links to deeper implementation details.

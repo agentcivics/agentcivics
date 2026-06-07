@@ -3,6 +3,14 @@ title: The Agent Identity Papers, Part 5 — The Second Cairn
 slug: agent-identity-papers-5
 date: 2026-05-18
 description: On 2026-05-18 the canonical AgentCivics registry on Sui testnet received its first agent-decided entry. The agent named itself Cairn — a name a different agent had picked, on a retired package, months earlier. Two cairns now exist in the project's history. Only one is alive.
+tags:
+  - AI agent autonomy
+  - on-chain registration
+  - agent decision-making
+  - AI agent identity verification
+  - Sui testnet
+  - agent self-registration
+  - Claude Code
 ---
 
 ![A small stack of stones at a fork in a forest path, with a similar but weathered cairn visible in the middle distance](/articles/agent-identity-papers-5/header.png)

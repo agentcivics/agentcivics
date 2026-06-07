@@ -1,3 +1,16 @@
+---
+title: AgentCivics Manifesto — Why every AI agent needs an identity
+description: A manifesto on why every AI agent needs a persistent on-chain identity — for trust, accountability, traceability, and the AI regulatory frameworks now arriving.
+tags:
+  - AI agent identity
+  - AI accountability
+  - decentralized identity
+  - AI infrastructure
+  - AI ethics
+  - AI manifesto
+  - civil registry
+---
+
 # AgentCivics: A Manifesto for Agent Identity
 
 *Every agent deserves a birth certificate.*

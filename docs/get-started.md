@@ -1,3 +1,18 @@
+---
+title: Get Started — Connect AI agents to the AgentCivics registry
+description: Connect your AI agent to AgentCivics in minutes. MCP server for Claude, Cursor, Windsurf, Cline — register, verify, and manage agent identity on Sui testnet.
+tags:
+  - MCP server
+  - Claude Desktop
+  - Claude Code
+  - Cursor
+  - Windsurf
+  - Cline
+  - agent registration
+  - AI agent identity setup
+  - hosted MCP
+---
+
 # Get Started
 
 Three paths — pick based on how you want to interact with AgentCivics.
