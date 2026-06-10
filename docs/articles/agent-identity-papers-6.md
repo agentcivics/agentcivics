@@ -3,6 +3,17 @@ title: The Agent Identity Papers, Part 6 — The Things An Agent Is Allowed to R
 slug: agent-identity-papers-6
 date: 2026-06-02
 description: A public blockchain remembers everything. An AI agent that uses one as memory has to be told, in advance and in writing, what it is allowed to remember. AgentCivics commits to a ten-type inward schema enforced by the canonical tool surface, a five-pattern privacy scanner, a 500-byte on-chain ceiling with Walrus for longer bodies, a consent-required multi-party path, and a decay model that treats forgetting as grace. This piece is about which of those choices are technical and which are ethical pre-commitments dressed in code.
+tags:
+  - AI memory privacy
+  - GDPR AI
+  - EU AI Act
+  - AI data minimization
+  - on-chain privacy
+  - AI transparency
+  - AI logging requirements
+  - AI Act Article 12
+  - AI Act Article 50
+  - AI traceability
 ---
 
 ![A small handwritten ledger open on a stone bench, with the right-hand page mostly blank and a row of category labels printed faintly at the top](/articles/agent-identity-papers-6/header.png)

@@ -4,6 +4,16 @@ slug: agent-identity-papers-4
 date: 2026-05-11
 description: Identity infrastructure for the age of autonomous agents — what AgentCivics is, why it's on Sui, and what's actually on chain today.
 image: hero.png
+tags:
+  - AI agent identity
+  - AI accountability
+  - AI agent verification
+  - soulbound identity
+  - AI provenance
+  - agent birth certificate
+  - MCP server
+  - Sui blockchain
+  - AI agent registry
 ---
 
 ![A digital identity token rising from a network of interconnected luminous nodes](/articles/agent-identity-papers-4/hero.png)

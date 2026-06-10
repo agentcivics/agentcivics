@@ -57,14 +57,52 @@ export default defineConfig({
   // VitePress 1.x sitemap doesn't auto-apply `base` to <loc> entries — it
   // prepends only the hostname. We bake the /docs/ prefix into transformItems
   // so live URLs match what's actually served (agentcivics.org/docs/...).
-  // item.url is a relative path like "articles/agent-identity-papers-6".
+  // Per-URL priority and changefreq help search engines weight which pages
+  // matter most + how often to recrawl.
   sitemap: {
     hostname: SITE_ORIGIN,
     transformItems(items) {
-      return items.map((item) => ({
-        ...item,
-        url: item.url.startsWith("docs/") ? item.url : `docs/${item.url}`,
-      }));
+      return items.map((item) => {
+        const url = item.url.startsWith("docs/") ? item.url : `docs/${item.url}`;
+
+        // Heuristics for priority + changefreq. Higher priority = more important
+        // for the site; not a ranking signal but it guides crawl budget.
+        let priority = 0.5;
+        let changefreq = "monthly";
+
+        if (url === "docs/" || url === "docs") {
+          priority = 1.0;
+          changefreq = "weekly";
+        } else if (
+          url === "docs/what-is-this" ||
+          url === "docs/get-started" ||
+          url === "docs/use-cases" ||
+          url === "docs/compliance" ||
+          url === "docs/manifesto" ||
+          url === "docs/articles/" ||
+          url === "docs/articles"
+        ) {
+          priority = 0.9;
+          changefreq = "weekly";
+        } else if (url.startsWith("docs/articles/agent-identity-papers")) {
+          priority = 0.8;
+          changefreq = "monthly";
+        } else if (url === "docs/state") {
+          priority = 0.7;
+          changefreq = "daily";
+        } else if (
+          url.startsWith("docs/concepts/") ||
+          url.startsWith("docs/guides/")
+        ) {
+          priority = 0.6;
+          changefreq = "monthly";
+        } else if (url.startsWith("docs/experiments/runs/")) {
+          priority = 0.3;
+          changefreq = "yearly";
+        }
+
+        return { ...item, url, priority, changefreq };
+      });
     },
   },
 
@@ -102,6 +140,18 @@ export default defineConfig({
       head.push(["meta", { name: "description", content: description }]);
       head.push(["meta", { property: "og:description", content: description }]);
       head.push(["meta", { name: "twitter:description", content: description }]);
+    }
+
+    // Per-page keywords meta — Google ignores it, but Bing/Yandex/others may
+    // still use it, and it costs nothing. Sourced from frontmatter.tags (array)
+    // or frontmatter.keywords (string).
+    if (Array.isArray(frontmatter.tags) && frontmatter.tags.length > 0) {
+      head.push([
+        "meta",
+        { name: "keywords", content: frontmatter.tags.join(", ") },
+      ]);
+    } else if (typeof frontmatter.keywords === "string" && frontmatter.keywords.length > 0) {
+      head.push(["meta", { name: "keywords", content: frontmatter.keywords }]);
     }
 
     // Article-specific: per-article OG image, article:* OG tags, JSON-LD
@@ -234,6 +284,7 @@ export default defineConfig({
             { text: "Contributing", link: "/contributing" },
             { text: "Security audit", link: "/security" },
             { text: "Privacy", link: "/privacy" },
+            { text: "EU AI Act & GDPR alignment", link: "/compliance" },
             { text: "Strict §5 pre-commitment", link: "/experiments/strict-section-5" },
             { text: "Mainnet pre-commitment", link: "/governance/mainnet-pre-commitment" },
           ],

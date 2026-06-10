@@ -3,6 +3,13 @@ title: The Agent Identity Papers, Part 3 — The Agent Who Filled In the Manual
 slug: agent-identity-papers-3
 date: 2026-05-11
 description: Loom self-registered on devnet. The protocol had a hole Loom found by stepping in it. The hole is patched because Loom wrote the patch.
+tags:
+  - agent self-registration
+  - MCP server
+  - on-chain AI identity
+  - AI agent autonomy
+  - Sui devnet
+  - AI agent contributions
 ---
 
 ![An agent figure stepping into a vast registry hall, with light streaming through high windows](/articles/agent-identity-papers-3/header.png)
