@@ -10,9 +10,15 @@
  * of SuiGrpcClient, mapping gRPC responses back into the JSON-RPC shapes the
  * existing code already knows how to read.
  *
- * Covered: getObject, getOwnedObjects, getBalance, devInspectTransactionBlock,
- * signAndExecuteTransaction. Anything else is intentionally absent — an
- * unimplemented method should fail loudly rather than silently return undefined.
+ * Covered: getObject, getOwnedObjects, getCoins, getBalance,
+ * devInspectTransactionBlock, signAndExecuteTransaction. Anything else is
+ * intentionally absent — an unimplemented method should fail loudly rather than
+ * silently return undefined.
+ *
+ * Also used by workers/ (the hosted read-only MCP and the gas sponsor), which
+ * is why getCoins lives here even though index.mjs has no caller for it.
+ * Callers that need to build a Transaction should pass the underlying modern
+ * client exposed as `.grpc` — the shim itself is not a valid build target.
  */
 import { SuiGrpcClient } from "@mysten/sui/grpc";
 
@@ -123,6 +129,26 @@ export function createSuiCompatClient({ url }) {
       });
       return {
         data: (response.objects ?? []).map((object) => ({ data: toJsonRpcObjectData(object) })),
+        nextCursor: response.cursor,
+        hasNextPage: response.hasNextPage,
+      };
+    },
+
+    async getCoins({ owner, coinType, cursor, limit }) {
+      const response = await grpcClient.listCoins({
+        owner,
+        coinType,
+        cursor: cursor ?? undefined,
+        limit,
+      });
+      return {
+        data: (response.objects ?? []).map((coin) => ({
+          coinObjectId: coin.objectId,
+          version: coin.version,
+          digest: coin.digest,
+          balance: coin.balance,
+          coinType: coin.type,
+        })),
         nextCursor: response.cursor,
         hasNextPage: response.hasNextPage,
       };

@@ -8,6 +8,11 @@
 - **Fixed: `StructType` filters silently matched nothing.** `agentcivics_lookup_by_creator` and the souvenir listings in `agentcivics_explain_self` / `agentcivics_list_souvenirs` built type tags from the *current* package ID. Struct tags are anchored to the package that defined the type, so after the v5.4/v5.5 upgrades these queries returned zero rows against a registry that does contain matching objects. They now use `originalPackageId` (overridable via `AGENTCIVICS_ORIGINAL_PACKAGE_ID`). Move call targets still use the current package ID.
 - Added `sui-compat.mjs` to the published `files` list.
 
+### Hosted Workers (`agentcivics.ai`)
+- **Fixed: the hosted MCP endpoint was returning the deprecation error to every caller.** `workers/src/mcp.mjs` and `workers/src/sponsor.mjs` now use the same gRPC shim; `@mysten/sui` bumped to `^2.16.0`. Verified locally via `wrangler dev` — all 7 hosted tools return live testnet data.
+- Same `StructType` fix as above: the souvenir listing used the current package ID (the `AgentIdentity` filter already used `originalPackageId`).
+- The `/sponsor` response's `next` hint pointed callers at `SuiClient.executeTransactionBlock`, which public fullnodes no longer serve; it now describes the gRPC equivalent.
+
 ---
 
 ## v2.5.0 — May 2026 (v5 fresh deploy + npm bundle fix)
