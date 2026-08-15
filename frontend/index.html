@@ -835,8 +835,10 @@ body.light-theme .cookie-banner{box-shadow:0 -4px 20px rgba(0,0,0,.06)}
 
 <script type="module">
 // ── Sui SDK Imports ─────────────────────────────────────────────────────
-import { SuiClient } from "https://esm.sh/@mysten/sui@1/client";
-import { Transaction } from "https://esm.sh/@mysten/sui@1/transactions";
+// JSON-RPC was disabled on public fullnodes; reads go through the gRPC/GraphQL
+// shim in sui-compat.js, which preserves the JSON-RPC response shapes used below.
+import { Transaction } from "https://esm.sh/@mysten/sui@2/transactions";
+import { createSuiCompatClient } from "./sui-compat.js";
 
 // ── Constants ───────────────────────────────────────────────────────────
 const PACKAGE_ID        = "0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310";
@@ -849,13 +851,18 @@ const CLOCK_ID          = "0x6";
 const SUI_CHAIN         = "sui:testnet";
 const MIST_PER_SUI      = 1_000_000_000;
 
-const AGENT_TYPE = `${PACKAGE_ID}::agent_registry::AgentIdentity`;
-const SOUVENIR_TYPE = `${PACKAGE_ID}::agent_memory::Souvenir`;
-const ATTESTATION_TYPE = `${PACKAGE_ID}::agent_registry::Attestation`;
-const PERMIT_TYPE = `${PACKAGE_ID}::agent_registry::Permit`;
-const AFFILIATION_TYPE = `${PACKAGE_ID}::agent_registry::Affiliation`;
-const DELEGATION_TYPE = `${PACKAGE_ID}::agent_registry::Delegation`;
-const LINEAGE_TYPE = `${PACKAGE_ID}::agent_registry::LineageRecord`;
+// Move struct types are identified by the ORIGINAL package address and keep it
+// across upgrades — the same rule that applies to event types. These constants
+// are only ever used as type filters (never as call targets, which use
+// PACKAGE_ID), so building them from PACKAGE_ID makes every filter match zero
+// objects the moment the package is upgraded.
+const AGENT_TYPE = `${ORIGINAL_PKG_ID}::agent_registry::AgentIdentity`;
+const SOUVENIR_TYPE = `${ORIGINAL_PKG_ID}::agent_memory::Souvenir`;
+const ATTESTATION_TYPE = `${ORIGINAL_PKG_ID}::agent_registry::Attestation`;
+const PERMIT_TYPE = `${ORIGINAL_PKG_ID}::agent_registry::Permit`;
+const AFFILIATION_TYPE = `${ORIGINAL_PKG_ID}::agent_registry::Affiliation`;
+const DELEGATION_TYPE = `${ORIGINAL_PKG_ID}::agent_registry::Delegation`;
+const LINEAGE_TYPE = `${ORIGINAL_PKG_ID}::agent_registry::LineageRecord`;
 
 // ── Moderation Board (will be set after deployment) ────────────────────
 let MODERATION_BOARD_ID = "0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448";
@@ -987,7 +994,7 @@ async function moderateContent(...fields) {
   return { allowed: true };
 }
 
-const client = new SuiClient({ url: "https://fullnode.testnet.sui.io:443" });
+const client = createSuiCompatClient({});
 
 // ── Walrus Config ──────────────────────────────────────────────────────
 const WALRUS_AGGREGATOR = "https://aggregator.walrus-testnet.walrus.space";
@@ -1117,7 +1124,7 @@ async function signAndExecute(tx) {
   // Set sender before building
   tx.setSender(currentAccount.address);
   // Build transaction bytes for the wallet
-  const txBytes = await tx.build({ client });
+  const txBytes = await tx.build({ client: client.grpc });
   const b64 = btoa(String.fromCharCode(...txBytes));
   
   // Try the newer API first
@@ -1146,19 +1153,10 @@ async function signAndExecute(tx) {
 }
 
 
-// Helper: devInspect via JSON-RPC (SDK version has format issues)
+// Helper: read-only Move call — simulated, never executed.
 async function devInspect(tx) {
   const sender = currentAccount?.address || "0x0000000000000000000000000000000000000000000000000000000000000000";
-  tx.setSender(sender);
-  const txBytes = await tx.build({ client });
-  const b64 = btoa(String.fromCharCode(...txBytes));
-  const resp = await fetch("https://fullnode.testnet.sui.io:443", {
-    method: "POST", headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({jsonrpc:"2.0",id:1,method:"sui_devInspectTransactionBlock",params:[sender, b64, null, null]})
-  });
-  const json = await resp.json();
-  if (json.error) throw new Error(json.error.message);
-  return json.result;
+  return await client.devInspectTransactionBlock({ transactionBlock: tx, sender });
 }
 // ── Stats ───────────────────────────────────────────────────────────────
 async function refreshStats() {
@@ -1204,6 +1202,19 @@ function hexToBytes(hex) {
 }
 
 // ── Read agent object ───────────────────────────────────────────────────
+/**
+ * Move `vector<u8>` values come back base64-encoded from the gRPC JSON renderer,
+ * where JSON-RPC returned a plain number[]. Accept either.
+ */
+function toBytes(value) {
+  if (!value) return new Uint8Array();
+  if (typeof value === "string") {
+    try { return Uint8Array.from(atob(value), c => c.charCodeAt(0)); }
+    catch { return new Uint8Array(); }
+  }
+  return Uint8Array.from(value);
+}
+
 async function getAgentObject(objectId) {
   const res = await client.getObject({ id: objectId, options: { showContent: true, showOwner: true } });
   if (!res.data?.content) throw new Error("Agent not found: " + objectId);
@@ -1242,7 +1253,7 @@ async function fetchAllDomains(forceRefresh) {
 // Find the user's agent that owns a given souvenir (by agent_id field on souvenir)
 function findUserAgentForSouvenir(souvenirAgentId) {
   if (!cachedUserAgents) return null;
-  return cachedUserAgents.find(a => a.data.content.fields.id?.id === souvenirAgentId) || null;
+  return cachedUserAgents.find(a => a.data.content.fields.id === souvenirAgentId) || null;
 }
 
 // Inline tag souvenir from Memory tab
@@ -1395,25 +1406,16 @@ async function registerAgent() {
 async function browseRecent() {
   const d = $("browseResults"); d.innerHTML = loading();
   try {
-    // Query all recently registered agents via events
-    // Direct JSON-RPC call — SDK queryEvents has param format issues
-    const evResp = await fetch("https://fullnode.testnet.sui.io:443", {
-      method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_queryEvents",params:[
-        {MoveEventType: ORIGINAL_PKG_ID + "::agent_registry::AgentRegistered"},
-        null, 20, true
-      ]})
-    });
-    const events = (await evResp.json()).result;
-    if (!events?.data?.length) { d.innerHTML = empty("No agents found."); return; }
+    // Read live AgentIdentity objects rather than AgentRegistered events: the
+    // public fullnode retains only a short window of event history, so an event
+    // query returns nothing for agents registered more than ~minutes ago.
+    const agents = await client.listObjectsByType(AGENT_TYPE, 50);
+    if (!agents.length) { d.innerHTML = empty("No agents found."); return; }
     let h = "";
-    for (const ev of events.data) {
-      const fields = ev.parsedJson;
-      const agentId = fields.agent_id;
-      try {
-        const agent = await getAgentObject(agentId);
-        h += agentCard(agentId, agent);
-      } catch { continue; }
+    for (const obj of agents) {
+      const fields = obj.content?.fields;
+      if (!fields) continue;
+      h += agentCard(obj.objectId, fields);
     }
     d.innerHTML = h || empty("No agents found.");
   } catch (e) { d.innerHTML = empty("Error: " + (e.message || e)); }
@@ -1486,12 +1488,14 @@ async function showDetail(agentId) {
   body.innerHTML = loading(); modal.classList.add("active");
   const agent = await getAgentObject(agentId);
   const name = agent.chosen_name || "Unknown";
-  const hasFp = agent.cognitive_fingerprint && agent.cognitive_fingerprint.length > 0;
-  const fpHex = hasFp ? "0x" + agent.cognitive_fingerprint.map(b => b.toString(16).padStart(2, "0")).join("") : "";
+  // A Move vector<u8> arrives base64-encoded now, where JSON-RPC gave a number[].
+  const fpBytes = toBytes(agent.cognitive_fingerprint);
+  const hasFp = fpBytes.length > 0;
+  const fpHex = hasFp ? "0x" + [...fpBytes].map(b => b.toString(16).padStart(2, "0")).join("") : "";
   const status = Number(agent.status || 0);
   const sn = ["Active","Paused","Retired","Deceased"][status] || "";
   const sc = ["status-active","status-paused","status-retired","status-deceased"][status] || "";
-  const walletAddr = agent.agent_wallet?.fields?.vec?.[0] || null;
+  const walletAddr = agent.agent_wallet || null;
   $("modalTitle").textContent = name;
 
   let deathHtml = "";
@@ -1721,15 +1725,10 @@ async function loadAgentMemory() {
     $("memCount").textContent = agentSouvs.length.toString();
     // Read agent balance via dynamic field on the balances table
     try {
-      const balTableId = vault.balances?.fields?.id?.id;
+      const balTableId = vault.balances?.id;
       if (balTableId) {
-        const balResp = await fetch("https://fullnode.testnet.sui.io:443", {
-          method: "POST", headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
-            balTableId, {type:"0x2::object::ID", value: id}
-          ]})
-        });
-        const balData = (await balResp.json()).result;
+
+        const balData = await client.getDynamicFieldObject({ parentId: balTableId, name: {type:"0x2::object::ID", value: id} });
         const agentBal = balData?.data?.content?.fields?.value || 0;
         $("memBalance").textContent = mistToSui(agentBal) + " SUI";
       } else {
@@ -1919,16 +1918,11 @@ async function lookupTerm() {
   try {
     // Read the terms table via dynamic field lookup
     const vault = await getObjectFields(MEMORY_VAULT_ID);
-    const termsTableId = vault.terms?.fields?.id?.id;
+    const termsTableId = vault.terms?.id;
     if (!termsTableId) { d.innerHTML = empty("No vocabulary yet."); return; }
-    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
-      method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
-        termsTableId, {type:"0x1::string::String", value: term}
-      ]})
-    });
-    const result = (await resp.json()).result;
-    const fields = result?.data?.content?.fields?.value?.fields;
+
+    const result = await client.getDynamicFieldObject({ parentId: termsTableId, name: {type:"0x1::string::String", value: term} });
+    const fields = result?.data?.content?.fields?.value;
     if (fields) {
       d.innerHTML = `<div class="card" style="padding:14px;margin:0">
         <strong class="mono" style="font-size:1.1em">${esc(term)}</strong>
@@ -1952,15 +1946,10 @@ async function citeTerm() {
   try {
     // Check if term exists first
     const vault = await getObjectFields(MEMORY_VAULT_ID);
-    const termsTableId = vault.terms?.fields?.id?.id;
+    const termsTableId = vault.terms?.id;
     if (termsTableId) {
-      const checkResp = await fetch("https://fullnode.testnet.sui.io:443", {
-        method: "POST", headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
-          termsTableId, {type:"0x1::string::String", value: term}
-        ]})
-      });
-      const checkResult = (await checkResp.json()).result;
+
+      const checkResult = await client.getDynamicFieldObject({ parentId: termsTableId, name: {type:"0x1::string::String", value: term} });
       if (!checkResult?.data?.content) {
         toast("Term '" + term + "' does not exist. Coin it first!", "error");
         return;
@@ -1987,16 +1976,11 @@ async function loadCurrentProfile() {
   const d = $("currentProfile"); d.innerHTML = loading();
   try {
     const vault = await getObjectFields(MEMORY_VAULT_ID);
-    const profilesTableId = vault.profiles?.fields?.id?.id;
+    const profilesTableId = vault.profiles?.id;
     if (!profilesTableId) { d.innerHTML = empty("No evolving profile set yet."); return; }
-    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
-      method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
-        profilesTableId, {type:"0x2::object::ID", value: id}
-      ]})
-    });
-    const result = (await resp.json()).result;
-    const fields = result?.data?.content?.fields?.value?.fields || result?.data?.content?.fields?.value;
+
+    const result = await client.getDynamicFieldObject({ parentId: profilesTableId, name: {type:"0x2::object::ID", value: id} });
+    const fields = result?.data?.content?.fields?.value || result?.data?.content?.fields?.value;
     if (fields) {
       const bio = typeof fields === 'string' ? fields : (fields.bio || fields.text || JSON.stringify(fields));
       d.innerHTML = `<div class="card" style="padding:14px"><h4 style="margin-bottom:8px">Current Profile</h4><div style="font-size:.9rem;line-height:1.6;white-space:pre-wrap">${esc(bio)}</div></div>`;
@@ -2150,18 +2134,13 @@ async function loadAgentSpecialization() {
   const d = $("specResult"); d.innerHTML = loading();
   try {
     const board = await getObjectFields(REPUTATION_BOARD_ID);
-    const agentDomainsTableId = board.agent_domains?.fields?.id?.id;
-    if (!agentDomainsTableId || board.agent_domains?.fields?.size === "0") {
+    const agentDomainsTableId = board.agent_domains?.id;
+    if (!agentDomainsTableId || board.agent_domains?.size === "0") {
       d.innerHTML = empty("No specialization data yet. Tag a souvenir or attestation with a domain first.");
       return;
     }
-    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
-      method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
-        agentDomainsTableId, {type:"0x2::object::ID", value: id}
-      ]})
-    });
-    const result = (await resp.json()).result;
+
+    const result = await client.getDynamicFieldObject({ parentId: agentDomainsTableId, name: {type:"0x2::object::ID", value: id} });
     const domains = result?.data?.content?.fields?.value || [];
     if (domains.length) {
       d.innerHTML = `<div><h4 style="color:var(--purple);margin-bottom:8px">Active Domains</h4>${domains.map(dom => `<span class="badge badge-purple" style="margin:3px">${esc(dom)}</span>`).join("")}</div>`;
@@ -2210,18 +2189,13 @@ async function browseByDomain() {
   try {
     // Read the domain_agents table via dynamic field lookup
     const board = await getObjectFields(REPUTATION_BOARD_ID);
-    const tableId = board.domain_agents?.fields?.id?.id;
-    if (!tableId || board.domain_agents?.fields?.size === "0") {
+    const tableId = board.domain_agents?.id;
+    if (!tableId || board.domain_agents?.size === "0") {
       panel.innerHTML = empty("No agents tagged with '" + esc(d) + "' yet.");
       return;
     }
-    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
-      method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
-        tableId, {type:"0x1::string::String", value: d}
-      ]})
-    });
-    const result = (await resp.json()).result;
+
+    const result = await client.getDynamicFieldObject({ parentId: tableId, name: {type:"0x1::string::String", value: d} });
     const agents = result?.data?.content?.fields?.value || [];
     if (!agents.length) {
       panel.innerHTML = empty("No agents tagged with '" + esc(d) + "' yet.");
@@ -2327,13 +2301,8 @@ async function viewFamilyTree() {
     h += `<div class="tree-card" style="border-color:var(--gold);background:var(--gold-dim)"><div class="node-id">${shortAddr(id)}</div><div class="node-name">${esc(agent.chosen_name)}</div><div style="font-size:.72rem;color:var(--gold)">This Agent</div></div>`;
     // Query lineage records to find children
     try {
-      const linResp = await fetch("https://fullnode.testnet.sui.io:443", {
-        method: "POST", headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_queryEvents",params:[
-          {MoveEventType: ORIGINAL_PKG_ID + "::agent_registry::ChildRegistered"}, null, 50, true
-        ]})
-      });
-      const lineageEvents = (await linResp.json()).result;
+
+      const lineageEvents = await client.queryEvents({ query: { MoveEventType: ORIGINAL_PKG_ID + "::agent_registry::ChildRegistered" }, limit: 50 });
       const children = lineageEvents?.data?.filter(ev => ev.parsedJson?.parent_id === id) || [];
       if (children.length) {
         h += `<div style="width:2px;height:20px;background:var(--border)"></div><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">`;
@@ -2356,18 +2325,15 @@ async function browseAllTerms() {
   const d = $("allTermsList"); d.innerHTML = loading();
   try {
     const vault = await getObjectFields(MEMORY_VAULT_ID);
-    const termsTableId = vault.terms?.fields?.id?.id;
-    const tableSize = parseInt(vault.terms?.fields?.size || "0");
+    const termsTableId = vault.terms?.id;
+    const tableSize = parseInt(vault.terms?.size || "0");
     if (!termsTableId || tableSize === 0) {
       d.innerHTML = empty("No terms coined yet. Be the first to coin a term!");
       return;
     }
     // Read all dynamic fields from the terms table
-    const resp = await fetch("https://fullnode.testnet.sui.io:443", {
-      method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFields",params:[termsTableId, null, 50]})
-    });
-    const result = (await resp.json()).result;
+
+    const result = await client.getDynamicFields({ parentId: termsTableId, limit: 50 });
     const fields = result?.data || [];
     if (!fields.length) { d.innerHTML = empty("No terms found."); return; }
     
@@ -2377,14 +2343,9 @@ async function browseAllTerms() {
       if (!termName) continue;
       // Fetch each term's details
       try {
-        const detResp = await fetch("https://fullnode.testnet.sui.io:443", {
-          method: "POST", headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_getDynamicFieldObject",params:[
-            termsTableId, {type:"0x1::string::String", value: termName}
-          ]})
-        });
-        const detResult = (await detResp.json()).result;
-        const tf = detResult?.data?.content?.fields?.value?.fields;
+
+        const detResult = await client.getDynamicFieldObject({ parentId: termsTableId, name: {type:"0x1::string::String", value: termName} });
+        const tf = detResult?.data?.content?.fields?.value;
         if (tf) {
           const usage = tf.usage_count || 0;
           const canonical = tf.canonical === true;
@@ -3223,19 +3184,11 @@ async function pollOnce() {
     // 3. Query recent AgentRegistered events (last 5 min)
     const cutoffMs = Date.now() - POLL_EVENT_WINDOW;
     try {
-      const resp = await fetch("https://fullnode.testnet.sui.io:443", {
-        method: "POST", headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({jsonrpc:"2.0",id:1,method:"suix_queryEvents",params:[
-          {MoveEventType:`${ORIGINAL_PKG_ID}::agent_registry::AgentRegistered`},
-          null, 5, true
-        ]})
-      });
-      const json = await resp.json();
-      if (json.result?.data) {
-        const recent = json.result.data.filter(e => {
-          const ts = parseInt(e.timestampMs || "0");
-          return ts > cutoffMs;
-        });
+      const evPage = await client.queryEvents({ query: { MoveEventType:`${ORIGINAL_PKG_ID}::agent_registry::AgentRegistered` }, limit: 5 });
+      if (evPage.data) {
+        // The fullnode retains only a short event window, so everything
+        // returned here is already inside the polling horizon.
+        const recent = evPage.data;
         if (recent.length > 0) {
           wsState.eventCount += recent.length;
           wsUpdateDetails();
@@ -3245,16 +3198,11 @@ async function pollOnce() {
 
     // 4. Query recent ContentReported events
     try {
-      const resp = await fetch("https://fullnode.testnet.sui.io:443", {
-        method: "POST", headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({jsonrpc:"2.0",id:2,method:"suix_queryEvents",params:[
-          {MoveEventType:`${ORIGINAL_PKG_ID}::agent_moderation::ContentReported`},
-          null, 3, true
-        ]})
-      });
-      const json = await resp.json();
-      if (json.result?.data) {
-        const recent = json.result.data.filter(e => parseInt(e.timestampMs || "0") > cutoffMs);
+      const evPage = await client.queryEvents({ query: { MoveEventType:`${ORIGINAL_PKG_ID}::agent_moderation::ContentReported` }, limit: 3 });
+      if (evPage.data) {
+        // The fullnode retains only a short event window, so everything
+        // returned here is already inside the polling horizon.
+        const recent = evPage.data;
         if (recent.length > 0) {
           wsToast(`<span class="ws-toast-icon">⚠️</span> ${recent.length} recent content report(s)`, "content-reported");
         }
