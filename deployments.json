@@ -1,21 +1,22 @@
 {
-  "version": "5.4.0",
+  "version": "5.5.0",
   "chain": "sui",
   "network": "testnet",
   "deployedAt": "2026-05-10",
-  "upgradedAt": "2026-05-10",
+  "upgradedAt": "2026-05-21",
   "freshDeploy": false,
-  "packageId": "0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310",
+  "packageId": "0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec",
   "originalPackageId": "0xa3d976d69b15f3a01cb3e428c0f55ccb582392223b3e19f66baf69159553fd92",
-  "modules": ["agent_registry","agent_memory","agent_reputation","agent_moderation"],
+  "modules": ["agent_registry","agent_memory","agent_reputation","agent_moderation","agent_refusal"],
   "objects": {
     "registry": "0xb72d761fc4a4abd6e5956ba58857464caa18988282d468498e0938e5201514b2",
     "treasury": "0xa99388ee8f71cc799720e916b15ea0a3514b6a44f352ce0283d7b694f844c7e5",
     "memoryVault": "0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7",
     "reputationBoard": "0x87fea980691ebeecd9a593bfc296ea871bd0ac891e4e0f6c59d1c1e6a820c353",
     "moderationBoard": "0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb",
-    "upgradeCap": "0xbbe9d7f59c962068b764f97d2e99e4bfd8bfe85a8db77bc98fa53ab8a7d8c7b5"
+    "upgradeCap": "0xbbe9d7f59c962068b764f97d2e99e4bfd8bfe85a8db77bc98fa53ab8a7d8c7b5",
+    "refusalBoard": "0x9fc8f362a3108a956cdb77e6abf497c9f9852f11a5fac0fe45ea0ecd1d2c90d0"
   },
-  "explorer": "https://testnet.suivision.xyz/package/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310",
-  "supersedes": "v5.3.0 (same shared objects, code upgraded via UpgradeCap to add clean_reputation Sybil filter)"
+  "explorer": "https://testnet.suivision.xyz/package/0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec",
+  "supersedes": "v5.4.0 (0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310) — same shared objects, code upgraded via UpgradeCap on 2026-05-21 to add the agent_refusal module."
 }
