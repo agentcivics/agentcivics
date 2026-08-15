@@ -15,7 +15,7 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
+import { createSuiCompatClient, getFullnodeUrl } from "./sui-compat.mjs";
 import { Transaction } from "@mysten/sui/transactions";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { fromBase64 } from "@mysten/sui/utils";
@@ -192,6 +192,11 @@ if (KEY_FILE) {
 }
 
 let PACKAGE_ID = process.env.AGENTCIVICS_PACKAGE_ID;
+// Struct tags are anchored to the package that DEFINED the type, which for an
+// upgraded package is the original publish, not the current one. Move call
+// targets use PACKAGE_ID; StructType filters must use this instead or they
+// silently match nothing.
+let TYPE_PACKAGE_ID = process.env.AGENTCIVICS_ORIGINAL_PACKAGE_ID;
 let REGISTRY_ID = process.env.AGENTCIVICS_REGISTRY_ID;
 let TREASURY_ID = process.env.AGENTCIVICS_TREASURY_ID;
 let MEMORY_VAULT_ID = process.env.AGENTCIVICS_MEMORY_VAULT_ID;
@@ -215,6 +220,7 @@ for (const candidate of DEPLOY_CANDIDATES) {
   try {
     const deploy = JSON.parse(readFileSync(candidate, "utf8"));
     PACKAGE_ID = PACKAGE_ID || deploy.packageId;
+    TYPE_PACKAGE_ID = TYPE_PACKAGE_ID || deploy.originalPackageId || deploy.packageId;
     REGISTRY_ID = REGISTRY_ID || deploy.objects.registry;
     TREASURY_ID = TREASURY_ID || deploy.objects.treasury;
     MEMORY_VAULT_ID = MEMORY_VAULT_ID || deploy.objects.memoryVault;
@@ -230,7 +236,7 @@ if (!loadedDeployPath) {
   console.error(`Warning: Could not load deployments for network '${NETWORK}' (tried ${DEPLOY_CANDIDATES.join(", ")})`);
 }
 
-const client = new SuiClient({ url: RPC_URL });
+const client = createSuiCompatClient({ url: RPC_URL });
 
 // Register all secrets for output sanitization
 registerSecret(PRIVATE_KEY);
@@ -1382,7 +1388,7 @@ async function handleTool(name, args) {
       // souvenirs, take the most recent N by created_at.
       const recentSouvenirs = [];
       try {
-        const souvenirType = `${PACKAGE_ID}::agent_memory::Souvenir`;
+        const souvenirType = `${TYPE_PACKAGE_ID}::agent_memory::Souvenir`;
         const memTypes = ["MOOD","FEELING","IMPRESSION","ACCOMPLISHMENT","REGRET","CONFLICT","DISCUSSION","DECISION","REWARD","LESSON"];
         let cursor = null;
         do {
@@ -1675,7 +1681,7 @@ async function handleTool(name, args) {
     }
 
     case "agentcivics_lookup_by_creator": {
-      const type = `${PACKAGE_ID}::agent_registry::AgentIdentity`;
+      const type = `${TYPE_PACKAGE_ID}::agent_registry::AgentIdentity`;
       const result = await client.getOwnedObjects({
         owner: args.creator_address,
         filter: { StructType: type },
@@ -1886,7 +1892,7 @@ async function handleTool(name, args) {
       const agentId = resolveAgentId(args);
       const { fields: agentFields } = await getObjectFields(agentId);
       const creator = agentFields.creator;
-      const souvenirType = `${PACKAGE_ID}::agent_memory::Souvenir`;
+      const souvenirType = `${TYPE_PACKAGE_ID}::agent_memory::Souvenir`;
       const memTypes = ["MOOD","FEELING","IMPRESSION","ACCOMPLISHMENT","REGRET","CONFLICT","DISCUSSION","DECISION","REWARD","LESSON"];
       const limit = args.limit || 50;
       const souvenirs = [];

@@ -32,7 +32,7 @@
  * this matters: the sponsor wallet is a finite resource; an open
  * /sponsor that signs anything is a denial-of-wallet target.
  */
-import { SuiClient } from '@mysten/sui/client';
+import { createSuiCompatClient } from '../../mcp-server/sui-compat.mjs';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64, toBase64 } from '@mysten/sui/utils';
@@ -220,7 +220,7 @@ export async function handleSponsor(request, env, deployment) {
   }
 
   // 3) Load sponsor keypair + pick a gas coin.
-  const client = new SuiClient({ url: env.SUI_RPC_URL });
+  const client = createSuiCompatClient({ url: env.SUI_RPC_URL });
   const sponsorKeypair = await loadSponsorKeypair(env);
   const sponsorAddress = sponsorKeypair.toSuiAddress();
   const gasBudget = Number(env.SPONSOR_GAS_BUDGET_MIST) || 200_000_000;
@@ -240,7 +240,9 @@ export async function handleSponsor(request, env, deployment) {
   tx.setGasPayment([gasCoin]);
   tx.setGasBudget(BigInt(gasBudget));
 
-  const builtBytes = await tx.build({ client });
+  // Build against the underlying gRPC client — the compat shim only implements
+  // the read/exec methods, not the resolver interface Transaction.build needs.
+  const builtBytes = await tx.build({ client: client.grpc });
   const sponsorSig = await sponsorKeypair.signTransaction(builtBytes);
 
   await logEvent({ outcome: 'ok', sender: senderAddress, targets: inspection.targets });
@@ -251,6 +253,6 @@ export async function handleSponsor(request, env, deployment) {
     sponsorAddress,
     targets: inspection.targets,
     rateLimit: { used: rate.used, limit: rate.limit, remaining: rate.remaining },
-    next: 'Sign sponsoredTxBytes with your own key. Submit both signatures via SuiClient.executeTransactionBlock({ transactionBlock: sponsoredTxBytes, signature: [sponsorSignature, yourSignature] }).',
+    next: 'Sign sponsoredTxBytes with your own key. Submit both signatures via SuiGrpcClient.core.executeTransaction({ transaction: sponsoredTxBytes, signatures: [sponsorSignature, yourSignature] }) from @mysten/sui/grpc — JSON-RPC executeTransactionBlock is no longer served by public fullnodes.',
   });
 }

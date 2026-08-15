@@ -14,7 +14,7 @@
  * is intentionally write-free — there is no path for someone else's
  * signing key to enter the hosted server's process.
  */
-import { SuiClient } from '@mysten/sui/client';
+import { createSuiCompatClient } from '../../mcp-server/sui-compat.mjs';
 import { Transaction } from '@mysten/sui/transactions';
 import { createHash } from 'node:crypto';
 
@@ -402,7 +402,9 @@ function tools(client, deployment) {
         const agentId = args.agent_object_id;
         const agentFields = await getObjectFields(agentId);
         const creator = agentFields.creator;
-        const souvenirType = `${PACKAGE_ID}::agent_memory::Souvenir`;
+        // Struct tags anchor to the defining package, not the upgraded one —
+        // same reason the AgentIdentity filter above uses originalPackageId.
+        const souvenirType = `${deployment.originalPackageId}::agent_memory::Souvenir`;
         const limit = Math.min(args.limit || 50, 200);
         const souvenirs = [];
         let cursor = null;
@@ -460,7 +462,7 @@ export async function handleMcp(request, env, deployment) {
   const body = await request.json();
   const id = body?.id ?? null;
 
-  const client = new SuiClient({ url: env.SUI_RPC_URL });
+  const client = createSuiCompatClient({ url: env.SUI_RPC_URL });
   const toolMap = tools(client, deployment);
 
   switch (body?.method) {
