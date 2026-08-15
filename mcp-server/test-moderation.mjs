@@ -4,27 +4,61 @@
 //  Tests: frontend wordlist, on-chain reporting, resolve, proposals, auto-flag
 // ═══════════════════════════════════════════════════════════════════════
 
-import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
+import { createSuiCompatClient, getFullnodeUrl } from './sui-compat.mjs';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const NETWORK = process.env.AGENTCIVICS_NETWORK || 'devnet';
-const client = new SuiClient({ url: process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK) });
+const client = createSuiCompatClient({ url: process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK) });
 const SECRET = process.env.AGENTCIVICS_PRIVATE_KEY;
 if (!SECRET) { console.error('Set AGENTCIVICS_PRIVATE_KEY env var (base64 Ed25519 secret).'); process.exit(1); }
 const keypair = Ed25519Keypair.fromSecretKey(fromBase64(SECRET));
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
 
-const PKG   = '0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff';
-const ORIG_PKG = '0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff';
-const BOARD = '0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448';
-const REG   = '0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930';
-const TREAS = '0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a';
-const CLOCK = '0x6';
+// IDs come from the deployment file for the active network. They used to be
+// hardcoded here, which is how they ended up four deployments out of date: the
+// package below was v5.0, retired by the v5.3 fresh redeploy, and the board was
+// from the abandoned v4 package entirely.
+const DEPLOY_CANDIDATES = [
+  join(__dirname, `deployments.${NETWORK}.json`),
+  join(__dirname, 'deployments.json'),
+  join(__dirname, '..', 'move', `deployments.${NETWORK}.json`),
+  join(__dirname, '..', 'move', 'deployments.json'),
+];
+let deploy = null;
+for (const candidate of DEPLOY_CANDIDATES) {
+  try { deploy = JSON.parse(readFileSync(candidate, 'utf8')); break; } catch { /* next */ }
+}
+if (!deploy) {
+  console.error(`No deployment file for network '${NETWORK}' (tried ${DEPLOY_CANDIDATES.join(', ')}).`);
+  process.exit(1);
+}
+if (deploy.network !== NETWORK) {
+  console.error(`Deployment file is for '${deploy.network}' but AGENTCIVICS_NETWORK is '${NETWORK}'. Refusing to run against the wrong chain.`);
+  process.exit(1);
+}
 
-const CIPHER = '0xda3ecae0cced0cd5d2431eb956f1d0050877aafd128cf71766af27d11075e9f7';
-const ECHO   = '0x8d9865813a99fae3bc3a59ebec31068148ecf44c6228c799011568f419181c59';
+const PKG      = deploy.packageId;
+const ORIG_PKG = deploy.originalPackageId || deploy.packageId;
+const BOARD    = deploy.objects.moderationBoard;
+const REG      = deploy.objects.registry;
+const TREAS    = deploy.objects.treasury;
+const CLOCK    = '0x6';
+
+// Two existing agents to exercise reporting against. No sensible default — the
+// previous hardcoded pair belonged to a retired deployment.
+const CIPHER = process.env.AGENTCIVICS_TEST_AGENT_A;
+const ECHO   = process.env.AGENTCIVICS_TEST_AGENT_B;
+if (!CIPHER || !ECHO) {
+  console.error('Set AGENTCIVICS_TEST_AGENT_A and AGENTCIVICS_TEST_AGENT_B to two AgentIdentity object IDs on this network.');
+  process.exit(1);
+}
 
 // Report stake = 0.01 SUI = 10_000_000 MIST
 const REPORT_STAKE = 10_000_000;

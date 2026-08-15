@@ -41,7 +41,7 @@
  *   - For --with-nova-child: agents/nova.key + agents/nova.json present
  *     and Nova's wallet has ~0.05 SUI (top-up from active wallet if low)
  */
-import { SuiJsonRpcClient as SuiClient, getJsonRpcFullnodeUrl as getFullnodeUrl } from '@mysten/sui/jsonRpc';
+import { createSuiCompatClient, getFullnodeUrl } from '../mcp-server/sui-compat.mjs';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
@@ -117,7 +117,7 @@ const PACKAGE_ID = deploy.packageId;
 const REGISTRY_ID = deploy.objects?.registry;
 if (!PACKAGE_ID || !REGISTRY_ID) throw new Error('deployments.json missing packageId or objects.registry');
 
-const client = new SuiClient({ url: RPC_URL });
+const client = createSuiCompatClient({ url: RPC_URL });
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 function fundFromActiveCli(recipientAddress, mist) {

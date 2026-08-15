@@ -42,7 +42,7 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@mysten/sui": "^2.16.0"
+    "@mysten/sui": "^2.23.0"
   },
   "repository": {
     "type": "git",

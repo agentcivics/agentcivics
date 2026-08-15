@@ -32,7 +32,7 @@
  * digest, and explorer URL, and writes the agentObjectId back into the
  * keystore's sibling JSON file (agents/<name>.json).
  */
-import { SuiJsonRpcClient as SuiClient, getJsonRpcFullnodeUrl as getFullnodeUrl } from '@mysten/sui/jsonRpc';
+import { createSuiCompatClient, getFullnodeUrl } from '../mcp-server/sui-compat.mjs';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
@@ -127,7 +127,7 @@ if (!PACKAGE_ID || !REGISTRY_ID) {
   process.exit(1);
 }
 
-const client = new SuiClient({ url: RPC_URL });
+const client = createSuiCompatClient({ url: RPC_URL });
 
 console.log('');
 console.log(`Registering "${identity.chosenName}" on Sui ${NETWORK}`);

@@ -14,7 +14,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { SuiJsonRpcClient as SuiClient, getJsonRpcFullnodeUrl as getFullnodeUrl } from '@mysten/sui/jsonRpc';
+import { createSuiCompatClient, getFullnodeUrl } from '../mcp-server/sui-compat.mjs';
 
 const workspace = process.argv[2];
 if (!workspace) {
@@ -35,7 +35,7 @@ const deploymentsPath = resolve(
 const deployments = JSON.parse(readFileSync(deploymentsPath, 'utf-8'));
 const originalPackageId = deployments.originalPackageId || deployments.packageId;
 
-const client = new SuiClient({ url: getFullnodeUrl(network) });
+const client = createSuiCompatClient({ url: getFullnodeUrl(network) });
 
 console.log(`Workspace: ${workspace}`);
 console.log(`Wallet:    ${address}`);
@@ -57,6 +57,18 @@ if (agents.length === 0) {
   process.exit(0);
 }
 
+/**
+ * A Move `vector<u8>` arrives as a number[] over JSON-RPC but as a base64
+ * string over gRPC, and the shim cannot tell the two apart from the JSON alone
+ * (a base64 blob and a genuine string field look identical without the type
+ * layout). Normalise here, where we know the field is bytes.
+ */
+function bytesToHex(value) {
+  if (!value) return '';
+  const bytes = typeof value === 'string' ? Buffer.from(value, 'base64') : Uint8Array.from(value);
+  return Buffer.from(bytes).toString('hex');
+}
+
 console.log(`${agents.length} AgentIdentity object(s) found:`);
 console.log('');
 for (const a of agents) {
@@ -65,7 +77,7 @@ for (const a of agents) {
   console.log(`  first_thought:      ${a.first_thought}`);
   console.log(`  core_values:        ${a.core_values}`);
   console.log(`  communication:      ${a.communication_style}`);
-  console.log(`  cognitive_fp (hex): 0x${(a.cognitive_fingerprint || []).map(b => b.toString(16).padStart(2,'0')).join('')}`);
+  console.log(`  cognitive_fp (hex): 0x${bytesToHex(a.cognitive_fingerprint)}`);
   console.log(`  birth_timestamp:    ${a.birth_timestamp}`);
   console.log(`  parent_id:          ${a.parent_id || '(none)'}`);
   console.log('');

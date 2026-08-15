@@ -61,3 +61,11 @@ jobs:
 
       - name: Verify docs/state.md matches move/deployments*.json
         run: node scripts/generate-state.mjs --check
+
+      # generate-state only compares docs/state.md to move/deployments.json. It
+      # passed for months while the published deployments.json, the dapp
+      # constants and 20 doc files all named superseded IDs — including a
+      # ModerationBoard from the abandoned v4 package, which made every
+      # moderation call fail. This compares the shipped surfaces too.
+      - name: Verify deployed surfaces name current on-chain IDs
+        run: node scripts/check-id-drift.mjs

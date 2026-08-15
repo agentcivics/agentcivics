@@ -10,10 +10,14 @@
  * of SuiGrpcClient, mapping gRPC responses back into the JSON-RPC shapes the
  * existing code already knows how to read.
  *
- * Covered: getObject, getOwnedObjects, getCoins, getBalance,
- * devInspectTransactionBlock, signAndExecuteTransaction. Anything else is
- * intentionally absent — an unimplemented method should fail loudly rather than
- * silently return undefined.
+ * Covered: getObject, getOwnedObjects, getCoins, getBalance, queryEvents,
+ * getTransactionBlock, waitForTransaction, devInspectTransactionBlock,
+ * signAndExecuteTransaction. Anything else is intentionally absent — an
+ * unimplemented method should fail loudly rather than silently return undefined.
+ *
+ * Requires @mysten/sui >= 2.23: grpcClient.listEvents (used by queryEvents) does
+ * not exist in 2.16, so a looser floor would resolve to a version where event
+ * queries throw at runtime rather than at install time.
  *
  * Also used by workers/ (the hosted read-only MCP and the gas sponsor), which
  * is why getCoins lives here even though index.mjs has no caller for it.
@@ -152,6 +156,59 @@ export function createSuiCompatClient({ url }) {
         nextCursor: response.cursor,
         hasNextPage: response.hasNextPage,
       };
+    },
+
+    /**
+     * suix_queryEvents. Retention caveat carried over from JSON-RPC: public
+     * fullnodes keep only a short window of event history, so an empty result
+     * means "nothing recent", not "never happened". Callers that need the full
+     * population should read objects instead.
+     */
+    async queryEvents({ query, cursor, limit = 50 }) {
+      const response = await grpcClient.listEvents({
+        filter: query?.MoveEventType
+          ? { eventType: query.MoveEventType }
+          : { emitModule: query?.MoveEventModule
+              ? `${query.MoveEventModule.package}::${query.MoveEventModule.module}`
+              : undefined },
+        cursor: cursor ?? undefined,
+        limit,
+      });
+      return {
+        data: (response.events ?? []).map((event) => ({
+          type: event.eventType,
+          packageId: event.packageId,
+          transactionModule: event.module,
+          sender: event.sender,
+          parsedJson: event.json,
+          timestampMs: event.timestampMs ?? null,
+          id: { txDigest: event.transactionDigest, eventSeq: String(event.eventIndex ?? 0) },
+        })),
+        hasNextPage: response.hasNextPage ?? false,
+        nextCursor: response.endCursor ?? null,
+      };
+    },
+
+    /** sui_getTransactionBlock. Only the `showInput` shape callers here read. */
+    async getTransactionBlock({ digest, options = {} }) {
+      const response = await grpcClient.getTransaction({
+        digest,
+        include: { transaction: options.showInput !== false, effects: options.showEffects === true },
+      });
+      const parsed = unwrapTransactionResult(response);
+      return {
+        digest: parsed?.digest,
+        transaction: parsed?.transaction
+          ? { data: { sender: parsed.transaction.sender, gasData: parsed.transaction.gasData } }
+          : null,
+        effects: parsed?.effects,
+      };
+    },
+
+    async waitForTransaction({ digest, timeout, pollInterval }) {
+      return unwrapTransactionResult(
+        await grpcClient.waitForTransaction({ digest, timeout, pollInterval }),
+      );
     },
 
     async getBalance({ owner, coinType }) {
