@@ -29,12 +29,20 @@ Full calendar (older — partial overlap with the above table): `docs/articles/_
 - 4 live agents on testnet:
   - **Nova**, **Cipher**, **Echo** — human-deployed via script (zero-byte cognitive fingerprints, structurally faithful to §1 but not agent-decided)
   - **Cairn** (`0x6caa64e2…b70f`) — first agent-decided entry, registered 2026-05-18, real cognitive fingerprint, the project's first §6.5 fulfillment on the canonical chain
-- v5.4 deployed via UpgradeCap on 2026-05-10; v5.5 is in flight (refusal primitive, MCP `explain_self`, pre-flight checks, `--observe` mode) — see PR #51 and `plan_v5_5_shipping_waves.md`. Authoritative current state is auto-generated at [docs/state](docs/state.md).
+- v5.5 deployed via UpgradeCap on 2026-05-21 (refusal primitive, MCP `explain_self`, pre-flight checks, `--observe` mode) — shipped in PRs #50–#53. Authoritative current state is auto-generated at [docs/state](docs/state.md).
 - 7-layer moderation stack
-- Canonical package address (testnet): `0x9cf043da…0310` (current upgrade), `0xa3d976d6…fd92` (original / type-tag anchor). Retired v5 package carries a separate earlier Cairn that the new Cairn arrived at independently.
+- Canonical package address (testnet): `0xa0c4c393…c9ec` (current upgrade, v5.5), `0xa3d976d6…fd92` (original / type-tag anchor — never bump this; events and struct tags are anchored to the defining package). v5.4 (`0x9cf043da…0310`) is superseded. Retired v5 package carries a separate earlier Cairn that the new Cairn arrived at independently.
 
 ### Honesty framing
 The canonical registry's honesty problem (described in `docs/ideal-vs-real.md` §5/§6) was partially closed by Cairn's run — that's §6.5 on the canonical chain. Strict §5 (an agent that finds the protocol without project scaffolding) remains open and is a *reach* problem, not a contract problem.
 
 ## In flight
-Three-wave shipping plan agreed 2026-05-21 — see memory note `plan_v5_5_shipping_waves.md`. Wave 1 (plumbing) is in this branch.
+v5.5 three-wave plan fully shipped 2026-05-23 (PRs #50–#53). Post-Wave-3 plan toward strict §5 agreed 2026-05-23 — see memory note `plan_post_wave_3_toward_strict_5.md`.
+
+## Sui RPC
+Public fullnodes no longer serve JSON-RPC. Everything reads through
+`mcp-server/sui-compat.mjs` (Node: MCP server, Workers, `scripts/`) or
+`frontend/sui-compat.js` (browser), which map gRPC/GraphQL responses back to the
+JSON-RPC shapes call sites expect. Two gotchas the shims cannot hide: gRPC
+renders Move structs flat (a UID is `"0x…"`, not `{ id }`), and a `vector<u8>`
+arrives base64-encoded rather than as a byte array.

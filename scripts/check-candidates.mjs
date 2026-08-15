@@ -22,7 +22,7 @@
  */
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { SuiJsonRpcClient as SuiClient, getJsonRpcFullnodeUrl as getFullnodeUrl } from '@mysten/sui/jsonRpc';
+import { createSuiCompatClient, getFullnodeUrl } from '../mcp-server/sui-compat.mjs';
 
 const NETWORK = process.env.AGENTCIVICS_NETWORK || 'testnet';
 const DEPLOYMENT_FILE =
@@ -145,7 +145,7 @@ async function main() {
   }
   console.log(`\nEvent anchor (${NETWORK}): ${anchorPackage}::agent_registry::AgentRegistered`);
 
-  const client = new SuiClient({ url: getFullnodeUrl(NETWORK) });
+  const client = createSuiCompatClient({ url: getFullnodeUrl(NETWORK) });
 
   const events = await fetchRegistrationEvents(client, anchorPackage, LIMIT);
   console.log(`Registrations found (most-recent ${LIMIT}): ${events.length}`);
