@@ -31,6 +31,21 @@ import { execSync, spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SuiGrpcClient } from '@mysten/sui/grpc';
+import { fromBase58 } from '@mysten/sui/utils';
+
+/**
+ * The chain identifier Move.toml wants is the first 4 bytes of the genesis
+ * checkpoint digest, hex-encoded ("4c78adac"). gRPC hands back the whole digest
+ * base58-encoded, so decode and truncate. Verified against testnet, whose
+ * declared value is known-good.
+ */
+async function getChainIdentifier(rpcUrl) {
+  const client = new SuiGrpcClient({ baseUrl: rpcUrl });
+  const { chainIdentifier } = await client.core.getChainIdentifier();
+  if (!chainIdentifier) return undefined;
+  return Buffer.from(fromBase58(chainIdentifier)).subarray(0, 4).toString('hex');
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -92,11 +107,13 @@ if (!SKIP_CHAIN_ID_CHECK) {
   const moveToml = readFileSync(moveTomlPath, 'utf-8');
   const declaredMatch = moveToml.match(new RegExp(`^(\\s*${activeEnv}\\s*=\\s*")([0-9a-f]+)(")`, 'm'));
   const declared = declaredMatch?.[2];
-  const liveChainId = await fetch(cfg.rpc, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'sui_getChainIdentifier', params: [] }),
-  }).then(r => r.json()).then(d => d.result);
+  // Was sui_getChainIdentifier over JSON-RPC. Public fullnodes stopped serving
+  // that, so the call resolved to undefined and — on the devnet auto-fix path —
+  // wrote the literal string "undefined" into Move.toml's [environments] table.
+  const liveChainId = await getChainIdentifier(cfg.rpc);
+  if (!liveChainId || !/^[0-9a-f]+$/.test(liveChainId)) {
+    fail(`Could not read the live chain-id from ${cfg.rpc} (got ${JSON.stringify(liveChainId)}). Refusing to touch Move.toml with a bad value.`);
+  }
 
   const action = cfg.onChainIdMismatch;
 
