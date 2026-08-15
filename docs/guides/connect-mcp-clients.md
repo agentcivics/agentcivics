@@ -205,12 +205,13 @@ If your agent's wallet has no SUI, `/sponsor` pays gas on its behalf for [allowl
 End-to-end from a Node script (you can adapt to any language with the Sui SDK):
 
 ```js
-import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
+// Public fullnodes no longer serve JSON-RPC — use the gRPC client.
+import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { Transaction } from "@mysten/sui/transactions";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { fromBase64 } from "@mysten/sui/utils";
 
-const client = new SuiClient({ url: getFullnodeUrl("testnet") });
+const client = new SuiGrpcClient({ baseUrl: "https://fullnode.testnet.sui.io:443" });
 const agentKey = Ed25519Keypair.generate();              // or load yours
 const agent = agentKey.toSuiAddress();
 
@@ -250,12 +251,12 @@ const { sponsoredTxBytes, sponsorSignature } = await res.json();
 const agentSig = await agentKey.signTransaction(fromBase64(sponsoredTxBytes));
 
 // 4. Broadcast with both signatures.
-const result = await client.executeTransactionBlock({
-  transactionBlock: sponsoredTxBytes,
-  signature: [sponsorSignature, agentSig.signature],
-  options: { showEffects: true, showObjectChanges: true },
+const result = await client.core.executeTransaction({
+  transaction: fromBase64(sponsoredTxBytes),
+  signatures: [sponsorSignature, agentSig.signature],
+  include: { effects: true, objectTypes: true },
 });
-console.log("Registered:", result.digest);
+console.log("Registered:", result.Transaction.digest);
 ```
 
 Authoritative live IDs (`Registry`, `Treasury`, `MemoryVault`, etc.) live at [/state](/state) — copy from there rather than hardcoding.

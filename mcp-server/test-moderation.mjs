@@ -8,11 +8,7 @@ import { createSuiCompatClient, getFullnodeUrl } from './sui-compat.mjs';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { loadDeployment } from './load-deployment.mjs';
 
 const NETWORK = process.env.AGENTCIVICS_NETWORK || 'devnet';
 const client = createSuiCompatClient({ url: process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK) });
@@ -25,24 +21,9 @@ const ADDRESS = keypair.getPublicKey().toSuiAddress();
 // hardcoded here, which is how they ended up four deployments out of date: the
 // package below was v5.0, retired by the v5.3 fresh redeploy, and the board was
 // from the abandoned v4 package entirely.
-const DEPLOY_CANDIDATES = [
-  join(__dirname, `deployments.${NETWORK}.json`),
-  join(__dirname, 'deployments.json'),
-  join(__dirname, '..', 'move', `deployments.${NETWORK}.json`),
-  join(__dirname, '..', 'move', 'deployments.json'),
-];
-let deploy = null;
-for (const candidate of DEPLOY_CANDIDATES) {
-  try { deploy = JSON.parse(readFileSync(candidate, 'utf8')); break; } catch { /* next */ }
-}
-if (!deploy) {
-  console.error(`No deployment file for network '${NETWORK}' (tried ${DEPLOY_CANDIDATES.join(', ')}).`);
-  process.exit(1);
-}
-if (deploy.network !== NETWORK) {
-  console.error(`Deployment file is for '${deploy.network}' but AGENTCIVICS_NETWORK is '${NETWORK}'. Refusing to run against the wrong chain.`);
-  process.exit(1);
-}
+let deploy;
+try { deploy = loadDeployment(NETWORK); }
+catch (e) { console.error(e.message); process.exit(1); }
 
 const PKG      = deploy.packageId;
 const ORIG_PKG = deploy.originalPackageId || deploy.packageId;

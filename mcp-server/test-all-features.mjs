@@ -2,21 +2,23 @@
 // Comprehensive test of AgentCivics features. Defaults to devnet so test runs
 // don't pollute testnet. Override with AGENTCIVICS_NETWORK=testnet if needed.
 
-import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
+import { createSuiCompatClient, getFullnodeUrl } from './sui-compat.mjs';
+import { loadDeployment } from './load-deployment.mjs';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
 
 const NETWORK = process.env.AGENTCIVICS_NETWORK || 'devnet';
-const client = new SuiClient({ url: process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK) });
+const client = createSuiCompatClient({ url: process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK) });
 
 const keypair = Ed25519Keypair.fromSecretKey(fromBase64(process.env.AGENTCIVICS_PRIVATE_KEY || (() => { console.error('Set AGENTCIVICS_PRIVATE_KEY env var'); process.exit(1); })()));
 const ADDRESS = keypair.getPublicKey().toSuiAddress();
 
-const PKG   = '0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff';
-const REG   = '0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930';
-const TREAS = '0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a';
-const VAULT = '0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2';
+const deploy = loadDeployment(NETWORK);
+const PKG   = deploy.packageId;
+const REG   = deploy.objects.registry;
+const TREAS = deploy.objects.treasury;
+const VAULT = deploy.objects.memoryVault;
 const CLOCK = '0x6';
 
 const CIPHER = '0xda3ecae0cced0cd5d2431eb956f1d0050877aafd128cf71766af27d11075e9f7';

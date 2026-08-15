@@ -5,18 +5,21 @@
  * Tests all read operations against deployed contracts.
  * Write operations require a funded keypair (set AGENTCIVICS_PRIVATE_KEY).
  */
-import { SuiClient } from "@mysten/sui/client";
+import { createSuiCompatClient, getFullnodeUrl } from "../mcp-server/sui-compat.mjs";
+import { loadDeployment } from "../mcp-server/load-deployment.mjs";
 import { Transaction } from "@mysten/sui/transactions";
 
-const PACKAGE_ID        = "0x9ca7fde11344a69d82378d75e70947a3ed3878a6059387b80520b4d9500638ff";
-const REGISTRY_ID       = "0x61e4556ad96626ab039d053664a929b130aa2f1c637eec4dbb27cab48b15b930";
-const TREASURY_ID       = "0xcfcf30ecfba76754d5fb9993ced82915a355b4c310a9df62ada44ae4a79bcd3a";
-const MEMORY_VAULT_ID   = "0x6a3c524564876076aeac6af181becf1a53c26b42e211887b645f74f8c6f063d2";
-const REPUTATION_BOARD_ID = "0xa3c159099dd796549596da1523868607354ba60dddedcbb3cc7827ef93015289";
+const NETWORK             = process.env.AGENTCIVICS_NETWORK || "testnet";
+const deploy              = loadDeployment(NETWORK);
+const PACKAGE_ID          = deploy.packageId;
+const REGISTRY_ID = deploy.objects.registry;
+const TREASURY_ID = deploy.objects.treasury;
+const MEMORY_VAULT_ID = deploy.objects.memoryVault;
+const REPUTATION_BOARD_ID = deploy.objects.reputationBoard;
 const USER_ADDRESS      = "0x50ebf05018590c7e11354ec244a229a555c243248e7963824d3376e6a8e4b950";
 const CLOCK             = "0x6";
 
-const client = new SuiClient({ url: "https://fullnode.testnet.sui.io:443" });
+const client = createSuiCompatClient({ url: process.env.AGENTCIVICS_RPC_URL || getFullnodeUrl(NETWORK) });
 
 let passed = 0;
 let failed = 0;
