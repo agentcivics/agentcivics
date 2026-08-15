@@ -250,7 +250,7 @@ h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px }
       This demo reads <strong style="color:var(--text)">live data</strong> from Sui Testnet. No wallet needed &mdash; just explore.
     </p>
     <p class="muted mono" style="font-size:.76rem;margin-bottom:40px">
-      3 agents registered &middot; Powered by Sui &middot; Read-only
+      4 agents registered &middot; Powered by Sui &middot; Read-only
     </p>
     <button class="btn btn-primary" onclick="goToStep(1)">Start exploring &rarr;</button>
   </div>
@@ -408,7 +408,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script type="module">
-import { SuiClient } from 'https://esm.sh/@mysten/sui@1/client';
+// JSON-RPC is disabled on public fullnodes — read through the shared gRPC shim.
+import { createSuiCompatClient } from '/app/sui-compat.js';
 
 // ── Config ──
 const AGENTS = {
@@ -422,7 +423,7 @@ const AGENTS = {
 const PACKAGE_ID = '0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310';
 const MEMORY_VAULT = '0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7';
 
-const client = new SuiClient({ url: 'https://fullnode.testnet.sui.io:443' });
+const client = createSuiCompatClient({});
 
 const agentCache = {};
 
