@@ -57,8 +57,13 @@ const EXPLORER_BASE = NETWORK === 'mainnet'
 
 // Load keyfile
 const keyfilePath = resolve(keyfileArg);
-const secretBase64 = readFileSync(keyfilePath, 'utf8').trim();
-const keypair = Ed25519Keypair.fromSecretKey(fromBase64(secretBase64));
+const secret = readFileSync(keyfilePath, 'utf8').trim();
+// Accept both forms. scripts/test-lineage-scenario.mjs persists bech32
+// ("suiprivkey1…"), so requiring base64 here meant a key produced by one script
+// could not be fed to the other.
+const keypair = secret.startsWith('suiprivkey')
+  ? Ed25519Keypair.fromSecretKey(secret)
+  : Ed25519Keypair.fromSecretKey(fromBase64(secret));
 const sender = keypair.toSuiAddress();
 
 // Load identity. Both naming conventions are accepted:
@@ -181,8 +186,11 @@ console.log('  Explorer: ', agentObjectId
   : `${EXPLORER_BASE}/txblock/${result.digest}`);
 
 // Persist agentObjectId back to the keystore metadata if present.
+// The guard matters: for a keyfile not ending in .key the replace is a no-op,
+// so metaPath resolved to the key file itself — which this block would have
+// JSON.parsed and then overwritten with metadata, destroying the private key.
 const metaPath = keyfilePath.replace(/\.key$/, '.json');
-if (existsSync(metaPath)) {
+if (metaPath !== keyfilePath && existsSync(metaPath)) {
   const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
   meta.agentObjectId = agentObjectId;
   meta.network = NETWORK;

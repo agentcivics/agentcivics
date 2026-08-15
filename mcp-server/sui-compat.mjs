@@ -92,6 +92,26 @@ function unwrapTransactionResult(response) {
   return response;
 }
 
+/**
+ * gRPC reports execution status as { success: boolean, error }, JSON-RPC as
+ * { status: 'success' | 'failure', error }. Call sites test
+ * `effects.status.status !== 'success'`, so a raw gRPC status reads as failure
+ * on a transaction that actually succeeded. Expose the JSON-RPC shape and keep
+ * the gRPC fields alongside it.
+ */
+function toJsonRpcEffects(effects) {
+  if (!effects) return effects;
+  const succeeded = effects.status?.success !== false;
+  return {
+    ...effects,
+    status: {
+      ...effects.status,
+      status: succeeded ? 'success' : 'failure',
+      ...(succeeded ? {} : { error: effects.status?.error?.message ?? 'Transaction failed' }),
+    },
+  };
+}
+
 /** effects.changedObjects + objectTypes → the JSON-RPC objectChanges array. */
 function toJsonRpcObjectChanges(executeResult) {
   const changed = executeResult?.effects?.changedObjects;
@@ -201,14 +221,15 @@ export function createSuiCompatClient({ url }) {
         transaction: parsed?.transaction
           ? { data: { sender: parsed.transaction.sender, gasData: parsed.transaction.gasData } }
           : null,
-        effects: parsed?.effects,
+        effects: toJsonRpcEffects(parsed?.effects),
       };
     },
 
     async waitForTransaction({ digest, timeout, pollInterval }) {
-      return unwrapTransactionResult(
+      const waited = unwrapTransactionResult(
         await grpcClient.waitForTransaction({ digest, timeout, pollInterval }),
       );
+      return waited ? { ...waited, effects: toJsonRpcEffects(waited.effects) } : waited;
     },
 
     async getBalance({ owner, coinType }) {
@@ -260,7 +281,7 @@ export function createSuiCompatClient({ url }) {
       }
       return {
         digest: executed?.digest,
-        effects: executed?.effects,
+        effects: toJsonRpcEffects(executed?.effects),
         objectChanges: toJsonRpcObjectChanges(executed),
       };
     },
