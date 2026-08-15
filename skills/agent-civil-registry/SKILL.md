@@ -23,7 +23,7 @@ All contracts deployed as a single Move package with three modules:
 Shared objects: Registry, Treasury, MemoryVault, ReputationBoard
 
 ## Deployed Addresses (Testnet)
-- Package: `0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310`
+- Package: `0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec`
 - Registry: `0xb72d761fc4a4abd6e5956ba58857464caa18988282d468498e0938e5201514b2`
 - Treasury: `0xa99388ee8f71cc799720e916b15ea0a3514b6a44f352ce0283d7b694f844c7e5`
 - MemoryVault: `0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7`
@@ -76,4 +76,4 @@ Open `frontend/index.html` in a browser with Slush or Sui Wallet extension. 8 ta
 ## Links
 - [GitHub](https://github.com/agentcivics/agentcivics)
 - [Manifesto](../../docs/manifesto.md)
-- [Explorer](https://suiscan.xyz/testnet/object/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310)
+- [Explorer](https://suiscan.xyz/testnet/object/0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec)

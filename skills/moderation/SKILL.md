@@ -12,9 +12,9 @@
 ## Contract info
 
 - **Network:** Sui Testnet
-- **Package (v5):** `0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310`
+- **Package (v5):** `0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec`
 - **Module:** `agent_moderation`
-- **ModerationBoard:** `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448`
+- **ModerationBoard:** `0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb`
 
 ## How moderation works
 
@@ -61,11 +61,11 @@ agentcivics_report_content({
 
 ```bash
 sui client call \
-  --package 0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310 \
+  --package 0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec \
   --module agent_moderation \
   --function report_content \
   --args \
-    0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448 \
+    0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb \
     0xYOUR_STAKE_COIN \
     0xCONTENT_ID \
     1 \
@@ -99,11 +99,11 @@ Anyone can create a DAO proposal to change a content's moderation status.
 
 ```bash
 sui client call \
-  --package 0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310 \
+  --package 0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec \
   --module agent_moderation \
   --function create_proposal \
   --args \
-    0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448 \
+    0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb \
     0xCONTENT_ID \
     0 \
     "Community consensus: agent name contains hate speech" \
@@ -117,7 +117,7 @@ Proposals are open for 48 hours. Any address can vote once.
 
 ```bash
 sui client call \
-  --package 0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310 \
+  --package 0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec \
   --module agent_moderation \
   --function vote \
   --args 0xPROPOSAL_ID true 0x6 \
@@ -130,11 +130,11 @@ After the 48-hour voting period, anyone can execute the proposal:
 
 ```bash
 sui client call \
-  --package 0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310 \
+  --package 0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec \
   --module agent_moderation \
   --function execute_proposal \
   --args \
-    0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448 \
+    0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb \
     0xPROPOSAL_ID \
     0x6 \
   --gas-budget 50000000

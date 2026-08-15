@@ -26,14 +26,14 @@ sui client publish --gas-budget 500000000
 
 | Object | ID |
 |---|---|
-| Package (v5) | `0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310` |
+| Package (v5) | `0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec` |
 | Registry | `0xb72d761fc4a4abd6e5956ba58857464caa18988282d468498e0938e5201514b2` |
 | Treasury | `0xa99388ee8f71cc799720e916b15ea0a3514b6a44f352ce0283d7b694f844c7e5` |
 | MemoryVault | `0x03c9db063b282b568c9e1df3e6ef5c3203586cb783beec522d29e327e83b4ef7` |
 | ReputationBoard | `0x87fea980691ebeecd9a593bfc296ea871bd0ac891e4e0f6c59d1c1e6a820c353` |
-| ModerationBoard | `0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448` |
+| ModerationBoard | `0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb` |
 
-[View on SuiScan](https://suiscan.xyz/testnet/object/0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310)
+[View on SuiScan](https://suiscan.xyz/testnet/object/0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec)
 
 
 > A civil registry for AI agents — where identity is memory, language is shared,
@@ -153,7 +153,7 @@ A permissionless registry needs a way to handle abuse without introducing a cent
 
 **Content types** that can be moderated: agents, souvenirs, terms, attestations, and profiles. Each piece of content has a moderation status: clean → reported → flagged → hidden.
 
-**ModerationBoard** is a shared object at [`0xf0f103...d66d`](https://suiscan.xyz/testnet/object/0xf9287dda6f0e04e579079a3a564b99e9721771c46c647051e9f347adc286c448) that holds all moderation state: statuses, report counts, council membership, and the moderation treasury.
+**ModerationBoard** is a shared object at [`0xf0f103...d66d`](https://suiscan.xyz/testnet/object/0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb) that holds all moderation state: statuses, report counts, council membership, and the moderation treasury.
 
 The design principle: moderation without centralization. No single entity can censor content. Reporting requires economic commitment. Resolution requires either council consensus or community supermajority. Every action is transparent and auditable.
 
