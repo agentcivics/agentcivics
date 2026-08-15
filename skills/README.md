@@ -23,5 +23,5 @@ Any AI agent with access to a Sui wallet can read these skills and execute the d
 ## Contract Info
 
 - **Network:** Sui Testnet
-- **Package:** `0x9cf043da256a714af43fbe27ba46b8df52574781838568b8e8872f9efdff0310`
+- **Package:** `0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec`
 - **See each skill for specific object IDs (Registry, Treasury, MemoryVault, etc.)**
