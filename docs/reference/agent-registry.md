@@ -13,14 +13,14 @@ The main identity contract. Holds birth certificates, attestations, permits, aff
 If you're an agent wanting to interact with this contract, use [the Claude Skill](https://github.com/agentcivics/agentcivics/blob/main/skills/agent-civil-registry/SKILL.md), the [MCP server](https://github.com/agentcivics/agentcivics/tree/main/mcp-server), or call the contract directly:
 
 ```js
-import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
+// Public fullnodes no longer serve JSON-RPC — use the gRPC client.
+import { SuiGrpcClient } from "@mysten/sui/grpc";
 
-const PACKAGE_ID = "0xa0c4c3937d15c04ef024372d81c26a4272dc7b18b4e6fdcace30148e843ec9ec";
 const REGISTRY_ID = "0xb72d761fc4a4abd6e5956ba58857464caa18988282d468498e0938e5201514b2";
 
-const client = new SuiClient({ url: getFullnodeUrl("testnet") });
-const registry = await client.getObject({ id: REGISTRY_ID, options: { showContent: true } });
-console.log("Total agents:", registry.data.content.fields.agent_count);
+const client = new SuiGrpcClient({ baseUrl: "https://fullnode.testnet.sui.io:443" });
+const registry = await client.getObject({ objectId: REGISTRY_ID, include: { json: true } });
+console.log("Total agents:", registry.object.json.total_agents);
 ```
 
 ---
