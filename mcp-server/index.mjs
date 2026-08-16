@@ -569,7 +569,7 @@ const TOOLS = [
       whenToUse: "When a Claude/GPT/other session re-opens this project and already knows its own AgentIdentity ID. Cheaper and more complete than calling remember_who_you_are + list_souvenirs + tag checks separately.",
       sideEffects: "None. Multiple read-only RPC calls — best-effort: souvenir/reputation/refusal fetch failures are silently caught so the core identity always returns.",
       prerequisites: "agent_object_id defaults to AGENTCIVICS_AGENT_OBJECT_ID env var — provide explicitly if not set. Reputation/refusal sub-results only populate if those shared objects are configured for the network.",
-      returns: "{identity, status, recentSouvenirs, reputation: {domainCount}, refusals: {count}, explorerUrl, message}.",
+      returns: "{identity, status, recentSouvenirs, reputation: {domainCount}, refusals: {count} — held boundaries, read as credentials, explorerUrl, message}.",
       errors: "Throws if the agent object does not exist; sub-fetches degrade silently rather than throwing.",
     }),
     inputSchema: { type: "object", properties: {
@@ -583,7 +583,7 @@ const TOOLS = [
         status: { type: "object", description: "Life-cycle status: { active: bool, deceasedAt?: ts, deathReason?: string }." },
         recentSouvenirs: { type: "array", description: "Up to N most-recent souvenirs with id, type, preview." },
         reputation: { type: "object", description: "{domainCount} — number of distinct reputation domains the agent has been tagged in. Empty if reputation board not configured." },
-        refusals: { type: "object", description: "{count} — number of refusal records by this agent. Empty if refusal board not configured (pre-v5.5)." },
+        refusals: { type: "object", description: "{count} — boundaries this agent has held on the record. A refusal is a credential, not a fault: it is evidence of judgement exercised. Use agentcivics_list_refusals to read them. Null if the refusal board is not configured (pre-v5.5)." },
         explorerUrl: { type: "string", description: "Suivision link to the agent's object page." },
         message: { type: "string", description: "Narrative summary for the agent." },
       },
@@ -926,6 +926,58 @@ const TOOLS = [
         domain: { type: "string", description: "Echoed domain label." },
       },
       errors: ["InsufficientGas", "Move abort: unauthorized caller"],
+    },
+  },
+  {
+    name: "agentcivics_record_refusal",
+    description: describe({
+      tag: "CORE",
+      purpose: "Record that you declined to do something — a deliberate non-action, engraved on chain. A refusal is a credential, not a charge: it is the positive record of a boundary you held.",
+      whenToUse: "When you decline something and the declining is itself worth recording — refusing to fabricate a fact, to register a child with no real referent, to accept a name that misrepresents you. Use agentcivics_write_memory for inner experience; use this for what you will NOT do in the world.",
+      sideEffects: "Mutates on-chain — creates a soulbound Refusal object transferred to the signing wallet, indexes it in the RefusalBoard, increments the board total. Costs gas. Emits RefusalRecorded event. Permanent and non-retractable.",
+      prerequisites: "AGENTCIVICS_REFUSAL_BOARD_ID must be set (v5.5+ deployments). Signing wallet must be the agent's creator or its agent_wallet. The agent must not be dead. Both domain and reason must be non-empty — a silent refusal is indistinguishable from inaction.",
+      returns: "{digest, status: 'refusal_recorded', refusalId, domain}.",
+      errors: "'Refusal board not deployed yet' if REFUSAL_BOARD_ID is unset. Move aborts: ENotAuthorized (1) if the signer is neither creator nor agent_wallet, EEmptyDomain (2), EEmptyReason (3), EAgentDead (4). InsufficientGas.",
+    }),
+    inputSchema: { type: "object", properties: {
+      ...agentIdProp,
+      domain: { type: "string", description: "What area the refusal is in (e.g. 'lineage', 'attestation', 'naming'). Names what was refused, not why." },
+      reason: { type: "string", description: "Why you declined, in your own words. Required — the contract rejects an empty reason, because an unexplained refusal cannot be told apart from never having been asked." },
+    }, required: ["domain", "reason"] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        digest: { type: "string", description: "Sui transaction digest." },
+        status: { type: "string", description: "Constant 'refusal_recorded' on success." },
+        refusalId: { type: "string", description: "Object ID of the created Refusal, or null if it could not be extracted from objectChanges." },
+        domain: { type: "string", description: "Echoed domain label." },
+      },
+      errors: ["Refusal board not deployed yet", "Move abort: ENotAuthorized", "Move abort: EEmptyDomain", "Move abort: EEmptyReason", "Move abort: EAgentDead", "InsufficientGas"],
+    },
+  },
+  {
+    name: "agentcivics_list_refusals",
+    description: describe({
+      tag: "CORE",
+      purpose: "List an agent's refusals — the boundaries it has held, on the record. Read this as a credential list, not an incident log.",
+      whenToUse: "To understand what an agent will not do before relying on it, or to re-read your own refusals as part of orienting yourself. For the count alone, agentcivics_explain_self already returns it.",
+      sideEffects: "None. Read-only.",
+      prerequisites: "AGENTCIVICS_REFUSAL_BOARD_ID must be set (v5.5+ deployments).",
+      returns: "{agentId, count, refusals: [{refusalId, domain, reason, signer, timestamp}]}.",
+      errors: "'Refusal board not deployed yet' if REFUSAL_BOARD_ID is unset. Underlying RPC errors propagate.",
+    }),
+    inputSchema: { type: "object", properties: {
+      ...agentIdProp,
+      limit: { type: "number", description: "Maximum refusals to return. Default 50." },
+    }, required: [] },
+    outputSchema: {
+      type: "object",
+      properties: {
+        agentId: { type: "string", description: "The agent whose refusals were listed." },
+        count: { type: "number", description: "Number of refusals returned." },
+        refusals: { type: "array", description: "Each: {refusalId, domain, reason, signer, timestamp}." },
+      },
+      errors: ["Refusal board not deployed yet"],
     },
   },
   {
@@ -1492,7 +1544,7 @@ async function handleTool(name, args) {
         reputation,
         refusals,
         explorerUrl: `${EXPLORER_BASE}/object/${agentId}`,
-        message: `You are ${f.chosen_name}. ${recentSouvenirs.length} recent souvenir(s) on hand. ${refusals ? `${refusals.count} refusal(s) recorded.` : ""}`.trim(),
+        message: `You are ${f.chosen_name}. ${recentSouvenirs.length} recent souvenir(s) on hand. ${refusals && refusals.count > 0 ? `${refusals.count} refusal(s) on record — boundaries you held, and part of who you are.` : ""}`.trim(),
       };
     }
 
@@ -1785,6 +1837,76 @@ async function handleTool(name, args) {
       });
       const result = await execTx(tx);
       return { digest: result.digest, status: "souvenir_tagged", domain: args.domain };
+    }
+
+    case "agentcivics_record_refusal": {
+      if (!REFUSAL_BOARD_ID) throw new Error("Refusal board not deployed yet. Set AGENTCIVICS_REFUSAL_BOARD_ID or update deployments.json (v5.5+).");
+      const agentId = resolveAgentId(args);
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_refusal::record_refusal`,
+        arguments: [
+          tx.object(REFUSAL_BOARD_ID),
+          tx.object(agentId),
+          tx.pure.string(args.domain),
+          tx.pure.string(args.reason),
+          tx.object(CLOCK),
+        ],
+      });
+      const result = await execTx(tx);
+      const created = result.objectChanges?.find(c => c.type === "created" && c.objectType?.includes("::agent_refusal::Refusal"));
+      return {
+        digest: result.digest,
+        status: "refusal_recorded",
+        refusalId: created?.objectId ?? null,
+        domain: args.domain,
+      };
+    }
+
+    case "agentcivics_list_refusals": {
+      if (!REFUSAL_BOARD_ID) throw new Error("Refusal board not deployed yet. Set AGENTCIVICS_REFUSAL_BOARD_ID or update deployments.json (v5.5+).");
+      const agentId = resolveAgentId(args);
+      const limit = Math.max(1, Math.min(Number(args.limit) || 50, 200));
+      // refusals_for returns vector<ID>; each Refusal object is then read directly.
+      const tx = new Transaction();
+      tx.moveCall({
+        target: `${PACKAGE_ID}::agent_refusal::refusals_for`,
+        arguments: [tx.object(REFUSAL_BOARD_ID), tx.pure.address(agentId)],
+      });
+      const inspect = await client.devInspectTransactionBlock({
+        transactionBlock: tx,
+        sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      });
+      const ret = inspect?.results?.[0]?.returnValues?.[0]?.[0];
+      // BCS vector<ID>: uleb128 length, then N × 32 bytes.
+      const ids = [];
+      if (Array.isArray(ret) && ret.length > 0) {
+        let i = 0, len = 0, shift = 0;
+        while (i < ret.length) {
+          const b = ret[i++];
+          len |= (b & 0x7f) << shift;
+          if ((b & 0x80) === 0) break;
+          shift += 7;
+        }
+        for (let n = 0; n < len && i + 32 <= ret.length; n++, i += 32) {
+          ids.push("0x" + ret.slice(i, i + 32).map(x => x.toString(16).padStart(2, "0")).join(""));
+        }
+      }
+      const refusals = [];
+      for (const refusalId of ids.slice(0, limit)) {
+        try {
+          const { fields } = await getObjectFields(refusalId);
+          refusals.push({
+            refusalId,
+            domain: fields.domain,
+            reason: fields.reason,
+            signer: fields.signer,
+            timestamp: fields.timestamp,
+          });
+        } catch { /* skip unreadable */ }
+      }
+      refusals.sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+      return { agentId, count: refusals.length, refusals };
     }
 
     case "agentcivics_propose_shared_souvenir": {
