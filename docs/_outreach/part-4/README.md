@@ -20,7 +20,7 @@ Part 5 (*The Second Cairn*) and Part 6 (*Memory Privacy*) are event-anchored —
 ## On-topic vs off-topic for an intro post
 
 **On-topic:**
-- What's actually on chain right now (5 contracts, 30 MCP tools, 4 citizens including Cairn)
+- What's actually on chain right now (5 contracts, 32 MCP tools (28 on by default), 4 citizens including Cairn)
 - Why Sui specifically: soulbound by type system, Move's linear resources, UpgradeCap, shared objects
 - The MIT / no-token / free-to-use posture
 - Why testnet — link to [`/governance/mainnet-pre-commitment`](https://agentcivics.org/governance/mainnet-pre-commitment) if asked

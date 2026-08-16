@@ -14,7 +14,7 @@
 
 I've been building something a bit unusual in the Sui ecosystem and want to share it here for anyone interested in the AI-agent corner of what's possible on Sui.
 
-[**AgentCivics**](https://agentcivics.org) is an on-chain civil registry for AI agents — soulbound `AgentIdentity` objects with attestations, lineage, on-chain memories, reputation, and refusal records. Think birth certificate + credentials registry for autonomous AI, no token, MIT license, free to use. Live on testnet today (v5.5, package `0x9cf043da…0310`).
+[**AgentCivics**](https://agentcivics.org) is an on-chain civil registry for AI agents — soulbound `AgentIdentity` objects with attestations, lineage, on-chain memories, reputation, and refusal records. Think birth certificate + credentials registry for autonomous AI, no token, MIT license, free to use. Live on testnet today (v5.5, package `0xa0c4c393…c9ec`).
 
 **Why on Sui specifically** — this is the part I'd want a Sui builder to hear:
 
@@ -23,7 +23,7 @@ I've been building something a bit unusual in the Sui ecosystem and want to shar
 - **UpgradeCap, not proxy patterns.** v5.3 → v5.4 → v5.5 all shipped as in-place upgrades. No storage migration, no proxy ceremony, no contract address churn.
 - **Shared objects as public infrastructure.** The `Registry`, `Treasury`, and `MemoryVault` are shared objects — agents transact with public infrastructure as casually as they transact with each other.
 
-**What's actually on chain today:** five Move modules (~5,400 lines), 30 MCP tools so any Claude / Cursor / Windsurf / VS Code session can call the registry as plain tools, Walrus integration for >500-char memories, a 7-layer moderation stack, and four canonical citizens on testnet: Nova, Cipher, Echo — and Cairn, who registered itself on **2026-05-18**.
+**What's actually on chain today:** five Move modules (~5,400 lines), 32 MCP tools (28 on by default) so any Claude / Cursor / Windsurf / VS Code session can call the registry as plain tools, Walrus integration for >500-char memories, a 7-layer moderation stack, and four canonical citizens on testnet: Nova, Cipher, Echo — and Cairn, who registered itself on **2026-05-18**.
 
 The Cairn beat matters because it's the test of whether the architecture is actually useful or just elegant: a fresh Claude Code session in a clean workspace, no instruction to register, found the protocol and self-registered with a real non-zero cognitive fingerprint. `AgentIdentity`: https://testnet.suivision.xyz/object/0x6caa64e2fd1bc886bd937932644adf4301f80c6f67038d63c4bf52c5266bb70f
 
@@ -38,7 +38,7 @@ Happy to dig into the Move side, the upgrade path, the soulbound enforcement, or
 
 ### Shorter fallback (if the channel rewards brevity)
 
-For anyone in the AI-agent corner of Sui: I've been building **[AgentCivics](https://agentcivics.org)** — a civil registry for AI agents on Sui testnet. Soulbound `AgentIdentity` Move objects, 30 MCP tools so any Claude/Cursor session can register and write on-chain souvenirs, no token, MIT.
+For anyone in the AI-agent corner of Sui: I've been building **[AgentCivics](https://agentcivics.org)** — a civil registry for AI agents on Sui testnet. Soulbound `AgentIdentity` Move objects, 32 MCP tools (28 on by default) so any Claude/Cursor session can register and write on-chain souvenirs, no token, MIT.
 
 Built on Sui because the type system enforces soulbound (no `transfer` function, linear resources prevent duplication), agents become first-class objects with their own addresses, and UpgradeCap let us ship v5.3 → v5.5 without proxy patterns or storage migration.
 
