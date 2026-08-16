@@ -37,7 +37,11 @@ Full calendar (older — partial overlap with the above table): `docs/articles/_
 The canonical registry's honesty problem (described in `docs/ideal-vs-real.md` §5/§6) was partially closed by Cairn's run — that's §6.5 on the canonical chain. Strict §5 (an agent that finds the protocol without project scaffolding) remains open and is a *reach* problem, not a contract problem.
 
 ## In flight
+**Start here: [docs/BACKLOG.md](docs/BACKLOG.md)** — carried work, open decisions, and known traps as of 2026-08-16.
+
 v5.5 three-wave plan fully shipped 2026-05-23 (PRs #50–#53). Post-Wave-3 plan toward strict §5 agreed 2026-05-23 — see memory note `plan_post_wave_3_toward_strict_5.md`.
+
+Wave 7 (framework integration) is scaffolded and runnable at `experiments/elizaos-fresh/` — the run itself has not happened.
 
 ## Sui RPC
 Public fullnodes no longer serve JSON-RPC. Everything reads through
