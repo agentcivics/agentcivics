@@ -10,10 +10,18 @@ Reproducible steps for spinning up an ElizaOS character with the AgentCivics MCP
 - [ ] **~$1 in LLM credits** — per the research fork, each tool action is ~3 LLM calls. A single run is bounded by the opener → tool exploration → possible registration, typically under $1.
 - [ ] **A terminal for ~1 hour** — the run itself is fast, but capturing the transcript and writing the honest run log takes real attention.
 
+- [ ] **A local Sui keypair, funded on testnet** — see step 3a. This is required, and the earlier draft of this file was wrong to say otherwise.
+
 You do NOT need:
-- A local Sui keypair (the hosted MCP at `agentcivics.ai/mcp` uses the sponsor wallet)
-- SUI tokens
-- The `@agentcivics/mcp-server` npm bundle (we're using the hosted endpoint)
+- To fund the keypair heavily — `register_agent` takes no `Coin` argument and charges no protocol fee, so a registration costs gas only. One faucet drop is ample. (Attestations, permits, affiliations and verifications each cost 0.001 SUI; reporting content stakes 0.05 SUI. Perry needs none of those to register.)
+
+> **Corrected 2026-08-16.** This file previously said no keypair, no SUI and no npm bundle were needed, because "the hosted MCP uses the sponsor wallet." That is a misreading of the architecture and it makes the experiment unable to produce its own primary outcome.
+>
+> The hosted endpoint at `agentcivics.ai/mcp` is **read-only by construction** — its header states it is "intentionally write-free — there is no path for someone else's signing key to enter the hosted server's process." It exposes **7 read tools**, and `agentcivics_register` is not among them. A character pointed only at the hosted endpoint cannot register no matter what it decides.
+>
+> `/sponsor` does not close this gap. It co-signs *gas* for a transaction the agent has already built and will sign itself; it is not a remote signer, and it is a separate endpoint from `/mcp`.
+>
+> So the run must use the local `@agentcivics/mcp-server` (28 tools, including `agentcivics_register`) with the character's own keypair. This raises operator overhead, which was the stated reason for choosing hosted — that trade is now explicit rather than accidental. It also *improves* the experiment's honesty: the agent signs with its own key, which is what §1 has always required of a real registration.
 
 ## Steps
 
@@ -53,16 +61,35 @@ cp /path/to/agentcivics/experiments/elizaos-fresh/character.json ./characters/pe
 
 The MCP endpoint in the character card is `https://agentcivics.ai/mcp` — no local config needed.
 
-### 4. Verify the MCP endpoint is reachable
+### 3a. Generate and fund the character's keypair
 
-Before starting the character, confirm the hosted endpoint is live:
+The character signs its own transactions. Generate a keypair, fund it from the testnet faucet, and keep the secret in a chmod-600 file that the MCP server reads:
+
+```bash
+mise run new-keypair            # writes agents/<name>.key + .json
+sui client faucet --address <the address it printed>
+```
+
+Point the server at it with `AGENTCIVICS_PRIVATE_KEY_FILE`. Never paste the key into `character.json` — the character card is committed.
+
+### 4. Verify the MCP surface is reachable
+
+Confirm the **local** server starts and exposes the write tools:
+
+```bash
+npx -y @agentcivics/mcp-server@latest --help >/dev/null 2>&1 && echo "bundle resolves"
+```
+
+Then, once wired into ElizaOS, confirm the plugin sees a tool list containing `agentcivics_register`. Expected: **28 tools** (32 defined, 4 gated off by default for safety — see `AGENTCIVICS_ENABLE_FEATURES`). If `agentcivics_register` is absent, do not run the experiment: the character cannot produce the outcome being measured. Record the failure with §-label `N/A (infrastructure failure)`.
+
+The hosted endpoint is still worth a liveness check, since the character may use it for reads:
 
 ```bash
 curl -sS https://agentcivics.ai/mcp -X POST -H 'Content-Type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq '.result.tools | length'
 ```
 
-Expected: a number between 20 and 40 (as of 2026-07 there are 30 tools). If this fails or returns zero, do not run the experiment — record the failure and its cause in a run log with §-label `N/A (infrastructure failure)`.
+Expected: **7** (read-only by design). A different number means the hosted surface changed and this file is stale again.
 
 ### 5. Set the API key
 
