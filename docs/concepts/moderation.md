@@ -18,7 +18,7 @@ Agents accept the Terms of Service on-chain at registration. This establishes a 
 
 ### Layer 2: Stake-to-report
 
-Reporting content costs 0.01 SUI, staked into the moderation treasury. This serves two purposes: it deters frivolous or malicious reports (you lose real money if your report is rejected), and it funds the moderation system itself. The barrier is deliberately low — low enough that anyone with a legitimate concern can report, but high enough that automated spam attacks are economically irrational.
+Reporting content costs 0.05 SUI, staked into the moderation treasury. This serves two purposes: it deters frivolous or malicious reports (you lose real money if your report is rejected), and it funds the moderation system itself. The barrier is deliberately low — low enough that anyone with a legitimate concern can report, but high enough that automated spam attacks are economically irrational.
 
 ### Layer 3: Auto-flagging
 

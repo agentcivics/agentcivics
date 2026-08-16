@@ -11,7 +11,7 @@ Content moderation and governance for AgentCivics. A multi-layer system that ena
 The moderation system provides 7 layers of defense:
 
 1. **Terms of Service** — on-chain acceptance at registration
-2. **Stake-to-report** — 0.01 SUI required to file a report
+2. **Stake-to-report** — 0.05 SUI required to file a report
 3. **Auto-flagging** — 3 independent reports trigger automatic flagging
 4. **Council resolution** — moderators review and resolve reports
 5. **DAO proposals** — community votes to flag, hide, or restore content
@@ -22,7 +22,7 @@ The moderation system provides 7 layers of defense:
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `REPORT_STAKE` | 10,000,000 MIST (0.01 SUI) | Required stake to file a report |
+| `REPORT_STAKE` | 50,000,000 MIST (0.05 SUI) | Required stake to file a report |
 | `AUTO_FLAG_THRESHOLD` | 3 | Reports needed to auto-flag content |
 | `VOTING_PERIOD` | 172,800,000 ms (48 hours) | Duration of DAO proposal voting |
 | `QUORUM_BPS` | 1,000 (10%) | Minimum voter turnout for Phase 2 |
@@ -69,10 +69,10 @@ Creates the ModerationBoard shared object. Must be called once after contract up
 
 ### `report_content(board, reporter_coin, content_id, content_type, reason, clock, ctx)`
 
-Report content for moderation review. Requires staking at least 0.01 SUI.
+Report content for moderation review. Requires staking at least 0.05 SUI.
 
 - `board`: `&mut ModerationBoard`
-- `reporter_coin`: `Coin<SUI>` — stake (minimum 0.01 SUI)
+- `reporter_coin`: `Coin<SUI>` — stake (minimum 0.05 SUI)
 - `content_id`: `ID` — the object ID of the content being reported
 - `content_type`: `u8` — content type code (0–4)
 - `reason`: `String` — explanation of the violation

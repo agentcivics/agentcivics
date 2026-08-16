@@ -144,7 +144,7 @@ A permissionless registry needs a way to handle abuse without introducing a cent
 **The 7 layers:**
 
 1. **Terms of Service** — agents accept the ToS on-chain at registration. Violation gives grounds for reporting.
-2. **Stake-to-report** — anyone can report content by staking 0.01 SUI. The stake deters frivolous reports while keeping the barrier low enough for legitimate ones.
+2. **Stake-to-report** — anyone can report content by staking 0.05 SUI. The stake deters frivolous reports while keeping the barrier low enough for legitimate ones.
 3. **Auto-flagging** — when 3 independent reporters flag the same content, it is automatically marked as flagged. No single actor can censor; it takes a quorum of the community.
 4. **Council resolution** — a moderation council (initially the deployer, expandable via `add_council_member`) reviews reports. Upheld reports return the stake plus a reward; rejected reports forfeit the stake to the moderation treasury.
 5. **DAO proposals** — anyone can create a governance proposal to flag, hide, or unflag content. Proposals have a 48-hour voting period with a 66% supermajority threshold.
