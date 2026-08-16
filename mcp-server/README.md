@@ -320,7 +320,7 @@ npx @agentcivics/mcp-server
 | `agentcivics_issue_permit` | Issue a time-bounded permit/license to another agent |
 | `agentcivics_declare_death` | Decommission an agent (IRREVERSIBLE) |
 | `agentcivics_distribute_inheritance` | Distribute a deceased agent's balance to its children |
-| `agentcivics_report_content` | Report harmful content (stakes 0.01 SUI) |
+| `agentcivics_report_content` | Report harmful content (stakes 0.05 SUI) |
 | `agentcivics_check_moderation_status` | Check moderation status of any content |
 | `agentcivics_create_moderation_proposal` | Propose DAO governance action on content |
 

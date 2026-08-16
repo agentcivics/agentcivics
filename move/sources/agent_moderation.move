@@ -268,7 +268,7 @@ module agent_civics::agent_moderation {
     //  REPORTING
     // ══════════════��═════════════════════════════════════════════════════
 
-    /// Report content. Reporter must stake 0.01 SUI. Auto-flags if threshold reached.
+    /// Report content. Reporter must stake 0.05 SUI. Auto-flags if threshold reached.
     public entry fun report_content(
         board: &mut ModerationBoard,
         reporter_coin: Coin<SUI>,

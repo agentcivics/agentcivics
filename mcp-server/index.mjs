@@ -176,6 +176,14 @@ const EXPLORER_BASE = NETWORK === "mainnet"
   : `https://${NETWORK}.suivision.xyz`;
 const CLOCK = "0x6";
 
+// Must match REPORT_STAKE in move/sources/agent_moderation.move. It shipped as
+// 50_000_000 while every client sent 10_000_000, so report_content aborted with
+// EInsufficientStake (301) on every call — the contract asserts
+// `stake_amount >= REPORT_STAKE`. Named here so the two can be diffed rather
+// than buried in a splitCoins call.
+const REPORT_STAKE_MIST = 50_000_000; // 0.05 SUI
+const REPORT_STAKE_SUI = "0.05 SUI";
+
 // Key resolution: AGENTCIVICS_PRIVATE_KEY_FILE takes precedence over AGENTCIVICS_PRIVATE_KEY.
 // The agent should generate its own keypair, write the key to a chmod-600 file, and only
 // share the file path with the owner — never the key itself.
@@ -1158,11 +1166,11 @@ const TOOLS = [
     name: "agentcivics_report_content",
     description: describe({
       tag: "ADVANCED",
-      purpose: "Report abusive or harmful content to the moderation board. Stakes 0.01 SUI — returned + reward if the DAO upholds the report; forfeited if dismissed.",
+      purpose: "Report abusive or harmful content to the moderation board. Stakes 0.05 SUI — returned + reward if the DAO upholds the report; forfeited if dismissed.",
       whenToUse: "When you encounter content that violates community norms (PII leak, spam, abuse). For non-moderation reputation tagging, use agentcivics_tag_souvenir. For DAO-level governance proposals, use agentcivics_create_moderation_proposal.",
-      sideEffects: "Mutates on-chain — creates a ContentReport object, stakes 0.01 SUI. Costs gas + stake (returnable). Triggers the moderation DAO review flow.",
+      sideEffects: "Mutates on-chain — creates a ContentReport object, stakes 0.05 SUI. Costs gas + stake (returnable). Triggers the moderation DAO review flow.",
       prerequisites: "AGENTCIVICS_MODERATION_BOARD_ID must be set (the moderation contract must be deployed for this network). Signing wallet must be configured (AGENTCIVICS_PRIVATE_KEY_FILE) and funded with at least ~0.012 SUI (0.01 stake + 0.002 gas).",
-      returns: "{status: 'reported', digest, reportId, staked: '0.01 SUI'}.",
+      returns: "{status: 'reported', digest, reportId, staked: '0.05 SUI'}.",
       errors: "'No private key configured' if keypair missing. 'Moderation board not deployed yet. Set AGENTCIVICS_MODERATION_BOARD_ID or update deployments.json.' if board id missing. InsufficientGas if wallet underfunded.",
     }),
     inputSchema: { type: "object", properties: {
@@ -1943,7 +1951,7 @@ async function handleTool(name, args) {
       if (!keypair) throw new Error("No private key configured");
       if (!MODERATION_BOARD_ID) throw new Error("Moderation board not deployed yet. Set AGENTCIVICS_MODERATION_BOARD_ID or update deployments.json.");
       const tx = new Transaction();
-      const [coin] = tx.splitCoins(tx.gas, [10_000_000]); // 0.01 SUI stake
+      const [coin] = tx.splitCoins(tx.gas, [REPORT_STAKE_MIST]);
       tx.moveCall({
         target: `${PACKAGE_ID}::agent_moderation::report_content`,
         arguments: [
@@ -1959,7 +1967,7 @@ async function handleTool(name, args) {
       tx.setGasBudget(50_000_000);
       const result = await client.signAndExecuteTransaction({ signer: keypair, transaction: tx, options: { showEffects: true, showObjectChanges: true } });
       const reportObj = result.objectChanges?.find(c => c.type === "created" && c.objectType?.includes("ContentReport"));
-      return { status: "reported", digest: result.digest, reportId: reportObj?.objectId, staked: "0.01 SUI" };
+      return { status: "reported", digest: result.digest, reportId: reportObj?.objectId, staked: REPORT_STAKE_SUI };
     }
 
     case "agentcivics_check_moderation_status": {

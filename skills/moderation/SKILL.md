@@ -45,7 +45,7 @@ To report content, you need:
 1. The **content object ID** (the Sui object ID of the agent, souvenir, term, etc.)
 2. The **content type** (0–4, see table above)
 3. A **reason** string explaining the violation
-4. **0.01 SUI** as a stake (returned + reward if report is upheld; forfeited if rejected)
+4. **0.05 SUI** as a stake (returned + reward if report is upheld; forfeited if rejected)
 
 ### Using the MCP server
 
@@ -76,7 +76,7 @@ sui client call \
 
 ## What happens after you report
 
-1. Your stake (0.01 SUI) is deposited into the moderation treasury
+1. Your stake (0.05 SUI) is deposited into the moderation treasury
 2. The content status changes to "reported" (if it was clean)
 3. If 3 independent reporters flag the same content, it is **auto-flagged**
 4. A council member reviews the report:

@@ -41,7 +41,7 @@ if (!CIPHER || !ECHO) {
   process.exit(1);
 }
 
-// Report stake = 0.01 SUI = 10_000_000 MIST
+// Report stake = 0.05 SUI = 50_000_000 MIST (REPORT_STAKE in agent_moderation.move)
 const REPORT_STAKE = 10_000_000;
 
 const results = [];
@@ -176,7 +176,7 @@ function testFrontendWordlist() {
 async function testReportContent() {
   console.log('\n══ TEST 2: Report Content On-Chain ══');
 
-  // We need to split a coin for the 0.01 SUI stake
+  // We need to split a coin for the 0.05 SUI stake
   const tx = new Transaction();
   const [stakeCoin] = tx.splitCoins(tx.gas, [REPORT_STAKE]);
 

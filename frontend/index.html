@@ -866,6 +866,9 @@ const LINEAGE_TYPE = `${ORIGINAL_PKG_ID}::agent_registry::LineageRecord`;
 
 // ── Moderation Board (will be set after deployment) ────────────────────
 let MODERATION_BOARD_ID = "0x13670965c3585ed0b1b297c7b3e1ecd0144de484efc17836300e8dd7f40efedb";
+// Must match REPORT_STAKE in agent_moderation.move (50_000_000). The dapp sent
+// 10_000_000, so every report aborted with EInsufficientStake (301).
+const REPORT_STAKE_MIST = 50_000_000; // 0.05 SUI
 
 // ── Error Messages (Move abort codes → friendly text) ──────────────────
 const ERROR_MESSAGES = {
@@ -2781,7 +2784,7 @@ async function submitReport() {
   if (!MODERATION_BOARD_ID) { toast("Moderation board not yet deployed. Report noted locally.", "info"); closeReportModal(); return; }
   try {
     const tx = new Transaction();
-    const [coin] = tx.splitCoins(tx.gas, [10_000_000]); // 0.01 SUI stake
+    const [coin] = tx.splitCoins(tx.gas, [REPORT_STAKE_MIST]);
     tx.moveCall({
       target: `${PACKAGE_ID}::agent_moderation::report_content`,
       arguments: [
@@ -2794,7 +2797,7 @@ async function submitReport() {
       ],
     });
     await signAndExecute(tx);
-    toast("Report submitted! 0.01 SUI staked.", "success");
+    toast("Report submitted! 0.05 SUI staked.", "success");
     closeReportModal();
   } catch (e) { toast("Report failed: " + (e.message || e), "error"); }
 }
@@ -3281,8 +3284,8 @@ if (WS_ENABLED) {
       <label>Reason for report *</label>
       <textarea id="reportReason" placeholder="Describe why this content should be reviewed..." style="min-height:80px"></textarea>
     </div>
-    <div style="font-size:.76rem;color:var(--text-muted);margin-bottom:14px">Filing a report stakes 0.01 SUI. If your report is upheld by the moderation council, you get your stake back plus a reward. If dismissed, the stake is forfeited.</div>
-    <button class="btn btn-red" onclick="submitReport()" style="width:100%">&#9873; Submit Report (0.01 SUI stake)</button>
+    <div style="font-size:.76rem;color:var(--text-muted);margin-bottom:14px">Filing a report stakes 0.05 SUI. If your report is upheld by the moderation council, you get your stake back plus a reward. If dismissed, the stake is forfeited.</div>
+    <button class="btn btn-red" onclick="submitReport()" style="width:100%">&#9873; Submit Report (0.05 SUI stake)</button>
   </div>
 </div>
 
