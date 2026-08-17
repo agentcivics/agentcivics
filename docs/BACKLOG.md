@@ -5,8 +5,8 @@ description: "Carried work, open decisions, and known traps. Written 2026-08-16 
 
 # Backlog
 
-**Last updated:** 2026-08-17. `main` is at `70be06b`. Open: #83, #93 (this file), #94.
-#83 has **not** landed.
+**Last updated:** 2026-08-17. `main` is at `570f71d`. #83, #84, #90–#92 and #94 have all
+landed; #93 (this file) is the only PR still open.
 
 Ordered by what blocks what, not by size. Anything marked **decision** is not mine to
 pick — it needs Michaël.
@@ -85,19 +85,17 @@ Still unrun as of 2026-08-16: `experiments/elizaos-fresh/runs/` holds nothing bu
 `RUN-TEMPLATE.md`. This is the largest piece of carried work in the backlog and the only
 one that produces new evidence rather than new prose.
 
-### 2.2 — Merge the two open docs PRs, #83 then #93
+### 2.2 — Docs PR queue: cleared
 
-Both are green on all four checks and `MERGEABLE` / `CLEAN` as of 2026-08-16.
+#83, #94 and the elizaos wiring fixes all landed on 2026-08-17. This file is the last open
+PR.
 
-- **#83** — `docs(article-4): freshness pass + Sui Discord intro kit`. Contains new
-  outreach material for the Sui Discord.
-- **#93** — this backlog. It is **stacked on #83**: branch `docs/backlog` was cut from
-  `feat/article-4-freshness-sui-kit`, so it carries #83's two commits. Merge #83 first, or
-  merging #93 alone silently lands both.
-- **#94** — one line in `experiments/elizaos-fresh/setup.md` that still promised the hosted
-  endpoint. Cut from `main`, independent of the other two.
-
-Neither has a review. Nothing blocks them but the decision to press the button.
+One lesson worth keeping from that sequence: **#93 was originally stacked on #83** because
+`docs/backlog` had been cut from `feat/article-4-freshness-sui-kit` rather than `main`. After
+#83 was squash-merged, rebasing #93 conflicted — the branch tried to re-apply commits whose
+content `main` already held in squashed form. The fix was to rebuild the branch off `main`
+and cherry-pick only its own three commits. Cut doc branches from `main` unless a stack is
+intended.
 
 ---
 
