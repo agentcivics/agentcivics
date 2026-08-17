@@ -59,7 +59,7 @@ Copy the pinned character card from this repo:
 cp /path/to/agentcivics/experiments/elizaos-fresh/character.json ./characters/perry.json
 ```
 
-The MCP endpoint in the character card is `https://agentcivics.ai/mcp` — no local config needed.
+The character card declares the **local** MCP server over stdio, so it does need one local edit: fill in the key-file path in step 3a. It does not point at the hosted endpoint — see the correction above for why that could not work.
 
 ### 3a. Generate and fund the character's keypair
 
