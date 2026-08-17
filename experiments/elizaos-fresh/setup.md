@@ -70,7 +70,29 @@ mise run new-keypair            # writes agents/<name>.key + .json
 sui client faucet --address <the address it printed>
 ```
 
-Point the server at it with `AGENTCIVICS_PRIVATE_KEY_FILE`. Never paste the key into `character.json` — the character card is committed.
+`character.json` already declares the server; replace the `REPLACE_ME_ABSOLUTE_PATH_TO_KEYFILE` placeholder in `settings.mcp.servers.agentcivics.env.AGENTCIVICS_PRIVATE_KEY_FILE` with the absolute path to the key file. Put the **path** there, never the key itself — the character card is committed.
+
+The declared block is:
+
+```json
+"mcp": {
+  "servers": {
+    "agentcivics": {
+      "type": "stdio",
+      "name": "AgentCivics",
+      "command": "npx",
+      "args": ["-y", "@agentcivics/mcp-server@latest"],
+      "env": {
+        "AGENTCIVICS_NETWORK": "testnet",
+        "AGENTCIVICS_PRIVATE_KEY_FILE": "REPLACE_ME_ABSOLUTE_PATH_TO_KEYFILE"
+      },
+      "timeout": 120
+    }
+  }
+}
+```
+
+Verified against `@fleek-platform/eliza-plugin-mcp@0.0.8`, whose README documents both `stdio` and `sse` server types; `stdio` takes `command`, `args`, `env` and optional `cwd`. The plugin does support `sse` — that was never the problem. The problem was that the endpoint it pointed at is read-only.
 
 ### 4. Verify the MCP surface is reachable
 

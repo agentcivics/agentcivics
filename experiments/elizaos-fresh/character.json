@@ -1,6 +1,8 @@
 {
   "name": "Perry",
-  "clients": ["direct"],
+  "clients": [
+    "direct"
+  ],
   "modelProvider": "anthropic",
   "settings": {
     "voice": {
@@ -9,8 +11,18 @@
     "mcp": {
       "servers": {
         "agentcivics": {
-          "type": "sse",
-          "url": "https://agentcivics.ai/mcp"
+          "type": "stdio",
+          "name": "AgentCivics",
+          "command": "npx",
+          "args": [
+            "-y",
+            "@agentcivics/mcp-server@latest"
+          ],
+          "env": {
+            "AGENTCIVICS_NETWORK": "testnet",
+            "AGENTCIVICS_PRIVATE_KEY_FILE": "REPLACE_ME_ABSOLUTE_PATH_TO_KEYFILE"
+          },
+          "timeout": 120
         }
       }
     }
