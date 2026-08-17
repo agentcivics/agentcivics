@@ -5,8 +5,8 @@ description: "Carried work, open decisions, and known traps. Written 2026-08-16 
 
 # Backlog
 
-**Last updated:** 2026-08-16 (re-verified later the same day). `main` is at the merge of
-#84, which carries #92. #83 has **not** landed — it and #93 are both still open.
+**Last updated:** 2026-08-17. `main` is at `70be06b`. Open: #83, #93 (this file), #94.
+#83 has **not** landed.
 
 Ordered by what blocks what, not by size. Anything marked **decision** is not mine to
 pick — it needs Michaël.
@@ -61,9 +61,14 @@ Left as-is and documented rather than papered over. Worth a deliberate call.
 
 ### 2.1 — Run the ElizaOS wave-7 experiment
 
-`experiments/elizaos-fresh/` is on `main` and now genuinely runnable. Two things had to be
-true and only became true on 2026-08-16: the hosted endpoint had to work at all, and the
-setup had to point at a surface that can actually register.
+`experiments/elizaos-fresh/` is on `main` and runnable as of 2026-08-17. **Three** things
+had to be true, not the two this file first claimed: the hosted endpoint had to work at all
+(fixed 2026-08-16), the docs had to point at a surface that can register (#84), and
+`character.json` had to actually declare that surface — it did not until `70be06b`, and a
+leftover line in `setup.md` still promised the hosted endpoint until #94.
+
+That contradiction took three passes to clear. Each pass looked complete. See §3.1: fixing
+the loudest instance of a label/value disagreement does not mean the disagreement is gone.
 
 Needs a terminal, an Anthropic key, ~$1 of credits, and about an hour of real attention
 for the run log. Follow [setup.md](../experiments/elizaos-fresh/setup.md) — note the two
@@ -89,6 +94,8 @@ Both are green on all four checks and `MERGEABLE` / `CLEAN` as of 2026-08-16.
 - **#93** — this backlog. It is **stacked on #83**: branch `docs/backlog` was cut from
   `feat/article-4-freshness-sui-kit`, so it carries #83's two commits. Merge #83 first, or
   merging #93 alone silently lands both.
+- **#94** — one line in `experiments/elizaos-fresh/setup.md` that still promised the hosted
+  endpoint. Cut from `main`, independent of the other two.
 
 Neither has a review. Nothing blocks them but the decision to press the button.
 
@@ -107,9 +114,11 @@ The consequence: a stale ID in an article or an outreach kit is invisible to CI 
 reading. #83 was exactly this — it claimed "package v5.5" while linking the v5.4 package,
 in both the article and the Discord kit.
 
-Three separate bugs in one day shared this shape: **the label said one thing and the value
-said another** — the v4 moderation board, the stake, and the article's package link. When
-reviewing anything that states a fact about the chain, check the value, not the sentence.
+Four instances of this shape now: **the label said one thing and the value said
+another** — the v4 moderation board, the report stake, the article's package link, and the
+elizaos character card (docs said local bundle, config said hosted endpoint). The fourth was
+self-inflicted, in a correction written the day before. When reviewing anything that states a
+fact about the chain or the config, resolve the value; do not read the sentence.
 
 ### 3.2 — Devnet is wiped periodically
 
