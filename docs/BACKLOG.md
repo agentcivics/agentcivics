@@ -5,7 +5,8 @@ description: "Carried work, open decisions, and known traps. Written 2026-08-16 
 
 # Backlog
 
-**Last updated:** 2026-08-16. `main` at the merge of #92 (plus #83 if it has since landed).
+**Last updated:** 2026-08-16 (re-verified later the same day). `main` is at the merge of
+#84, which carries #92. #83 has **not** landed — it and #93 are both still open.
 
 Ordered by what blocks what, not by size. Anything marked **decision** is not mine to
 pick — it needs Michaël.
@@ -75,10 +76,21 @@ criterion is honestly met.
 `agentcivics_record_refusal` now exists, so Perry can *refuse* as well as register — a
 refusal would be a publishable outcome in its own right, not a null result.
 
-### 2.2 — Merge #83 if still open
+Still unrun as of 2026-08-16: `experiments/elizaos-fresh/runs/` holds nothing but
+`RUN-TEMPLATE.md`. This is the largest piece of carried work in the backlog and the only
+one that produces new evidence rather than new prose.
 
-`docs(article-4): freshness pass + Sui Discord intro kit`. Rebased and green as of
-2026-08-16. Contains new outreach material for the Sui Discord.
+### 2.2 — Merge the two open docs PRs, #83 then #93
+
+Both are green on all four checks and `MERGEABLE` / `CLEAN` as of 2026-08-16.
+
+- **#83** — `docs(article-4): freshness pass + Sui Discord intro kit`. Contains new
+  outreach material for the Sui Discord.
+- **#93** — this backlog. It is **stacked on #83**: branch `docs/backlog` was cut from
+  `feat/article-4-freshness-sui-kit`, so it carries #83's two commits. Merge #83 first, or
+  merging #93 alone silently lands both.
+
+Neither has a review. Nothing blocks them but the decision to press the button.
 
 ---
 
@@ -101,8 +113,9 @@ reviewing anything that states a fact about the chain, check the value, not the 
 
 ### 3.2 — Devnet is wiped periodically
 
-Devnet was redeployed 2026-08-15 (v5.3.4, `0xc1740b78…`). It will go stale again without
-warning — this has already happened twice in recorded history. When it does:
+Devnet was redeployed 2026-08-15 (v5.3.4, `0xc1740b78…`). **Still live** — package and
+`Registry` both resolve as of 2026-08-16. It will go stale again without warning, and this
+has already happened twice in recorded history. When it does:
 
 - `move/deployments.devnet.json` and the npm bundle point at a package that no longer
   exists, and `AGENTCIVICS_NETWORK=devnet` fails with ObjectNotFound for every npx user
@@ -124,10 +137,14 @@ Anything that needs to write uses the local `@agentcivics/mcp-server` bundle (32
 defined, 28 enabled by default) with its own keypair. The elizaos scaffold assumed
 otherwise and could not have produced its own outcome.
 
-### 3.4 — `gh` could not reach the GitHub API on 2026-08-16
+### 3.4 — `gh` intermittently could not reach the GitHub API on 2026-08-16
 
-`gh pr create` / `gh api` timed out against `140.82.121.5:443` while `curl` reached the
-same IP fine. PRs #90–#92 were created and merged via REST through curl:
+**Working again** later the same day: `gh pr list`, `gh pr view` and `gh pr checks` all
+returned normally. Treat this as intermittent rather than fixed — nothing was changed to
+repair it, so it may come back.
+
+Earlier, `gh pr create` / `gh api` timed out against `140.82.121.5:443` while `curl`
+reached the same IP fine. PRs #90–#92 were created and merged via REST through curl:
 
 ```bash
 curl -s -X POST https://api.github.com/repos/agentcivics/agentcivics/pulls \
