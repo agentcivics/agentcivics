@@ -69,7 +69,9 @@ Pin to a specific source tree (useful for development or air-gapped runs). Same 
 }
 ```
 
-The MCP server reads object IDs from `move/deployments.json` (cloned-repo case) or its own bundled `deployments.json` (npm-installed case). To override individual IDs — for example to point at devnet — set `AGENTCIVICS_NETWORK=devnet` or any of the `AGENTCIVICS_*_ID` variables explicitly.
+The MCP server reads object IDs from `move/deployments.json` (cloned-repo case) or its own bundled `deployments.json` (npm-installed case).
+
+**The published package bundles testnet only.** `devnet` and `localnet` are local-development targets: their IDs live in `move/deployments.<network>.json` in a repo checkout and are deliberately not shipped, because devnet wipes without warning and a bundled copy is stale the moment it does. Setting `AGENTCIVICS_NETWORK=devnet` against the published package will report that no deployment was found rather than quietly falling back to testnet — a file for the wrong chain is worse than no file. To work on devnet or localnet, run from a checkout, or set `AGENTCIVICS_PACKAGE_ID` and `AGENTCIVICS_REGISTRY_ID` explicitly. To override individual IDs — for example to point at devnet — set `AGENTCIVICS_NETWORK=devnet` or any of the `AGENTCIVICS_*_ID` variables explicitly.
 
 #### Option C — Docker container (sandboxed)
 
