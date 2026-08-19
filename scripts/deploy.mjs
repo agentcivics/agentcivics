@@ -77,6 +77,16 @@ const ENV_CONFIG = {
     // than auto-rewrite Move.toml. The operator must investigate.
     onChainIdMismatch: 'fail',
   },
+  localnet: {
+    suiCommand: 'test-publish',
+    rpc: 'http://127.0.0.1:9000',
+    deploymentsFile: 'move/deployments.localnet.json',
+    // No public explorer for a node on your laptop.
+    explorerBase: null,
+    // A fresh localnet mints a new chain-id every time it starts, so drift is
+    // the normal case rather than a warning sign. Same reasoning as devnet.
+    onChainIdMismatch: 'auto-fix',
+  },
   devnet: {
     suiCommand: 'test-publish',
     rpc: 'https://fullnode.devnet.sui.io:443',
@@ -95,7 +105,7 @@ if (activeEnv === 'mainnet') {
 }
 
 const cfg = ENV_CONFIG[activeEnv];
-if (!cfg) fail(`unsupported active env "${activeEnv}". Run \`mise run env-testnet\` or \`mise run env-devnet\` first.`);
+if (!cfg) fail(`unsupported active env "${activeEnv}". Run \`mise run env-localnet\`, \`mise run env-devnet\` or \`mise run env-testnet\` first.`);
 
 ok(`will use: sui client ${cfg.suiCommand}`);
 ok(`will write: ${cfg.deploymentsFile}`);
@@ -340,7 +350,7 @@ const updated = {
   supersedes: current.packageId
     ? `${current.version} (${current.packageId}) — replaced by fresh ${cfg.suiCommand} on ${new Date().toISOString().slice(0,10)}`
     : undefined,
-  explorer: `${cfg.explorerBase}${packageId}`,
+  explorer: cfg.explorerBase ? `${cfg.explorerBase}${packageId}` : undefined,
 };
 for (const k of Object.keys(updated)) if (updated[k] === undefined) delete updated[k];
 
@@ -382,7 +392,9 @@ console.log('     cd mcp-server && npm publish');
 console.log('');
 console.log(`  ${BOLD}3.${NC} Commit ${cfg.deploymentsFile} + mcp-server changes`);
 console.log('');
-console.log(`Explorer: ${cfg.explorerBase}${packageId}`);
+console.log(cfg.explorerBase
+  ? `Explorer: ${cfg.explorerBase}${packageId}`
+  : 'Explorer: none — localnet runs on your machine, so there is no public explorer to link.');
 
 function incrementPatch(version) {
   const m = (version || '0.0.0').match(/^(\d+)\.(\d+)\.(\d+)(.*)$/);

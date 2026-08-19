@@ -87,6 +87,19 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | docker run --rm -i \\
 description = "Switch the active sui client environment to testnet (canonical chain, persistent). Use for production-like operations and the canonical Registry."
 run = "sui client switch --env testnet"
 
+[tasks.env-localnet]
+description = "Switch the active sui client environment to localnet (http://127.0.0.1:9000). Requires a local node — start one with `sui start` first. Fastest loop for contract work: no faucet wait, no shared state, resets whenever you want."
+run = """
+nc -z 127.0.0.1 9000 2>/dev/null || {
+  echo "No Sui node on 127.0.0.1:9000."
+  echo "Start one first:  sui start"
+  echo "(sui client new-env validates the RPC, so the env cannot even be registered until a node answers.)"
+  exit 1
+}
+sui client envs --json | grep -q '"localnet"' || sui client new-env --alias localnet --rpc http://127.0.0.1:9000
+sui client switch --env localnet
+"""
+
 [tasks.env-devnet]
 description = "Switch the active sui client environment to devnet (wipes weekly). Integration tests run here, never on testnet — testnet pollution leaves un-killable on-chain state."
 run = "sui client switch --env devnet"

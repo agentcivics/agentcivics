@@ -36,9 +36,7 @@
     "package.json",
     "README.md",
     "deployments.json",
-    "deployments.testnet.json",
-    "deployments.devnet.json",
-    "deployments.mainnet.json"
+    "deployments.testnet.json"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

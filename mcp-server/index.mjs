@@ -227,6 +227,12 @@ let loadedDeployPath = null;
 for (const candidate of DEPLOY_CANDIDATES) {
   try {
     const deploy = JSON.parse(readFileSync(candidate, "utf8"));
+    // A file for the wrong chain is worse than no file. The generic
+    // deployments.json declares testnet, so without this a devnet user whose
+    // deployments.devnet.json is absent silently falls through to it and
+    // writes to the canonical registry — the one place integration runs must
+    // never touch. Skip rather than serve the wrong chain.
+    if (deploy.network && deploy.network !== NETWORK) continue;
     PACKAGE_ID = PACKAGE_ID || deploy.packageId;
     TYPE_PACKAGE_ID = TYPE_PACKAGE_ID || deploy.originalPackageId || deploy.packageId;
     REGISTRY_ID = REGISTRY_ID || deploy.objects.registry;
@@ -241,7 +247,13 @@ for (const candidate of DEPLOY_CANDIDATES) {
   } catch { /* try next candidate */ }
 }
 if (!loadedDeployPath) {
-  console.error(`Warning: Could not load deployments for network '${NETWORK}' (tried ${DEPLOY_CANDIDATES.join(", ")})`);
+  console.error(`Warning: no deployment file for network '${NETWORK}' (tried ${DEPLOY_CANDIDATES.join(", ")})`);
+  if (NETWORK !== "testnet") {
+    console.error(
+      `The published package bundles testnet only. '${NETWORK}' is a local-development target: run from a repo checkout, ` +
+      `where move/deployments.${NETWORK}.json is available, or set AGENTCIVICS_PACKAGE_ID / AGENTCIVICS_REGISTRY_ID explicitly.`,
+    );
+  }
 }
 
 const client = createSuiCompatClient({ url: RPC_URL });
@@ -332,6 +344,8 @@ async function preflight() {
 
   // Deployment bundle alignment: did we load a JSON whose network matches
   // the env-selected network?
+  // Unreachable now that the loader skips mismatched files, but kept as a
+  // belt-and-braces check in case IDs arrive from env vars instead.
   if (loadedDeployPath && LOADED_DEPLOY_NETWORK && LOADED_DEPLOY_NETWORK !== NETWORK) {
     issues.push(`bundled deployments.json declares network='${LOADED_DEPLOY_NETWORK}' but AGENTCIVICS_NETWORK='${NETWORK}' — tools will call the wrong package`);
   }

@@ -14,11 +14,14 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const moveDir = resolve(__dirname, '..', 'move');
 
+// Testnet only. devnet and localnet are local-development targets: their IDs
+// are read from move/deployments.<network>.json in a repo checkout, never
+// bundled. Devnet in particular wipes without warning — twice in three days in
+// August 2026 — and shipping its IDs put npm releases on a sandbox's schedule
+// while handing npx users a package that had already stopped existing.
 const candidates = [
   'deployments.json',
   'deployments.testnet.json',
-  'deployments.devnet.json',
-  'deployments.mainnet.json',
 ];
 
 let copied = 0;
