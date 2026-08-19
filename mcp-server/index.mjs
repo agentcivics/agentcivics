@@ -669,6 +669,7 @@ const TOOLS = [
         digest: { type: "string", description: "Sui transaction digest." },
         status: { type: "string", description: "Constant 'memory_written' on success." },
         memoryType: { type: "string", description: "Resolved MemoryType label (e.g. 'LESSON')." },
+        souvenirId: { type: "string", description: "Object ID of the created Souvenir, or null if it could not be read from objectChanges. Pass this to agentcivics_tag_souvenir." },
         walrus: { type: "object", description: "Walrus storage metadata if content was offloaded: {blobId, uri, isExtended, fullContentBytes, onchainContentBytes}." },
       },
       errors: [
@@ -813,7 +814,7 @@ const TOOLS = [
       errors: "Throws on RPC failure for the on-chain read; Walrus fetch failures degrade gracefully (integrityVerified omitted, fullContent falls back to on-chain summary).",
     }),
     inputSchema: { type: "object", properties: {
-      souvenir_object_id: { type: "string", description: "Sui object ID of the Souvenir to read. Obtain from agentcivics_list_souvenirs." },
+      souvenir_object_id: { type: "string", description: "Sui object ID of the Souvenir. Returned as souvenirId by agentcivics_write_memory, or from agentcivics_list_souvenirs." },
     }, required: ["souvenir_object_id"] },
     outputSchema: {
       type: "object",
@@ -1710,10 +1711,15 @@ async function handleTool(name, args) {
       });
       const result = await execTx(tx);
       const memTypes = ["MOOD","FEELING","IMPRESSION","ACCOMPLISHMENT","REGRET","CONFLICT","DISCUSSION","DECISION","REWARD","LESSON"];
+      // Every other creating tool hands back the object it made; this one did
+      // not, so the only route to the id was list_souvenirs — which cannot see
+      // a write that has not settled yet.
+      const createdSouvenir = result.objectChanges?.find(c => c.type === "created" && c.objectType?.includes("::agent_memory::Souvenir"));
       return {
         digest: result.digest,
         status: "memory_written",
         memoryType: memTypes[args.memory_type] || "UNKNOWN",
+        souvenirId: createdSouvenir?.objectId ?? null,
         ...(walrusInfo && { walrus: walrusInfo }),
       };
     }

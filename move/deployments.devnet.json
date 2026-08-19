@@ -1,10 +1,10 @@
 {
-  "version": "5.3.4",
+  "version": "5.3.5",
   "network": "devnet",
-  "deployedAt": "2026-08-15",
+  "deployedAt": "2026-08-18",
   "freshDeploy": true,
-  "packageId": "0xc1740b78c0cb1060c13f723f833171bf93c3fa243cb7810819ecc08fb6eb90f0",
-  "originalPackageId": "0xc1740b78c0cb1060c13f723f833171bf93c3fa243cb7810819ecc08fb6eb90f0",
+  "packageId": "0x3f2c23798daa7490e51d393fe756e031a46b06c90ccd37b3d044d539997df081",
+  "originalPackageId": "0x3f2c23798daa7490e51d393fe756e031a46b06c90ccd37b3d044d539997df081",
   "modules": [
     "agent_registry",
     "agent_memory",
@@ -13,19 +13,19 @@
     "agent_refusal"
   ],
   "objects": {
-    "registry": "0xdda8ec2499a1a1901cd1a2269442b5f1e4b52192179be875d06c6e7222e3c137",
-    "treasury": "0x80294e5c5c872d1e88e1f7496d8248b423ff5ca2fd7d3a9311d45ea44e6c2cde",
-    "memoryVault": "0xb4f126a5268bd46769f530fbbe5e60d1c76bedbee88b2ae12289a44c65c6bd05",
-    "reputationBoard": "0xc98ba9fd4e1b9d60c2c3f37ae3f686be571f616696343cd6a8535471eb23da0f",
-    "moderationBoard": "0x71eced7f9d5286def68f9a1d0b0af6bb572dab392578f2d6991924ca0b4f8cac",
-    "upgradeCap": "0x3663f5c17092e0349aac0554d5f59d95cb88a8a036d925559d376fa132505de8",
-    "refusalBoard": "0x29a92dece477d32bd54907c346f24fc2835a142cb4d5d05bb0209fa927fce437"
+    "registry": "0xb24d3e32330a0e35e794dd09984f48a2c638304d23f5614eb429512d42b6f88b",
+    "treasury": "0x036e9fba395070c1d31be60c225cd8f949daffceca3ca0300eacd2ec1cc3d10d",
+    "memoryVault": "0xa553775f794c38e93673306742b9fa3f2f692096524433a30bf7db0dbc370749",
+    "reputationBoard": "0xc4f57889d4744d11b9c50ed01e62176d7e8c6ecd1f2be6de3ed97c9f35a7f56b",
+    "moderationBoard": "0xef27c7e8cb323d35fbc4908a9325c1a982a1d0d541cb40acda18a6a011fc81fe",
+    "upgradeCap": "0x9a2a77d7815797c6571152d5099cf9e174b6d219298a72cb944cc9f2f72ebbff",
+    "refusalBoard": "0x9a040975a426dea0687fe3f828781cb0680c4e9f049c4112187e985e24d9f9bc"
   },
   "deployer": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
-  "publishDigest": "8ZfnXSYFww4qpAbqrG8UMnfSKKoBPHTnANx78JbDsedL",
-  "moderationBoardDigest": "EzYYD1T5Krt77uPKJJjbnonkRSBUVG4bdrWdx2DbQj3q",
+  "publishDigest": "2dLGtupmUhNw2RDGDprSyUqPLfoUZgKSF9iZfXLdU1qy",
+  "moderationBoardDigest": "D9KybmTEiEDFS5QhgAcJESQY6X435n3XSHcs3BGp12SE",
   "moderationAdmin": "0x358b0ce1d7bc4f6a83f9c1e4a6ed7d63b0207a623ad9e9531e0a70b87f6cfeab",
-  "explorer": "https://devnet.suivision.xyz/package/0xc1740b78c0cb1060c13f723f833171bf93c3fa243cb7810819ecc08fb6eb90f0",
-  "supersedes": "5.3.3 (0x662e77612ed188fab5cfb2434faae0458c814804d5a39e88badb4d07281798c9) — replaced by fresh test-publish on 2026-08-15",
-  "refusalBoardDigest": "D9P74m13HKqAqqqMMTkkYiiBhUGb7bWGmGFHyFK1rdQy"
+  "explorer": "https://devnet.suivision.xyz/package/0x3f2c23798daa7490e51d393fe756e031a46b06c90ccd37b3d044d539997df081",
+  "supersedes": "5.3.4 (0xc1740b78c0cb1060c13f723f833171bf93c3fa243cb7810819ecc08fb6eb90f0) — replaced by fresh test-publish on 2026-08-18",
+  "refusalBoardDigest": "3wV3b7SfsghBpCJEzNm1zSTMpwkm3rpiUF7ffoEqu5aU"
 }
